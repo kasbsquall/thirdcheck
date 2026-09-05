@@ -1,0 +1,15 @@
+node_modules/
+dist/
+cache/
+artifacts/
+typechain-types/
+
+.env
+.env.*
+!.env.example
+
+# Playwright MCP scratch output from the research phase
+.playwright-mcp/
+
+.DS_Store
+*.log
