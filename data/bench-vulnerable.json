@@ -1,0 +1,35 @@
+{
+  "target": "vulnerable",
+  "escrow": "0xD8504B263104aa915974eCCE1002d7F7587e88cD",
+  "chainKey": 1,
+  "generatedAt": "2026-09-05T23:53:25.609Z",
+  "findings": [
+    {
+      "id": "B-02",
+      "title": "Emitting contract not pinned; a look-alike forges the event",
+      "status": "accepted",
+      "vulnerableWhen": "accepted",
+      "detail": "escrow released against the proof",
+      "sourceTx": "0x235c3ff0db6d275e680fd6ad4dcdb10a23061ce71b7629d133fc45158db2a2c6",
+      "evidenceTx": "0xad755634630c768c817ecb997a77c9147970b38a8ba43dc90c4abf9285f3f29e"
+    },
+    {
+      "id": "B-06",
+      "title": "Proven payment not bound to the order it releases",
+      "status": "accepted",
+      "vulnerableWhen": "accepted",
+      "detail": "escrow released against the proof",
+      "sourceTx": "0x03c2be654436c6711928fdfc25ba787cb1382d53198e03763efb8876d33b50c0",
+      "evidenceTx": "0x27c9c29781ab3f201c2664d434c8bab540d0589d91578f3b2cf911969e8e87fe"
+    },
+    {
+      "id": "B-04",
+      "title": "No replay guard on the proof; one payment releases many orders",
+      "status": "accepted",
+      "vulnerableWhen": "accepted",
+      "detail": "same proof released two orders (first accepted, second accepted)",
+      "sourceTx": "0xa9fc1aed411f186d4f7ccade1fa4a3c47702f06cb972614bf894b91be657ce5f",
+      "evidenceTx": "0x7c94e4cb2636231cea0067d6bb10ff611d769b86f987cb9d6208ac3ff2e40ccd"
+    }
+  ]
+}

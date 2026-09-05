@@ -13,3 +13,6 @@ typechain-types/
 
 .DS_Store
 *.log
+
+frontend/node_modules/
+frontend/.next/
