@@ -1,0 +1,110 @@
+{
+  "target": "C:\\Users\\User\\AppData\\Local\\Temp\\claude\\C--Users-User-Downloads-proyectos2026-defi\\abb0168a-eade-4021-9936-5a0115b3434f\\scratchpad\\ref\\VaultBridge",
+  "generatedAt": "2026-09-05T23:48:36.583Z",
+  "findings": [
+    {
+      "id": "B-11",
+      "title": "Verification via a selector the precompile does not implement",
+      "file": "contracts/src/creditcoin/interfaces/IUSCVerifier.sol",
+      "line": 7,
+      "evidence": "declares verifySingle(...)",
+      "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile."
+    },
+    {
+      "id": "B-11",
+      "title": "Verification via a selector the precompile does not implement",
+      "file": "contracts/src/creditcoin/interfaces/IUSCVerifier.sol",
+      "line": 17,
+      "evidence": "declares verifyBatch(...)",
+      "note": "verifyBatch is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifyBatch at 0x0FD2 cannot reach the real precompile."
+    },
+    {
+      "id": "B-11",
+      "title": "Verification via a selector the precompile does not implement",
+      "file": "contracts/src/creditcoin/MockStreakPrecompile.sol",
+      "line": 17,
+      "evidence": "declares verifySingle(...)",
+      "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile."
+    },
+    {
+      "id": "B-11",
+      "title": "Verification via a selector the precompile does not implement",
+      "file": "contracts/src/creditcoin/MockStreakPrecompile.sol",
+      "line": 27,
+      "evidence": "declares verifyBatch(...)",
+      "note": "verifyBatch is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifyBatch at 0x0FD2 cannot reach the real precompile."
+    },
+    {
+      "id": "B-11",
+      "title": "A mock verifier is present in the source tree",
+      "file": "contracts/src/creditcoin/MockStreakPrecompile.sol",
+      "line": 10,
+      "evidence": "contract MockStreakPrecompile",
+      "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here."
+    },
+    {
+      "id": "B-11",
+      "title": "Verifier address is swappable after deployment",
+      "file": "contracts/src/creditcoin/StreakVerifier.sol",
+      "line": 59,
+      "evidence": "setVerifier(...) assigns verifierAddress",
+      "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead."
+    },
+    {
+      "id": "B-11",
+      "title": "Verifier address is swappable after deployment",
+      "file": "contracts/src/creditcoin/VaultLending.sol",
+      "line": 147,
+      "evidence": "setVerifier(...) assigns verifierAddress",
+      "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead."
+    },
+    {
+      "id": "B-11",
+      "title": "Verification via a selector the precompile does not implement",
+      "file": "contracts/test/VaultLending.t.sol",
+      "line": 19,
+      "evidence": "declares verifySingle(...)",
+      "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile."
+    },
+    {
+      "id": "B-11",
+      "title": "Verification via a selector the precompile does not implement",
+      "file": "contracts/test/VaultLending.t.sol",
+      "line": 585,
+      "evidence": "declares verifySingle(...)",
+      "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile."
+    },
+    {
+      "id": "B-11",
+      "title": "A mock verifier is present in the source tree",
+      "file": "contracts/test/VaultLending.t.sol",
+      "line": 577,
+      "evidence": "contract MockBlockProverImpl",
+      "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here."
+    },
+    {
+      "id": "B-12",
+      "title": "Generator returns null on failure, read upstream as absence",
+      "file": "frontend/lib/balanceCache.ts",
+      "line": 91,
+      "evidence": "catch { ... return null }",
+      "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result."
+    },
+    {
+      "id": "B-12",
+      "title": "Generator zeroes the proof on failure but still reports success",
+      "file": "proof-pipeline/src/generateAbsenceProof.ts",
+      "line": 125,
+      "evidence": "catch { proof = '0x'; ... success: true }",
+      "note": "The proof generation failed, the proof was blanked, and the result still claims success. A consumer trusting that flag acts on an empty proof."
+    },
+    {
+      "id": "B-12",
+      "title": "Generator returns null on failure, read upstream as absence",
+      "file": "proof-pipeline/src/generateAbsenceProof.ts",
+      "line": 179,
+      "evidence": "catch { ... return null }",
+      "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result."
+    }
+  ]
+}

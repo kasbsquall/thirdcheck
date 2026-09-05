@@ -1,0 +1,22 @@
+{
+  "target": "C:\\Users\\User\\Downloads\\proyectos2026\\defi\\src",
+  "generatedAt": "2026-09-05T23:48:50.305Z",
+  "findings": [
+    {
+      "id": "B-12",
+      "title": "Generator zeroes the proof on failure but still reports success",
+      "file": "static.ts",
+      "line": 146,
+      "evidence": "catch { proof = '0x'; ... success: true }",
+      "note": "The proof generation failed, the proof was blanked, and the result still claims success. A consumer trusting that flag acts on an empty proof."
+    },
+    {
+      "id": "B-12",
+      "title": "Generator zeroes the proof on failure but still reports success",
+      "file": "static.ts",
+      "line": 156,
+      "evidence": "catch { proof = '0x'; ... success: true }",
+      "note": "The proof generation failed, the proof was blanked, and the result still claims success. A consumer trusting that flag acts on an empty proof."
+    }
+  ]
+}
