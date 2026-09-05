@@ -12,9 +12,12 @@ const accounts = DEPLOYER_PRIVATE_KEY ? [DEPLOYER_PRIVATE_KEY] : [];
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.24",
+    version: "0.8.28",
     settings: {
       optimizer: { enabled: true, runs: 200 },
+      // EvmV1Decoder unpacks deeply nested bytes[] chunks and blows the stack under the legacy
+      // codegen. The IR pipeline is the documented fix and Gluwa's own contracts need it too.
+      viaIR: true,
     },
   },
   networks: {

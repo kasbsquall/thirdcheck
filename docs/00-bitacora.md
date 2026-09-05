@@ -78,3 +78,36 @@ su propio SDK. Dice:
 **Pendiente inmediato para Kevin.** Una `SEPOLIA_RPC_URL` propia de Alchemy o Infura, porque el
 endpoint público limita durante la generación de pruebas, y una clave de despliegue financiada
 desde el faucet de CC3. Sin eso no se puede desplegar el contrato vulnerable del día 2.
+
+---
+
+## 2026-09-05 · Sesión 2 · Día 2 en curso
+
+**D-07. Entorno completo y financiado.** `check-setup` da 9 de 9. Deployer
+`0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155` con 10.000 CTC en CC3. Falta ETH de Sepolia, que
+bloquea únicamente el despliegue de los contratos fuente.
+
+**D-08. Se usa la interfaz oficial, no una copia vendorizada.** `@gluwa/usc-contracts` v0.2.1 trae
+`INativeQueryVerifier.sol` y `EvmV1Decoder.sol`. La interfaz oficial confirma las cinco funciones
+que ya había transcrito del ABI del SDK, así que se borró la copia propia para no tener dos fuentes
+de verdad. La documentación de esa corrección vive en `docs/03-catalogo-binding.md`.
+
+**D-09. Compilación con `viaIR: true`.** `EvmV1Decoder` desborda la pila con el codegen clásico.
+El pipeline IR es el arreglo documentado. Solidity fijado en 0.8.28, que es el pragma de los
+contratos de Gluwa.
+
+**D-10. Catálogo escrito.** `docs/03-catalogo-binding.md`, doce entradas con identificador estable,
+método de detección, evidencia citada y ataque. Compromiso de cobertura declarado explícitamente:
+seis dinámicas, tres estáticas, tres solo documentadas. Un catálogo que promete doce y ejecuta seis
+sería el mismo tipo de afirmación sin respaldo que el proyecto existe para detectar.
+
+**D-11. `VulnerableEscrow` desplegado en CC3 testnet.**
+- Dirección: `0xD8504B263104aa915974eCCE1002d7F7587e88cD`
+- Tx: `0x26780789f4214a5693bcde32cee91ce5969b041284e6f6b5bda7c429179c0378`, bloque 5437099, 970.491 gas
+- Ocho defectos del catálogo: B-01, B-02, B-04, B-05, B-06, B-07, B-08, B-09.
+- No es un espantapájaros: verifica contra el precompile real en la misma transacción que el cambio
+  de estado y comprueba la firma del evento. Lo que nunca establece es la relación entre la
+  transacción probada y el pedido.
+
+**Pendiente inmediato.** ETH de Sepolia para `0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155`, y con
+eso se despliegan `SourceSettlement` e `ImpostorSettlement`, que desbloquean el día 3.
