@@ -33,7 +33,7 @@ function promptHidden(question: string): Promise<string> {
 
     rl.question(question, (answer) => {
       muted = false;
-      rl.output.write("\n");
+      output.output.write("\n");
       rl.close();
       resolvePrompt(answer.trim());
     });
