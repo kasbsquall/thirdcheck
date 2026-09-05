@@ -40,3 +40,41 @@ completo en `docs/02-plan-8-dias.md`.
 
 **Datos crudos.** `data/ctc-buidls-full.json` (48 envíos completos, 436 KB, vía API pública de
 DoraHacks `/api/v1/hub/hackathons/2290/buidls`). `data/digest.md` (resumen por proyecto).
+
+---
+
+## 2026-09-05 · Sesión 2 · Día 1 cerrado
+
+**D-05. La puerta de viabilidad del día 1 está superada, y sin gastar gas ni usar clave privada.**
+`scripts/check-setup.ts` da 8 de 8 contra CC3 testnet en vivo. `scripts/prove-view.ts` genera una
+prueba real del prover para una transacción real de Sepolia y la verifica llamando a la sobrecarga
+`verify` de tipo view del precompile como `eth_call`. Resultado `true`. Además `calculateTxIndex`
+recupera el índice ordinal de la transacción a partir de la forma del camino Merkle y coincide con
+el que reporta Sepolia.
+
+**D-06. Corrección al ABI del precompile, y es material para el catálogo.** La fuente de verdad es
+`node_modules/@gluwa/usc-sdk/dist/block-prover/block_prover.json`, el ABI que Gluwa distribuye en
+su propio SDK. Dice:
+
+- El precompile expone **cinco** funciones, no dos: `verify` y `verifyAndEmit` cada una con
+  sobrecarga individual y de lote, más `calculateTxIndex`. La verificación por lotes **sí** existe
+  on-chain. La documentación oficial solo menciona dos funciones, e index41 afirma en su interfaz
+  vendorizada que son exactamente dos y que no hay lote on-chain. Ambas afirmaciones son
+  incorrectas.
+- `verifySingle` y `verifyBatch` son nombres de método del SDK de TypeScript, no selectores
+  on-chain. Una interfaz de Solidity que los declare apuntando a `0x0FD2` calcula selectores que
+  ahí no existen. VaultBridge hace exactamente eso, lo que confirma que su contrato no puede estar
+  hablando con el precompile real. Entrada B-11 del catálogo, ya no hipotética.
+- El evento `TransactionVerified(chainKey, height, transactionIndex)` no lleva el hash de la
+  transacción. Identifica una posición, no un payload.
+
+**Datos medidos, citables en el deck.**
+- Sepolia es `chainKey` 1. Ethereum mainnet es `chainKey` 3. Encoding 1 en ambos.
+- Retraso de la attestation frontier medido el 5 de septiembre: 37 bloques, unos 7,4 minutos.
+  Corrobora de forma independiente los 8 a 9 minutos que reporta Collateral Eligibility Ledger.
+- Prueba servida por el prover en 404 ms (cacheada). 1 root de continuidad, 8 hermanos Merkle,
+  1312 bytes de txBytes para una transacción normal.
+
+**Pendiente inmediato para Kevin.** Una `SEPOLIA_RPC_URL` propia de Alchemy o Infura, porque el
+endpoint público limita durante la generación de pruebas, y una clave de despliegue financiada
+desde el faucet de CC3. Sin eso no se puede desplegar el contrato vulnerable del día 2.
