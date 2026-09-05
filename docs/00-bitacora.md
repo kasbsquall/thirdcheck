@@ -111,3 +111,21 @@ sería el mismo tipo de afirmación sin respaldo que el proyecto existe para det
 
 **Pendiente inmediato.** ETH de Sepolia para `0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155`, y con
 eso se despliegan `SourceSettlement` e `ImpostorSettlement`, que desbloquean el día 3.
+
+---
+
+## 2026-09-05 · Sesión 2 · Corte
+
+**D-12. Contratos fuente y hardened desplegados.** SourceSettlement e ImpostorSettlement en
+Sepolia, HardenedEscrow en CC3. Direcciones en `docs/04-estado-y-pendientes.md`.
+
+**D-13. Motor del falsificador escrito** (`src/bench.ts`, `src/proof.ts`) con los tres ataques
+del día 3. Estaba corriendo contra el vulnerable al cerrar; no llegó a confirmar veredicto por el
+retraso de attestation. Reejecutable con `npx hardhat run scripts/run-bench.ts --network cc3`.
+
+**Avance global estimado: 42% del build de 8 días.** El detalle jornada por jornada y la lista
+ordenada de pendientes están en `docs/04-estado-y-pendientes.md`. Lo difícil (precompile, motor,
+dos escrows) está hecho; lo que queda es ancho y de bajo riesgo (completar ataques, analizador
+estático, frontend, empaquetado).
+
+**Al retomar, primer paso:** volver a correr el bench del vulnerable hasta el final.
