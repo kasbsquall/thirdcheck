@@ -854,3 +854,47 @@ deployer), Y que esa grabación sea el vídeo. Cierra los dos huecos del juez de
 Encaja con la decisión del usuario: el vídeo va al final; cuando se produzca con contraparte externa,
 se voltea también al tercer juez. Estado: 2-1 a favor con margen; el 1º unánime queda a un artefacto
 (liquidación con contraparte externa grabada como vídeo).
+
+## D-48 · Mesa CEIP agnóstica sobre el campo real de 58 (2026-09-06)
+
+Campo actualizado: la hackathon 2290 pasó a 58 BUIDLs (deadline extendido a 2026-09-13). La API de
+DoraHacks ahora está tras un WAF (405 + captcha), no se forzó; el listado se leyó de la página pública
+y se guardó en docs/evidencias/2026-09-06-jurado-58/campo-58.md. ThirdCheck no aparece con ese nombre
+entre los 58 (entrada pendiente de enlazar por el usuario); se representó a los jueces desde los hechos
+verificables del repo. VaultBridge, Sovereign Attest Agent y FactorX (los 3 defectos confirmados) SÍ
+están entre los 58.
+
+Tres jueces agnósticos (codenames, P3 = ThirdCheck), campo top-11 curado + contexto de ~47 clones de
+crédito/RWA. Peso estricto en evidencia: solo P1 (crosscredit), P2 (index41) y P3 tienen artefactos
+on-chain verificados; el resto es descripción de submission.
+
+Resultado:
+| juez | #1 | #2 | #3 |
+|---|---|---|---|
+| ing. protocolo/ecosistema | P3 | P2 | P1 |
+| inversor (VC) | P1 | P2 | P3 |
+| track-fit/sponsor | P1 | P2 | P3 |
+
+Votos de primer lugar: crosscredit 2, ThirdCheck 1. Borda top-5: crosscredit 13, index41 12,
+ThirdCheck 11. ThirdCheck = #3 en el agregado de los 58, muy cerca, y firmemente en el top-3 CEIP
+(el fast-track está asegurado; el 1º no en esta lectura estricta).
+
+Cambio respecto a D-47 (ronda de 4 proyectos, 2-1 a favor): con el campo completo de 58 y evaluación
+estricta por evidencia, dos de tres jueces bajan a ThirdCheck a #3. Corrección explícita de la
+recomendación previa ("la contraparte externa no era necesaria"): con este campo SÍ es la palanca
+decisiva de #1. Los tres convergen:
+1. Liquidación self-operator (operator=seller=treasury) => sin prueba de demanda; inversor y track-fit
+   bajan por esto.
+2. Vídeo diferido => track-fit lo cuenta como fallo de requisito obligatorio.
+Único que sostiene #1: el juez de ecosistema (valora que audita a todo el campo).
+
+Palanca decisiva unánime (ambas rondas): una liquidación con TRES claves independientes reales
+(buyer != seller != treasury/operator), y que el vídeo SEA esa liquidación, incluyendo al falsifier
+(el operador manda una prueba forjada, el hub la rechaza on-chain; la honesta paga al seller; cierra
+con judge:verify en vivo). Multiplicador citado por ingeniero e inversor: fichar a uno de los otros
+57 proyectos como primer operador externo del SettlementHub (prueba demanda + superficie de
+distribución).
+
+Pendiente: preparar variante de scripts/settle-hub.ts que tome COUNTERPARTY_PRIVATE_KEY (queda lista;
+requiere que el usuario aporte una segunda wallet real con algo de CTC en CC3 y ETH de Sepolia). El
+vídeo sigue al final, y ahora su guion tiene columna vertebral definida por el jurado.
