@@ -681,3 +681,48 @@ convierte "impacto asertado" en "impacto mostrado". Ambos atacan justo los topes
 Techo estructural honesto: aun verificado, crosscredit gana producto y generalista por narrativa y por
 tener app de usuario final; el objetivo realista pasa de "segundo claro" a "moneda al aire por el
 primero", y ahí el vídeo (que el usuario deja para el final) es donde se disputa la narrativa.
+
+---
+
+## 2026-09-06 · Sesión (cont.) — repo público anonimizado + jurado CEIP
+
+**D-42. Publicado el repo público anonimizado.** https://github.com/kasbsquall/thirdcheck (PUBLIC,
+branch main). Se publicó un snapshot de historial limpio (git archive de HEAD, sin historial que
+filtre nombres), con la capa pública anonimizada: `docs/` internos fuera, datos con nombres fuera
+(confirmed-defects, static-VaultBridge/Sovereign/FactorX, day7, findings-report, digest,
+ctc-buidls-full), `verify.ts` degradado con honestidad a "withheld pending coordinated disclosure",
+boletín y LiveCheck sin nombres. Verificado dos veces (agente + yo): grep de nombres vacío,
+`judge:verify` 7/7 en el snapshot. El repo local sigue intacto con nombres, historial y base privada;
+no se le puso remoto. El gate dogfood corrió en GitHub Actions y pasó en verde. Taggeado `v1` para que
+`uses: kasbsquall/thirdcheck@v1` resuelva. Owner: kasbsquall. Esto cierra el mayor tope que nombró el
+panel anterior (repo no localizable).
+
+Pendiente del usuario: enlazar el repo (y deck + vídeo) en la entrada de DoraHacks, `npm publish` de
+la librería, crear el repo plantilla, listar la Action en Marketplace, enviar disclosures.
+
+**D-43. Jurado CEIP (jurado real, lente de inversión).** Tres jueces (ingeniero de protocolo,
+inversor de Credit Labs, juez de track/producto), criterios reales del hackathon + CEIP, vídeo
+obviado para todos. Overall promedio:
+
+| proyecto | ing. protocolo | inversor | track/producto | promedio |
+|---|---|---|---|---|
+| crosscredit | 86 | 80 | 88 | 84.7 |
+| ThirdCheck | 87 | 62 | 80 | 76.3 |
+| index41 | 80 | 66 | 79 | 75.0 |
+| COVENANT | 60 | 59 | 67 | 62.0 |
+
+CEIP fast-track (cada juez nombra 3): crosscredit 3/3, ThirdCheck 3/3, index41 3/3, COVENANT 0/3.
+Veredicto: crosscredit Grand Prize proyectado; los tres cupos de fast-track CEIP van, por unanimidad,
+a crosscredit, ThirdCheck e index41. ThirdCheck proyectado 2º, en empate técnico con index41 (2 jueces
+lo ponen sobre index41, el inversor pone index41 encima). El ingeniero de protocolo rankeó a
+ThirdCheck 1º por mérito técnico (depth 89, completeness 90), pero lo puso 2º para CEIP.
+
+Topes de ThirdCheck para el 1er lugar, consistentes en los tres jueces: track fit débil (57, no es app
+de ninguno de los 5 tracks) e investabilidad (50, dev-tooling, TAM pequeña hoy, camino de ingresos
+tipo servicios). Ambos son de encuadre, no de código. Punto de honestidad del ingeniero:
+`conformance.json` muestra `onchain: 1` (solo un entry point ejecutado en tx real; los otros 14 son
+eth_call/probe), así que el "15/16" es en parte a nivel de lectura, y el propio dato lo admite. Palanca
+de #1 restante: tesis de inversión + posicionamiento DeFi explícitos, y señal externa real
+(adopción/acuse) + más txs on-chain reales para endurecer la profundidad. Aun así, superar a crosscredit
+es difícil: es un producto de consumo financiable con forma de empresa; ThirdCheck es infraestructura,
+mejor "apuesta estratégica" que "equity" según el inversor.
