@@ -72,6 +72,17 @@ pago no ocurrió, el escrow libera.
 lo hace. crosscredit y Standing también lo comprueban. La mayoría no.
 **Fixture:** `SourceSettlement.settleAndRevert()`.
 
+**Hallazgo medido, 5 de septiembre.** Al ejecutar este ataque descubrimos un matiz que refuerza el
+punto en lugar de debilitarlo. Cuando una transacción revierte en su nivel superior, la EVM
+**descarta todos sus logs**: el receipt queda con estado 0 y cero eventos. Nuestro escrow
+vulnerable, que lee `receiptLogs[0]`, revierte con "no logs" al recibir la prueba de una transacción
+así, no porque compruebe el estado, sino porque no hay nada que leer. La conclusión honesta: para un
+consumidor basado en eventos y con el modelo de prueba de una sola transacción del Attestcoin, el
+vector "emite y revierte" no es explotable, porque el evento del que dependería no sobrevive al
+revert. B-01 sigue siendo una comprobación válida de defensa en profundidad (el hardened la hace de
+todos modos), pero su superficie real de riesgo es más estrecha de lo que sugiere a primera vista.
+El resultado se muestra tal cual en el boletín: SAFE en el vulnerable, con el motivo "no logs".
+
 ### B-02 · No se ata el contrato emisor
 
 **Detección:** dinámica.
