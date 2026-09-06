@@ -46,13 +46,19 @@ function lineOf(content: string, index: number): number {
   return content.slice(0, index).split("\n").length;
 }
 
+/** Test/mock scaffolding: a mock or SDK-name selector here is expected practice, not a defect. */
+function isTestPath(rel: string): boolean {
+  const f = rel.toLowerCase();
+  return /(^|\/)(tests?|mocks?|helpers)\//.test(f) || /\.t\.sol$/.test(f);
+}
+
 /**
  * B-11a. An interface pointed at the precompile that declares a verification function whose name
  * is not a real selector. A call to it computes a selector the precompile does not implement, so
  * the contract cannot be talking to the real precompile.
  */
 function checkFakeSelectors(file: string, rel: string, content: string): StaticFinding[] {
-  if (extname(file) !== ".sol") return [];
+  if (extname(file) !== ".sol" || isTestPath(rel)) return [];
   const findings: StaticFinding[] = [];
   for (const fake of FAKE_SELECTORS) {
     const re = new RegExp(`function\\s+${fake}\\s*\\(`, "g");
@@ -72,28 +78,45 @@ function checkFakeSelectors(file: string, rel: string, content: string): StaticF
 }
 
 /**
- * B-11b. A verifier address held in mutable storage with an owner-only setter. If the verifier can
+ * B-11b. A PROOF verifier address held in mutable storage with an owner setter. If the verifier can
  * be pointed at a mock, every cryptographic guarantee becomes the owner's discretion.
+ *
+ * The hard part is not finding `setVerifier` — it is telling a swappable *proof verifier* apart from
+ * an authorized-*caller* role that happens to be named "verifier". Two discriminators, both read from
+ * the source, decide it (this is what a v1 name-only heuristic got wrong on 8 sound contracts):
+ *   - if the var is compared against `msg.sender` anywhere, it is an authorized-caller role, not a
+ *     proof verifier. Suppress.
+ *   - if the setter body guards on the state var being zero (write-once), it is not swappable.
+ *     Suppress.
+ * Only a setter that is neither leaves a genuinely swappable proof verifier.
  */
 function checkSwappableVerifier(file: string, rel: string, content: string): StaticFinding[] {
   if (extname(file) !== ".sol") return [];
   const findings: StaticFinding[] = [];
-  // A setter that assigns to a state var whose name suggests it is the verifier.
   const setterRe = /function\s+(set\w*[Vv]erifier\w*)\s*\([^)]*\)[^{]*\{([^}]*)\}/g;
   let m: RegExpExecArray | null;
   while ((m = setterRe.exec(content))) {
     const body = m[2];
-    const assign = /(\w*[Vv]erifier\w*)\s*=/.exec(body);
-    if (assign) {
-      findings.push({
-        id: "B-11",
-        title: "Verifier address is swappable after deployment",
-        file: rel,
-        line: lineOf(content, m.index),
-        evidence: `${m[1]}(...) assigns ${assign[1]}`,
-        note: "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
-      });
-    }
+    // A real assignment (single `=`), not a `==`/`!=` comparison on a param zero-check.
+    const assign = /(\w*[Vv]erifier\w*)\s*=(?!=)/.exec(body);
+    if (!assign) continue;
+    const varName = assign[1];
+    const esc = varName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Authorized-caller role: the var gates msg.sender somewhere. Not a proof verifier.
+    const roleGuard = new RegExp(`msg\\.sender\\s*[!=]=\\s*${esc}\\b|${esc}\\s*[!=]=\\s*msg\\.sender`).test(content);
+    // Write-once: the setter refuses to run if the state var is already set.
+    const writeOnce = new RegExp(`${esc}\\s*!=\\s*address\\(0\\)`).test(body) || new RegExp(`require\\s*\\(\\s*${esc}\\s*==\\s*address\\(0\\)`).test(body);
+    if (roleGuard || writeOnce) continue;
+
+    findings.push({
+      id: "B-11",
+      title: "Proof verifier is swappable after deployment",
+      file: rel,
+      line: lineOf(content, m.index),
+      evidence: `${m[1]}(...) assigns ${varName}`,
+      note: "The proof verifier target lives in mutable storage with no write-once or timelock guard, and is not an authorized-caller role. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+    });
   }
   return findings;
 }
@@ -104,7 +127,7 @@ function checkSwappableVerifier(file: string, rel: string, content: string): Sta
  * context alongside B-11b.
  */
 function checkVerifierMock(file: string, rel: string, content: string): StaticFinding[] {
-  if (extname(file) !== ".sol") return [];
+  if (extname(file) !== ".sol" || isTestPath(rel)) return [];
   const re = /contract\s+(\w*Mock\w*(?:Verifier|Prover|Precompile)\w*|\w*(?:Verifier|Prover|Precompile)\w*Mock\w*)\s+is\s+/g;
   const findings: StaticFinding[] = [];
   let m: RegExpExecArray | null;
@@ -129,6 +152,10 @@ function checkVerifierMock(file: string, rel: string, content: string): StaticFi
 function checkCatchAsEvidence(file: string, rel: string, content: string): StaticFinding[] {
   if (extname(file) === ".sol") return [];
   const findings: StaticFinding[] = [];
+  // A plain catch-returns-null is only a B-12 when the file actually generates a proof or absence
+  // observation. In off-chain UI/worker code it is ordinary error handling, not a manufactured
+  // negative. The strong pattern (blanked proof but success:true) is always reported.
+  const proofRelated = /proof|absence|attest|evidence|inclusion|continuity/i.test(rel);
   const lines = content.split("\n");
   for (let i = 0; i < lines.length; i++) {
     if (!/\bcatch\b/.test(lines[i])) continue;
@@ -137,7 +164,7 @@ function checkCatchAsEvidence(file: string, rel: string, content: string): Stati
     const returnsNull = /return\s+null\s*;/.test(body);
     const zeroesProof = /(continuityProof|merkleProof|proof)\s*=\s*["']0x/.test(body);
     const stillSucceeds = /success\s*:\s*true/.test(body);
-    if (returnsNull) {
+    if (returnsNull && proofRelated) {
       findings.push({
         id: "B-12",
         title: "Generator returns null on failure, read upstream as absence",

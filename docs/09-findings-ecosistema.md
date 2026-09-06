@@ -69,12 +69,26 @@ de un **rol de caller autorizado**. Estos ocho quedaron limpios tras leer el set
   `AttestcoinPaymentVerifier` llamando `blockProver.verify` / `verifyAndEmit` en 0x0FD2. (Menor:
   conviene moverlo bajo `test/`.)
 
-## Lección para el propio ThirdCheck
+## Motor v2: los falsos positivos ahora los atrapa el analizador
 
-El analizador debe distinguir un `setVerifier` que reasigna el objetivo **llamado para verificar la
-prueba** de uno que reasigna un **msg.sender autorizado**. Mientras no lo haga, la regla operativa
-es la de este informe: el estático es triaje rápido, y **ninguna afirmación se publica sin
-confirmación en fuente**. Eso ya es una práctica defendible; mejorar el heurístico sube la señal.
+La lección de arriba se aplicó al propio `src/static.ts`. El heurístico ahora distingue un
+`setVerifier` que reasigna el objetivo **llamado para verificar la prueba** de uno que reasigna un
+**msg.sender autorizado**, con dos discriminadores leídos de la fuente: si la variable se compara
+contra `msg.sender` es un rol de caller (se suprime), y si el setter tiene guarda de escritura única
+no es intercambiable (se suprime). Además ignora árboles de test (`test/`, `mocks/`, `*.t.sol`) para
+las señales de selector y mock, y solo marca `catch return null` en archivos relacionados con prueba
+o ausencia.
+
+Re-escaneando los 7 repos con el motor v2: VaultBridge sigue marcando (9 señales de producción), y
+los otros seis pasan de **15 hallazgos a 2** (un archivo `live-evidence` y el mock en `src/` de spark,
+ambos revisiones defendibles), sin un solo falso positivo de rol autorizado. La salida cruda del
+analizador ahora reproduce el triaje confirmado por sí sola. Regla operativa mantenida: ninguna
+afirmación se publica sin confirmación en fuente; el motor v2 simplemente hace que el triaje casi no
+tenga trabajo que corregir.
+
+`data/day7-findings.json` y `data/findings-report.json` conservan el escaneo v1 del campo completo
+(41 repos, 76 señales) como registro; los 34 repos restantes no se re-clonaron. La mejora del motor
+está verificada sobre los 7 re-clonados.
 
 ## Por qué el ruido es ruido
 

@@ -344,3 +344,55 @@ reproducción (`npm run judge:verify -- --reclone`). El envío lo hace Kevin; Th
 correos. Hasta respuesta o vencimiento del plazo, boletín y deck describen el anti-patrón anónimo.
 Regla mantenida: la afirmación fuerte es el hecho estático (verifySingle/verifyBatch no están en la
 ABI del precompilo), sin sobreafirmar una ejecución en vivo del selector falso.
+
+**D-28. Jurado agnóstico re-corrido como red-team (4 jueces escépticos, verificando en el repo).**
+Panel: profundidad de protocolo, seguridad/sponsor, producto/impacto, detector de BS. Convergen:
+ThirdCheck gana **limpio el eje de seguridad/ecosistema** (8 vs 3-5, ~3 pts), es **2º en profundidad**
+(8 vs index41 9), y **pierde producto** (5, meta-tool sin usuario post-hackathon). Veredicto de
+integridad: el hallazgo de VaultBridge es real y justamente enunciado, 8 falsos positivos bien
+descartados; el disclaimer honesto suma.
+
+**Objeción convergente (misma costura desde tres ángulos):** el empaque "on-chain / reproducido /
+15-16 / 1 confirmado" implicaba más de lo cierto. (a) `judge:verify` tenía checks auto-referenciales
+(checkProtocolFact era tautología; findings/scorecard/conformance leen JSON propio); (b) el único
+hallazgo externo (VaultBridge) nunca se ejecutó en vivo contra el precompilo; (c) "15/16" mezcla
+amplitud (12 lecturas + 2 sondeos vacíos) con profundidad real (~3 primitivos).
+
+**Arreglos aplicados (P0):** experimento en vivo confirmó que 0x0FD2 responde reason="Unknown
+selector" a `verifySingle` y despacha `verify` ("Expected at least 5 arguments"). Con eso:
+`checkProtocolFact` (tautología) → `checkSelectorLive`, un `eth_call` sin clave que vuelve el hallazgo
+de VaultBridge un **hecho on-chain**; "open review items" ahora reporta los 3 corroborantes de
+VaultBridge en vez de ocultarlos; README ajustado ("protocol (live)", --reclone re-deriva señales
+estáticas, no "el hallazgo"); artefactos de heredoc quitados del borrador de divulgación. judge:verify
+sigue 9/9, ahora con un check on-chain genuino. Commits 24d3c35 y 5d116ec.
+
+**Decisión de posicionamiento:** plantar la bandera en **seguridad / CI-gate del ecosistema**, no
+competir en producto contra index41/crosscredit. Video abre con el defecto confirmado y divulgado,
+luego los huecos sistémicos del campo (identidad de cadena 12/44, selección de log 6/33) como riesgo
+de adopción del protocolo; el scorecard es evidencia de que la herramienta corre a escala, no el héroe.
+
+**Pendiente P1 (no bloqueante):** alimentar las 2 vistas `verify()` con una prueba real del bench para
+que dejen de ser sondeos vacíos; correr `verifyAndEmit` batch con fondos para 16/16 sin asterisco; en
+narración separar "superficie entendida" de "primitivos que cargan peso" y "estático-confirmado" de
+"ejecutado en vivo".
+
+**D-29. Motor del analizador v2, threat model y guion de video: subir de nivel cada eje.**
+`src/static.ts` ahora distingue verificador-intercambiable de rol-de-caller (dos discriminadores:
+comparación contra msg.sender = rol; guarda de escritura única = no intercambiable), ignora árboles
+de test para selector/mock, y solo marca `catch return null` en archivos de prueba/ausencia. Además
+se corrigió el regex de asignación que capturaba `verifier_ ==` (chequeo de cero del parámetro) como
+si fuera la asignación. Re-escaneo de los 7 repos: VaultBridge sigue con 9 señales de producción, los
+otros seis pasan de 15 a 2, cero falsos positivos de rol autorizado. El motor ya reproduce el triaje
+confirmado solo. `data/static-VaultBridge.json` regenerado (9 hallazgos de producción, sin ruido de
+tests); boletín verificado (sin `.t.sol`).
+
+`docs/11-threat-model.md`: qué ThirdCheck afirma y qué NO (no exploit en vivo de un tercero; el
+bench corre sobre contratos propios; el estático es heurístico y todo se confirma en fuente; el
+scorecard no es certificado). `docs/12-video-script.md`: guion de ~3 min con el posicionamiento del
+red-team (abrir con el defecto on-chain, no el scorecard; ganar el eje seguridad/CI-gate; ofrecer la
+frase estático-vs-vivo). judge:verify 10/10 con --reclone (ahora "9 señales" v2).
+
+**Pendiente P1 (opcional, no bloqueante):** alimentar las 2 vistas `verify()` con una prueba real del
+prover para volverlas "live" (receta lista, requiere PROOF_BUILDER_URL); `verifyAndEmit` batch con
+fondos para 16/16 sin asterisco. Se dejan fuera de esta tanda por el riesgo de cuelgue del prover y
+por necesitar clave; el valor marginal es bajo frente a lo ya cerrado.
