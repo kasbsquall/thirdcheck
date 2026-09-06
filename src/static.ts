@@ -9,6 +9,8 @@
  * end to catch these patterns, and every finding points at a line a human can read in five seconds.
  * False positives are possible; the report labels these findings as "review", not "confirmed".
  *
+ *   B-01  a proven receipt is acted on without checking it succeeded (review)
+ *   B-02  a proven log is acted on without pinning the emitting contract (review)
  *   B-11  the precompile can be swapped, or is addressed by a selector that does not exist
  *   B-12  an off-chain generator treats a failure as a negative observation
  */
@@ -44,6 +46,16 @@ function walk(dir: string, out: string[] = []): string[] {
 
 function lineOf(content: string, index: number): number {
   return content.slice(0, index).split("\n").length;
+}
+
+/**
+ * Blank out // and /* *\/ comments, preserving every newline and the exact character offsets so
+ * lineOf stays accurate. Without this, a contract that omits a guard but *describes* the missing
+ * guard in a comment (`// no require(log.address_ == sourceVault)`) would suppress its own finding —
+ * an evasion a real gate must not fall for.
+ */
+function stripComments(src: string): string {
+  return src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (m) => m.replace(/[^\n]/g, " "));
 }
 
 /** Test/mock scaffolding: a mock or SDK-name selector here is expected practice, not a defect. */
@@ -168,6 +180,60 @@ function checkSignatureInsteadOfPrecompile(file: string, rel: string, content: s
 }
 
 /**
+ * B-01. A consumer that decodes a proven receipt but never reads receiptStatus. The precompile
+ * proves inclusion, not success. On EVM sources a reverted transaction carries no logs, so a
+ * log-presence check often masks this — which is why it is reported as review, not a build failure.
+ * On non-EVM sources or with a custom decoder, an included-but-reverted transaction is consumed as
+ * if it had succeeded. Fires only when the file decodes a receipt and no receiptStatus read appears
+ * anywhere in it.
+ */
+function checkReceiptStatusUnchecked(file: string, rel: string, content: string): StaticFinding[] {
+  if (extname(file) !== ".sol" || isTestPath(rel)) return [];
+  const decodes = /decodeReceiptFields\s*\(/.exec(content);
+  if (!decodes) return [];
+  if (/receiptStatus/.test(content)) return [];
+  return [{
+    id: "B-01",
+    title: "Acts on a proven receipt without checking it succeeded",
+    file: rel,
+    line: lineOf(content, decodes.index),
+    evidence: "decodeReceiptFields(...) with no receiptStatus read in the file",
+    note: "The precompile proves inclusion, not success. This file decodes a receipt but never reads receiptStatus. On EVM sources a reverted transaction carries no logs, so a log-presence check usually masks this; on non-EVM sources or with a custom decoder, an included-but-reverted transaction is consumed as if it succeeded. Read receipt.receiptStatus == 1 explicitly.",
+  }];
+}
+
+/** True if the file pins a proven log's emitter: compares log.address_ or indexes a map by it. */
+function pinsEmitter(content: string): boolean {
+  return (
+    /\.address_\s*[!=]=/.test(content) ||               // log.address_ == X
+    /[!=]=\s*[A-Za-z0-9_.\[\]]*\.address_/.test(content) || // X == log.address_
+    /\[[^\]\n]*\.address_[^\]\n]*\]/.test(content)      // registry[log.address_]
+  );
+}
+
+/**
+ * B-02. A consumer that selects a log from a proven receipt but never pins the emitting contract.
+ * Any contract that emits the same event signature is then trusted: an attacker deploys a look-alike,
+ * emits the event, proves it, and drives the consumer. This is the emitter-guard hole demonstrated
+ * on-chain by more than one team in this field. Fires only when the file selects a log and no
+ * emitter comparison or registry lookup on log.address_ appears anywhere in it.
+ */
+function checkEmitterUnpinned(file: string, rel: string, content: string): StaticFinding[] {
+  if (extname(file) !== ".sol" || isTestPath(rel)) return [];
+  const selects = /getLogsByEventSignature\s*\(|\.receiptLogs\b/.exec(content);
+  if (!selects) return [];
+  if (pinsEmitter(content)) return [];
+  return [{
+    id: "B-02",
+    title: "Selects a proven log without pinning the emitting contract",
+    file: rel,
+    line: lineOf(content, selects.index),
+    evidence: "log selection with no log.address_ emitter check in the file",
+    note: "The receipt is proven, but the log is trusted by event signature alone. Any contract that emits the same signature is accepted, so an attacker deploys a look-alike, emits the event, and proves it. Pin the emitter: require log.address_ to equal the registered source contract (or index a registry by it).",
+  }];
+}
+
+/**
  * B-12. An off-chain generator whose catch block returns a value that upstream reads as a negative
  * observation, or that returns success while zeroing the proof. A failure to look is being reported
  * as having looked and found nothing.
@@ -217,10 +283,15 @@ export function analyzeTree(root: string): StaticFinding[] {
   for (const file of files) {
     const rel = relative(root, file).replace(/\\/g, "/");
     const content = readFileSync(file, "utf8");
+    // Comment-stripped view for presence/absence checks, so a guard described in a comment cannot
+    // stand in for a guard that is missing from the code. Offsets are preserved, so lineOf is exact.
+    const code = stripComments(content);
     findings.push(...checkFakeSelectors(file, rel, content));
     findings.push(...checkSwappableVerifier(file, rel, content));
     findings.push(...checkVerifierMock(file, rel, content));
     findings.push(...checkSignatureInsteadOfPrecompile(file, rel, content));
+    findings.push(...checkReceiptStatusUnchecked(file, rel, code));
+    findings.push(...checkEmitterUnpinned(file, rel, code));
     findings.push(...checkCatchAsEvidence(file, rel, content));
   }
   return findings;

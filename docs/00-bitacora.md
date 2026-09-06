@@ -457,3 +457,27 @@ es literal: carryproof, ledgerline y deadswitch la hacen bien. Eso valida la tes
 vez obliga a matizar la retórica de "campo universalmente ingenuo". judge:verify sigue 9/9 (la
 invariante de scorecard usa sc.total, se autoajusta a 53). Números de guion actualizados: 53 leídos,
 B-05 14/49, B-09 8/37.
+
+**D-33. Motor v3: dos clases nuevas y resistencia a evasión por comentario (opción C).** El analizador
+pasaba de B-11/B-12; ahora también detecta estáticamente:
+- **B-01** actúa sobre un recibo probado sin leer `receiptStatus` (clase-revisión: en fuentes EVM una
+  tx revertida no lleva logs, así que el chequeo de presencia de log suele subsumirlo; en fuentes
+  no-EVM o con decoder propio es un hueco real).
+- **B-02** selecciona un log probado sin fijar el emisor (`log.address_`): el hueco del guard de emisor
+  que deja probar el evento de un impostor. Clase-revisión por precaución de FP, aunque es la clase
+  explotable que varios equipos demuestran on-chain.
+
+Detección de emisor robusta: cuenta como fijado tanto la comparación (`log.address_ == x`) como el
+índice de registro (`registry[log.address_]`), así ledgerline (que fija por mapping) no da FP.
+
+**Evasión por comentario, tapada.** Primer intento marcó CLEAN el `NaiveManager` de Deadswitch porque
+sus comentarios *describen* los guards ausentes (`// no require(log.address_ == sourceVault)`), y el
+regex los leía como si el guard existiera. Un gate serio no puede caer en eso: se podría evadir
+escribiendo el chequeo en un comentario. Fix: `stripComments()` blanquea `//` y `/* */` preservando
+offsets (lineOf sigue exacto) antes de los chequeos de presencia/ausencia.
+
+Validación (cero FP): carryproof y ledgerline (deep) limpios; rwas limpio de B-01/02 (no decodifica
+recibo); el `NaiveManager` de Deadswitch marca B-01+B-02 (su propio control vulnerable, que ellos
+publicaron como inseguro); nuestro VulnerableEscrow marca B-01+B-02 (verdadero positivo, es su razón
+de existir), HardenedEscrow limpio. Gate dogfood exit 0 (los nuevos son avisos, no rompen build).
+judge:verify 11/11 con --reclone (VaultBridge y Sovereign se re-derivan igual).

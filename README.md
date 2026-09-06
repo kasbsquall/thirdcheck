@@ -77,7 +77,11 @@ workflow:
 The gate scans the repo, posts inline PR annotations, and exits non-zero on a defect-class finding: a
 verify path that cannot reach the precompile (a selector like `verifySingle` that `0x0FD2` does not
 implement), a swappable proof verifier with no guard, a proof replaced by an `ecrecover` signature, or
-an off-chain generator that blanks a proof yet reports success. Authorized-caller roles, write-once
+an off-chain generator that blanks a proof yet reports success. It also raises review-class warnings
+(non-blocking) for two subtler holes: a proven receipt acted on without checking it succeeded (B-01),
+and a proven log acted on without pinning the emitting contract (B-02) — the emitter-guard hole that
+lets an attacker prove a look-alike's event. Comments are stripped before analysis, so a guard
+described in a comment cannot mask a guard missing from the code. Authorized-caller roles, write-once
 setters, and test-tree mocks are not flagged — the analyzer distinguishes them, so the gate does not
 cry wolf. This repo runs the gate on itself (`.github/workflows/thirdcheck.yml`).
 
@@ -124,7 +128,7 @@ the real precompile. That is catalogue entry B-11, and the static analyzer flags
 |---|---|---|
 | Catalogue | `docs/03-catalogo-binding.md` | Twelve binding defects, each with a stable id, detection method, cited evidence, and the attack it enables |
 | Falsifier | `src/bench.ts` | Five dynamic attacks that submit legitimate proofs of the wrong thing, plus a positive path |
-| Static analyzer | `src/static.ts` | Catches source-visible defects (B-11, B-12) with file:line evidence |
+| Static analyzer | `src/static.ts` | Catches source-visible defects (B-01, B-02, B-11, B-12) with file:line evidence. Strips comments first, so a guard *described* in a comment cannot stand in for one *missing* from the code |
 | Vulnerable escrow | `contracts/cc3/VulnerableEscrow.sol` | The target. Verifies against the real precompile, checks the event signature, and still releases against a forgery because it never binds the proof to the order |
 | Hardened escrow | `contracts/cc3/HardenedEscrow.sol` | The same product with the checks in a fixed order. Rejects every attack, releases the correct payment |
 | Source fixtures | `contracts/source/*.sol` | The honest payment on Sepolia, a look-alike, and reverting/noisy variants |
