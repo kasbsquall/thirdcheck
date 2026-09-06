@@ -1,11 +1,12 @@
 /**
- * Runs the falsifier against a target escrow and prints the findings.
+ * Runs the falsifier against a target escrow in two phases, so the attestation frontier is waited
+ * on once, not once per attack.
  *
  *   npx hardhat run scripts/run-bench.ts --network cc3                 # vulnerable target
  *   npx hardhat run scripts/run-bench.ts --network cc3 -- --target hardened
  *
- * Against the vulnerable target every attack is expected to be ACCEPTED (vulnerable). Against the
- * hardened target every attack is expected to be REJECTED and the positive path ACCEPTED.
+ * Phase one emits all source transactions and funds all orders. Then it waits once for the highest
+ * source block to be attested. Phase two proves and releases everything.
  */
 import { writeFileSync } from "fs";
 import { resolve } from "path";
@@ -13,17 +14,8 @@ import { resolve } from "path";
 import { ethers } from "hardhat";
 import * as dotenv from "dotenv";
 
-import {
-  attackImpostor,
-  attackWrongOrder,
-  attackReplay,
-  attackReceiptReverted,
-  attackNoisyLogs,
-  positivePath,
-  BenchContext,
-  Finding,
-} from "../src/bench";
-import { resolveSepoliaChainKey } from "../src/proof";
+import { PREPARERS, BenchContext, Finding, PreparedAttack } from "../src/bench";
+import { resolveSepoliaChainKey, waitUntilAttested } from "../src/proof";
 
 dotenv.config();
 
@@ -63,26 +55,31 @@ async function main() {
   console.log(`  target: ${target} escrow at ${await escrow.getAddress()}`);
   console.log(`  source chain: Sepolia (chainKey ${chainKey})\n`);
 
-  const findings: Finding[] = [];
-  const steps: [string, (c: BenchContext, a: bigint) => Promise<Finding>][] = [
-    ["[B-01] reverted source transaction", attackReceiptReverted],
-    ["[B-02] impostor forges the payment event", attackImpostor],
-    ["[B-04] one payment replayed onto a second order", attackReplay],
-    ["[B-06] genuine payment for a different order", attackWrongOrder],
-    ["[B-09] decoy logs before the real one", attackNoisyLogs],
-    ["[POS] correct payment (positive path)", positivePath],
-  ];
+  // Phase one: emit all source txs and fund all orders, sequentially (one key, ordered nonces).
+  console.log("  phase 1 — emitting source transactions and funding orders");
+  const prepared: PreparedAttack[] = [];
+  for (const prepare of PREPARERS) {
+    const p = await prepare(ctx, AMOUNT);
+    console.log(`    ${p.id} ready  (source block ${p.maxHeight}${p.sourceTx ? `, ${p.sourceTx.slice(0, 12)}…` : ""})`);
+    prepared.push(p);
+  }
 
-  for (const [label, fn] of steps) {
-    console.log(`  ${label} ...`);
-    findings.push(await fn(ctx, AMOUNT));
+  const maxHeight = Math.max(...prepared.map((p) => p.maxHeight));
+  console.log(`\n  phase 1.5 — waiting once for Sepolia block ${maxHeight} to be attested`);
+  await waitUntilAttested(cc3, chainKey, maxHeight);
+
+  // Phase two: prove and release everything. Blocks are attested, so proofs come back fast.
+  console.log("\n  phase 2 — proving and releasing");
+  const findings: Finding[] = [];
+  for (const p of prepared) {
+    const f = await p.finalize();
+    findings.push(f);
+    console.log(`    ${f.id} ${f.status}`);
   }
 
   console.log("\n  Findings\n");
   for (const f of findings) {
-    // Positive path is meant to be accepted; attacks accepted means vulnerable.
     const isPositive = f.id === "POS";
-    const good = isPositive ? f.status === "accepted" : f.status === "rejected";
     let verdict: string;
     if (f.status === "error") verdict = "ERROR";
     else if (isPositive) verdict = f.status === "accepted" ? "OK" : "BROKEN";
@@ -93,16 +90,9 @@ async function main() {
     if (f.sourceTx) console.log(`              source tx (Sepolia): ${f.sourceTx}`);
     if (f.evidenceTx) console.log(`              release tx (CC3):    ${f.evidenceTx}`);
     console.log();
-    void good;
   }
 
-  const report = {
-    target,
-    escrow: await escrow.getAddress(),
-    chainKey,
-    generatedAt: new Date().toISOString(),
-    findings,
-  };
+  const report = { target, escrow: await escrow.getAddress(), chainKey, generatedAt: new Date().toISOString(), findings };
   const path = resolve(__dirname, "..", "data", `bench-${target}.json`);
   writeFileSync(path, JSON.stringify(report, null, 2));
   console.log(`  report written to ${path}\n`);
