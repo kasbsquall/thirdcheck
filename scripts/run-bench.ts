@@ -36,18 +36,23 @@ async function main() {
   const cc3 = new ethers.JsonRpcProvider(env("CREDITCOIN_RPC_URL"));
   const sepolia = new ethers.JsonRpcProvider(env("SEPOLIA_RPC_URL"));
   const key = env("DEPLOYER_PRIVATE_KEY");
-  const cc3Signer = new ethers.Wallet(key, cc3);
-  const sepoliaSigner = new ethers.Wallet(key, sepolia);
+  const cc3Wallet = new ethers.Wallet(key, cc3);
+  const sepoliaWallet = new ethers.Wallet(key, sepolia);
+  // Contracts send through a NonceManager so the many sequential txs from one key cannot collide
+  // on a nonce when an RPC ack is slow (REPLACEMENT_UNDERPRICED). The plain wallets are kept for
+  // their synchronous .address.
+  const cc3Sender = new ethers.NonceManager(cc3Wallet);
+  const sepoliaSender = new ethers.NonceManager(sepoliaWallet);
   const proverUrl = env("PROOF_BUILDER_URL");
   const chainKey = await resolveSepoliaChainKey(cc3);
 
-  const escrow = await ethers.getContractAt(hardened ? "HardenedEscrow" : "VulnerableEscrow", env(escrowEnv), cc3Signer);
+  const escrow = await ethers.getContractAt(hardened ? "HardenedEscrow" : "VulnerableEscrow", env(escrowEnv), cc3Sender);
   const sourceAddress = env("SOURCE_SETTLEMENT_ADDRESS");
-  const source = await ethers.getContractAt("SourceSettlement", sourceAddress, sepoliaSigner);
-  const impostor = await ethers.getContractAt("ImpostorSettlement", env("IMPOSTOR_SETTLEMENT_ADDRESS"), sepoliaSigner);
+  const source = await ethers.getContractAt("SourceSettlement", sourceAddress, sepoliaSender);
+  const impostor = await ethers.getContractAt("ImpostorSettlement", env("IMPOSTOR_SETTLEMENT_ADDRESS"), sepoliaSender);
 
   const ctx: BenchContext = {
-    cc3, sepolia, cc3Signer, sepoliaSigner, proverUrl, chainKey,
+    cc3, sepolia, cc3Signer: cc3Wallet, sepoliaSigner: sepoliaWallet, proverUrl, chainKey,
     escrow, escrowIsHardened: hardened, source, sourceAddress, impostor,
   };
 
