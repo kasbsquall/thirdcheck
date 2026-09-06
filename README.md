@@ -92,6 +92,8 @@ Twelve binding checks the precompile leaves to the developer. Each has a stable 
 | Example consumer | `contracts/cc3/SettlementConsumer.sol` | a complete, correct cross-chain escrow in ~40 lines, built on the library |
 | CI gate | `action.yml` | a GitHub Action that fails a build before mainnet if a consumer skips the third check |
 | Template repo | `examples/settlement-consumer-template` | a forkable project that passes the gate on day one |
+| Settlement rails | `contracts/protocol/SettlementHub.sol` | shared cross-chain settlement any dApp routes value through, third-check-correct by construction, with a hard-capped protocol fee |
+| Trust registry | `contracts/protocol/VerifiedRegistry.sol` | an on-chain record that a consumer passed the third check, bound to its code hash; verified operators settle at a lower fee |
 | Live checker | `frontend/` | paste any contract or a GitHub repo URL and get the same verdict the gate gives |
 
 ## Ship a correct consumer
@@ -158,6 +160,15 @@ The precompile is what makes cross-chain value flow possible on Creditcoin. Ever
 
 The wedge is to be the default pre-mainnet gate for every Attestcoin consumer, the way a linter or a test suite is default rather than optional. From there the path is to be the security layer of the ecosystem: continuous CI verification, runtime monitoring of deployed consumers, and audit-grade review, offered as a service while the gate and the library stay free and drive adoption. The flywheel is direct. Safer consumers let Creditcoin carry more cross-chain value, which pulls in more builders and more value, and each new consumer needs the third check. ThirdCheck grows as the ecosystem it protects grows.
 
+### The protocol: rails and a trust registry
+
+Two contracts turn that thesis into value that flows on-chain, both deployed on CC3 testnet:
+
+- **SettlementHub** is shared settlement rails. Any dApp opens an order and settles it against a source-chain payment proof; the hub runs the whole third check by construction (the audited `ThirdCheckLib` path) and takes a hard-capped protocol fee on release. The protocol captures a slice of the cross-chain value it makes safe to move.
+- **VerifiedRegistry** is the trust layer. It records that a consumer passed the third check, bound to the consumer's code hash so the badge cannot outlive the code it was granted for. The `ConsumerVerified` event is an ordinary log, so any other Attestcoin chain can consume it by verifying it through the BlockProver precompile, the same primitive ThirdCheck uses everywhere.
+
+The two are linked so that being provably safe is cheaper than not being: a verified operator settles at a lower fee. That link is live and keyless to check. `npm run judge:verify` reads the deployed contracts and confirms a verified operator is quoted 0.10% against an unverified operator's 0.25% on the same amount.
+
 ## Deployed addresses (testnet)
 
 | contract | chain | address |
@@ -166,13 +177,15 @@ The wedge is to be the default pre-mainnet gate for every Attestcoin consumer, t
 | ImpostorSettlement | Ethereum Sepolia | `0x327c38893Dd70ACCEC5Dc5F5CD5558f6ab33032a` |
 | VulnerableEscrow | Creditcoin CC3 | `0xD8504B263104aa915974eCCE1002d7F7587e88cD` |
 | HardenedEscrow | Creditcoin CC3 | `0xeC82270dc356948FC2e5E969a887ce6bE27e375A` |
+| VerifiedRegistry | Creditcoin CC3 | `0xa2E744fEa8707aE124ee7d605D2fc1b58BF68752` |
+| SettlementHub | Creditcoin CC3 | `0x676a74fa6542BEd2dD4A16EF122f75968329B1B0` |
 
 SourceSettlement on Sepolia and VulnerableEscrow on CC3 share an address, deployed from the same account at the same nonce. That is B-05 made literal: the same address on two chains is two different contracts.
 
 ## Project layout
 
 ```
-contracts/        vulnerable and hardened escrows, source fixtures, the library
+contracts/        vulnerable and hardened escrows, source fixtures, the library, the protocol (hub + registry)
 src/              proof generation, the bench, the fs-free analysis engine
 scripts/          judge:verify, conformance, the CI gate, deploy and bench runners
 packages/         thirdcheck-contracts, the installable library

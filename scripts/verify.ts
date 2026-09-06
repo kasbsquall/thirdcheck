@@ -253,6 +253,31 @@ function checkReclone() {
   }
 }
 
+// F — the protocol layer (rails + trust registry) is deployed and the economic link is live: a
+// verified operator is quoted a lower settlement fee than an unverified one, read straight off CC3.
+const SETTLEMENT_HUB = "0x676a74fa6542BEd2dD4A16EF122f75968329B1B0";
+const VERIFIED_REGISTRY = "0xa2E744fEa8707aE124ee7d605D2fc1b58BF68752";
+const VERIFIED_CONSUMER = "0xeC82270dc356948FC2e5E969a887ce6bE27e375A"; // HardenedEscrow, verified in the registry
+const UNVERIFIED_ADDR = "0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155";   // an address with no verification
+async function checkProtocol() {
+  try {
+    const provider = new ethers.JsonRpcProvider(CC3_RPC);
+    const registry = new ethers.Contract(VERIFIED_REGISTRY, ["function isVerifiedNow(address) view returns (bool)"], provider);
+    const hub = new ethers.Contract(SETTLEMENT_HUB, ["function quoteFee(address,uint256) view returns (uint256)"], provider);
+    const verified = await registry.isVerifiedNow(VERIFIED_CONSUMER);
+    const amt = ethers.parseEther("1");
+    const feeV: bigint = await hub.quoteFee(VERIFIED_CONSUMER, amt);
+    const feeU: bigint = await hub.quoteFee(UNVERIFIED_ADDR, amt);
+    if (verified && feeV < feeU) {
+      pass("Settlement rails + registry (live)", `hub ${short(SETTLEMENT_HUB)} + registry ${short(VERIFIED_REGISTRY)} on CC3; verified fee ${ethers.formatEther(feeV)} < unverified ${ethers.formatEther(feeU)} per 1.0`);
+    } else {
+      fail("Settlement rails + registry (live)", `verified=${verified}, feeV=${feeV}, feeU=${feeU}`);
+    }
+  } catch (e) {
+    info("Settlement rails + registry (live)", `unreachable (${errMsg(e)})`);
+  }
+}
+
 async function main() {
   const reclone = process.argv.includes("--reclone");
   console.log("\nThirdCheck · judge:verify\n");
@@ -262,6 +287,7 @@ async function main() {
   checkFindings();
   checkScorecard();
   checkConformance();
+  await checkProtocol();
   if (reclone) checkReclone();
 
   const width = Math.max(...results.map((r) => r.label.length));

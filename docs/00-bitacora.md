@@ -726,3 +726,34 @@ de #1 restante: tesis de inversión + posicionamiento DeFi explícitos, y señal
 (adopción/acuse) + más txs on-chain reales para endurecer la profundidad. Aun así, superar a crosscredit
 es difícil: es un producto de consumo financiable con forma de empresa; ThirdCheck es infraestructura,
 mejor "apuesta estratégica" que "equity" según el inversor.
+
+---
+
+## 2026-09-06 · Sesión (cont.) — pivote de producto: rieles de settlement + registro de confianza
+
+**D-44. Construidas y desplegadas las alternativas 1 y 2 para atacar track fit e investabilidad.** El
+jurado CEIP marcó dos topes de encuadre/producto (track 57, investabilidad 50). Respuesta: convertir
+la herramienta en un producto DeFi con captura de valor, sin perder el núcleo de seguridad.
+
+- **SettlementHub** (`contracts/protocol/SettlementHub.sol`): rieles de liquidación cross-chain
+  multi-tenant. Cualquier dApp abre una orden y la liquida contra una prueba de pago de origen; el hub
+  corre el tercer check completo por construcción (ruta auditada de ThirdCheckLib, la misma que el
+  bench prueba) y cobra un fee de protocolo con tope duro (MAX_FEE_BPS=100). Captura una tajada del
+  flujo cross-chain que hace seguro.
+- **VerifiedRegistry** (`contracts/protocol/VerifiedRegistry.sol`): capa de confianza. Registra que un
+  consumidor pasó el tercer check, atado a su codehash (EXTCODEHASH), así el badge no sobrevive a un
+  cambio de código. El evento ConsumerVerified es un log ordinario, verificable cross-chain por el
+  BlockProver (dogfood del propio primitivo).
+- **Enlace económico**: operador verificado paga menos fee. Genera demanda de verificación y el hub
+  captura el flujo. Verificado en vivo on-chain: verificado 0.10% vs no verificado 0.25%.
+
+Desplegado en CC3 testnet: VerifiedRegistry 0xa2E744fEa8707aE124ee7d605D2fc1b58BF68752, SettlementHub
+0x676a74fa6542BEd2dD4A16EF122f75968329B1B0. HardenedEscrow verificado en el registro como demo.
+Tests: `test/protocol.test.ts` 12/12 (fee math, descuento verificado, control de acceso, guards; la
+ruta settle es la del library, ya probada por el bench). `judge:verify` ahora 10/10 con el check
+"Settlement rails + registry (live)" (eth_call sin llave que confirma el descuento). Ambos contratos
+escanean limpio en el engine. `scripts/deploy-protocol.ts` nuevo.
+
+Encuadre: ThirdCheck pasa de "auditor" a "los rieles seguros del dinero cross-chain en Creditcoin, con
+registro de confianza", track DeFi claro y tesis de inversión con captura de valor sobre el flujo y
+camino a mainnet (CC3 mainnet existe, Chainkey 1). Pendiente: sincronizar al repo público.
