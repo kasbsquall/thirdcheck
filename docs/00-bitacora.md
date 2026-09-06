@@ -129,3 +129,39 @@ dos escrows) está hecho; lo que queda es ancho y de bajo riesgo (completar ataq
 estático, frontend, empaquetado).
 
 **Al retomar, primer paso:** volver a correr el bench del vulnerable hasta el final.
+
+---
+
+## 2026-09-05 · Sesión 2 · Avance autónomo
+
+**D-14. Tres ataques del día 3 confirmados VULNERABLE en cadena.** B-02, B-06 y B-04 contra el
+vulnerable, cada uno con su transacción de release en CC3. B-04 es el más contundente: la misma
+prueba liberó dos pedidos. Hashes en `data/bench-vulnerable.json` (reporte de 3 ataques; el de 6
+pasos lo sustituye al terminar).
+
+**D-15. Motor extendido a cinco ataques + camino positivo.** Añadidos B-01 (receipt revertido) y
+B-09 (logs señuelo) con sus fixtures, y `fundOrder` ramifica por objetivo para correr la misma
+batería contra vulnerable y hardened. Corriendo la batería completa contra el vulnerable.
+
+**D-16. Analizador estático funcionando** (`src/static.ts`). Contra VaultBridge reproduce a máquina
+los defectos B-11 y B-12 que había encontrado a mano, con archivo y línea exactos (IUSCVerifier
+selectores inexistentes, verifierAddress sustituible, MockStreakPrecompile, generateAbsenceProof.ts
+125 y 179). Contra nuestros contratos no marca nada: discrimina.
+
+**D-17. Frontend del día 6 construido y verificado renderizado.** Next.js, boletín data-driven que
+lee `data/*.json`. Dirección forense: Archivo + IBM Plex Mono, un acento ámbar, cifras tabulares,
+Phosphor Light, motion bajo 300ms con reduced-motion. Build estático limpio, capturado con navegador
+propio. Puerto 3939.
+
+**D-18. Nombre decidido: ThirdCheck.** Libre en npm (thirdcheck, third-check) y en GitHub. Falsifier
+descartado, ocupado en GitHub.
+
+**D-19. README y whitepaper redactados** (`README.md`, `docs/05-whitepaper.md`), incluida la sección
+de integración con Attestcoin y la postura de divulgación responsable.
+
+**Avance global estimado: ~72%.** Días 1, 2, 3 cerrados. Día 5 (analizador) hecho. Día 6 (frontend)
+hecho. Día 4 al 80%: falta terminar el bench de 6 pasos del vulnerable y correr el del hardened.
+Día 7 (objetivos reales, divulgación) y día 8 (deck PDF, video, envío) pendientes.
+
+**Al retomar:** en cuanto termine el bench del vulnerable, correr
+`npx hardhat run scripts/run-bench.ts --network cc3 -- --target hardened`.
