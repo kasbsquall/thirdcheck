@@ -183,7 +183,9 @@ export interface HubSettlement {
 }
 
 export function loadHubSettlement(): HubSettlement | null {
-  return readJson<HubSettlement>("hub-settlement.json");
+  // Prefer the three-distinct-parties settlement; fall back to the first (self-operator) one.
+  return readJson<HubSettlement>("hub-settlement-counterparty.json")
+    ?? readJson<HubSettlement>("hub-settlement.json");
 }
 
 export const CC3_EXPLORER = "https://creditcoin-testnet.blockscout.com/tx/";

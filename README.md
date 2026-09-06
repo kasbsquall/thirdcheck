@@ -169,14 +169,14 @@ Two contracts turn that thesis into value that flows on-chain, both deployed on 
 
 The two are linked so that being provably safe is cheaper than not being: a verified operator settles at a lower fee. That link is live and keyless to check. `npm run judge:verify` reads the deployed contracts and confirms a verified operator is quoted 0.10% against an unverified operator's 0.25% on the same amount.
 
-The rails are not only deployed, they have settled a real order end to end. A payment was made on Sepolia through `SourceSettlement`, the matching order was opened and funded on the hub on CC3, and once the source block crossed the attestation frontier the hub's `settle` ran the full third check, took the protocol fee and paid the seller. Both transactions are public:
+The rails are not only deployed, they have settled a real order end to end, between three distinct addresses. An external operator paid on Sepolia through `SourceSettlement`, opened and funded the matching order on the hub on CC3, and once the source block crossed the attestation frontier the hub's `settle` ran the full third check, took the protocol fee, and paid the seller. Both transactions are public:
 
 | step | chain | transaction |
 |---|---|---|
-| source payment | Ethereum Sepolia | [`0x36979b86…a8639e`](https://sepolia.etherscan.io/tx/0x36979b8682017196a2b903dc3e04e61d785f4893bdca95ead6dbf56299a8639e) |
-| settlement | Creditcoin CC3 | [`0xbeb49165…1441a3`](https://creditcoin-testnet.blockscout.com/tx/0xbeb49165dc1fe78842f33d450fe2c06e04ea86fd795a8bf518951a12a81441a3) |
+| source payment | Ethereum Sepolia | [`0x94d9d06b…67399c`](https://sepolia.etherscan.io/tx/0x94d9d06bbe1c6478a76ec4112a6b2edd17fb7ca1ec7b14f46db981d66e67399c) |
+| settlement | Creditcoin CC3 | [`0x58e18e7c…c9d597`](https://creditcoin-testnet.blockscout.com/tx/0x58e18e7c41659bb4a2b6d000ee7f8fa18fa37a3ff37bf89819b68a43cfc9d597) |
 
-The settlement released 0.0009975 to the seller and captured 0.0000025 as the protocol fee, the 0.25% quoted for an unverified operator. `judge:verify` reads the mined `settle` transaction off the public RPC and confirms the order is released and the fee was taken.
+Operator, seller and treasury are three distinct addresses. The settlement paid 0.0009975 to the seller and captured 0.0000025 as the protocol fee, the 0.25% quoted for an unverified operator, and both deltas landed on-chain. These are testnet transactions with self-custodied demo keys. `judge:verify` reads the mined `settle` transaction off the public RPC and confirms the order is released, the three parties are distinct, and the fee was taken.
 
 ## Deployed addresses (testnet)
 

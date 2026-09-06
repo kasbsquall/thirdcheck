@@ -13,6 +13,9 @@ function short(h: string): string {
 export function SettlementSection({ data }: { data: HubSettlement | null }) {
   if (!data || !data.released) return null;
 
+  const distinctParties =
+    new Set([data.operator, data.seller, data.treasury].map((a) => a.toLowerCase())).size === 3;
+
   return (
     <section className="rise" style={{ ...styles.section, animationDelay: "115ms" }}>
       <div style={styles.head}>
@@ -46,6 +49,12 @@ export function SettlementSection({ data }: { data: HubSettlement | null }) {
             <CheckCircle size={12} weight="light" style={{ color: "var(--safe)" }} />
             <span>on {data.amount} settled through the audited ThirdCheckLib path, by construction</span>
           </div>
+          {distinctParties && (
+            <div style={styles.subline}>
+              <CheckCircle size={12} weight="light" style={{ color: "var(--safe)" }} />
+              <span>operator, seller and treasury are three distinct addresses; the fee and the payout landed on-chain (testnet)</span>
+            </div>
+          )}
         </div>
 
         {/* The two-transaction flow */}

@@ -284,8 +284,11 @@ async function checkProtocol() {
 async function checkSettlement() {
   const label = "Rails settled a real order (live)";
   try {
-    const path = resolve(DATA, "hub-settlement.json");
-    if (!existsSync(path)) return info(label, "no hub-settlement.json committed");
+    // Prefer the three-distinct-parties settlement when present; fall back to the first one.
+    const cp = resolve(DATA, "hub-settlement-counterparty.json");
+    const self = resolve(DATA, "hub-settlement.json");
+    const path = existsSync(cp) ? cp : self;
+    if (!existsSync(path)) return info(label, "no hub-settlement*.json committed");
     const r = JSON.parse(readFileSync(path, "utf8"));
     const provider = new ethers.JsonRpcProvider(CC3_RPC);
     const rcpt = await provider.getTransactionReceipt(r.settleTx.hash);
@@ -299,8 +302,10 @@ async function checkSettlement() {
       .map((l) => { try { return hub.interface.parseLog(l); } catch { return null; } })
       .find((p) => p?.name === "OrderSettled");
     const fee = evt?.args?.fee as bigint | undefined;
+    const distinct = new Set([r.operator, r.seller, r.treasury].map((a: string) => a.toLowerCase())).size === 3;
     if (released && evt && fee !== undefined && fee > 0n) {
-      pass(label, `order released via ${short(r.settleTx.hash)} on CC3; fee ${ethers.formatEther(fee)} captured (source ${short(r.sourceTx.hash)} on Sepolia)`);
+      const parties = distinct ? "3 distinct parties" : "self-operator";
+      pass(label, `order released via ${short(r.settleTx.hash)} on CC3 (${parties}); fee ${ethers.formatEther(fee)} captured (source ${short(r.sourceTx.hash)} on Sepolia)`);
     } else {
       fail(label, `released=${released}, OrderSettled=${!!evt}, fee=${fee}`);
     }
