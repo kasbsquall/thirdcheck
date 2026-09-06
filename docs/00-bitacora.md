@@ -789,3 +789,37 @@ por él on-chain todavía (lo citaron el inversor y el ingeniero). Palanca de #1
 liquidación real de extremo a extremo por el SettlementHub en CC3 (idealmente con contraparte externa),
 que convierte el "desplegado pero nunca liquidado / sin volumen" en un hecho minado. Después: volumen/
 adopción de terceros, y el vídeo al final.
+
+## D-46 · Liquidación real de extremo a extremo por el SettlementHub, minada en CC3 (2026-09-06)
+
+Ejecutada la palanca de #1 que los tres jueces CEIP señalaron en D-45: el hub pasó de
+"desplegado pero nunca liquidado" a un hecho minado. `scripts/settle-hub.ts` abre y fondea
+una orden en el hub, paga en Sepolia por `SourceSettlement`, espera la frontera de atestación
+(~526s medidos esta corrida), pide la prueba al prover y llama `settle()`, que corre el tercer
+chequeo completo por `ThirdCheckLib`, toma el fee de protocolo y paga al seller.
+
+Hechos verificables (fuente: `data/hub-settlement.json`):
+- settle tx (CC3): 0xbeb49165dc1fe78842f33d450fe2c06e04ea86fd795a8bf518951a12a81441a3, bloque 5440969
+- source tx (Sepolia): 0x36979b8682017196a2b903dc3e04e61d785f4893bdca95ead6dbf56299a8639e, bloque 11647746, txIndex 63
+- order.released = true; OrderSettled: payout 0.0009975, fee 0.0000025 (25 bps, operador no verificado)
+- orderId 0x0695de89f2ad701ef40399184ab65b232d7ec98c0fa6ef970d596ecfff0b6756
+
+Cableado donde suma para el jurado:
+- `scripts/verify.ts`: nuevo check G "Rails settled a real order (live)" lee la settle tx minada del
+  RPC público y confirma released + fee capturado. judge:verify local 11/11; repo público 9/9.
+- README: sección con ambos enlaces al explorer y el desglose del fee.
+- Frontend (boletín): panel `SettlementSection` alimentado por `hub-settlement.json`
+  (`frontend/components/Settlement.tsx` + loader en `lib/reports.ts` + wiring en `page.tsx`).
+  Verificado el contenido renderizado por DOM (payout/fee/hashes correctos); la captura de imagen
+  del panel queda para cuando se produzca el vídeo.
+
+Estado git: commit local en el repo privado (0f938ca) y en el repo público anonimizado (0a13d95,
+name-sweep limpio). El push del repo público queda PENDIENTE de OK del usuario (paso de publicación
+hacia afuera).
+
+Decisión del usuario sobre el vídeo (reafirmada este bloque): el vídeo y el speech se editan al FINAL,
+recién cuando una pasada de jurado dé por fin el 1º, usando el skill hackathon-video. La captura 2K
+con Playwright/ffmpeg del explorer y del boletín es materia prima para ese momento, no ahora.
+
+Pendiente para seguir sumando hacia el 1º: repetir la liquidación con contraparte externa (el usuario
+arregla la contraparte), volumen/adopción de terceros, y luego la nueva pasada de jurado.
