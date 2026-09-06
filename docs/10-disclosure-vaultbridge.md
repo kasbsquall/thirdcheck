@@ -109,9 +109,69 @@ Happy to help. I'll hold any public mention for 14 days.
 
 Best, Kevin — ThirdCheck
 
+## Tercer hallazgo: FactorX (borrador aparte)
+
+Divulgar por el mismo protocolo: aviso de seguridad privado en el repo del equipo
+(github.com/Ebubechukwucyber/FactorX → *Security* → *Report a vulnerability*) + copia a
+team@creditcoin.org, sin nombre público hasta respuesta.
+
+**Asunto:** Coordinated security disclosure — the on-chain record accepts an unverified, forgeable payment (FactorX)
+
+Hi,
+
+I'm Kevin, working on ThirdCheck (BUIDL CTC 2026 Fall). Following coordinated disclosure, sharing an
+issue privately first. I'm not publishing the project name, and I'm happy to help with the fix.
+cc team@creditcoin.org since it concerns the Attestcoin integration.
+
+Summary: the on-chain function that records a verified payment takes a proof, discards it, calls no
+precompile, and writes the record from values the caller supplies, with no access control. Anyone can
+record a fabricated payment.
+
+Details (against the current public source):
+
+1) The proof is discarded and never verified.
+   `AttestcoinVerifier.verifyAndRecord` (src/AttestcoinVerifier.sol:62) is `external` with no
+   access-control modifier. It receives a proof argument and discards it with a bare `proof;` no-op
+   (line 76), makes no call to the BlockProver precompile at 0x0FD2, and then emits `PaymentVerified`
+   and writes the registry from caller-supplied payer, beneficiary and amount (line 89). Because
+   nothing is verified and anyone may call it, a caller can record a payment that never happened and
+   have downstream logic treat it as attested.
+
+2) Your own docs already flag the root cause.
+   README.md:127 and docs/ATTESTCOIN_INTEGRATION.md state that the on-chain `verifyAndEmit` selector
+   did not match on this testnet, so verification was moved off-chain to the SDK `verifySingle`. That
+   leaves the on-chain record unauthenticated. Worth noting honestly: `verifySingle` is an SDK helper
+   name, not a selector the on-chain precompile implements (its surface is `verify`, `verifyAndEmit`,
+   `calculateTxIndex`), so off-chain `verifySingle` plus an unverified on-chain write is not equivalent
+   to precompile verification.
+
+Suggested fixes:
+
+- Verify on-chain inside `verifyAndRecord` through the real precompile (`verify` / `verifyAndEmit` via
+  @gluwa/usc-contracts) and derive payer, beneficiary and amount from the proven transaction, not from
+  caller input. Drop the `proof;` discard.
+- Add access control to any path that writes a "verified" record, and never emit `PaymentVerified`
+  from unverified caller data.
+- If off-chain verification is intentional for now, do not persist an on-chain record that downstream
+  trusts as attested; mark it explicitly unverified until the precompile path is in place.
+
+Reproduce it yourself (read-only, clones your public repo and re-derives the finding with the
+analyzer, no keys):
+
+    git clone https://github.com/<thirdcheck-repo> && cd thirdcheck && npm install
+    npm run judge:verify -- --reclone
+
+Happy to help with the fix or open a PR. I'll hold any public mention (even anonymized) for 14 days
+from today. Thanks for building on Attestcoin.
+
+Best, Kevin — ThirdCheck
+
 ## Notas internas (no enviar)
 
 - Sustituir `<thirdcheck-repo>` por la URL real del repo de ThirdCheck antes de enviar.
+- FactorX corrobora de forma independiente el hallazgo (1) de VaultBridge: `verifySingle` es un nombre
+  del SDK, no un selector on-chain. El propio README de FactorX lo admite. Evidencia por hallazgo en
+  `data/static-FactorX.json` y `data/confirmed-defects.json`.
 - La afirmación fuerte y verificable es (1): `verifySingle`/`verifyBatch` no están en la ABI del
   precompilo. Coincide con el comportamiento que ya usa `scripts/check-setup.ts` (el precompilo
   revierte ante un selector ausente). No afirmamos haber ejecutado el selector falso contra el

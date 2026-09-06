@@ -626,3 +626,19 @@ producto concretas, en paralelo.
 Verificado tras ambos tracks: `npm run compile` ok, `npm run typecheck` solo con los errores
 preexistentes de `scripts/run-b09.ts`, `npm run judge:verify` 9/9. Falta: republicar el artifact para
 reflejar el nuevo ejemplo, idea 3 (disclosure) y la pasada nueva de jurado, en ese orden.
+
+---
+
+## 2026-09-06 · Sesión (cont.) — idea 3: cerrar el loop de disclosure
+
+**D-40. Borradores de divulgación para los tres equipos + sponsor, listos para que el usuario los
+envíe.** ThirdCheck no envía correos; son borradores. `docs/10` ahora cubre VaultBridge, Sovereign
+Attest Agent y FactorX (tercer hallazgo añadido: `verifyAndRecord` external sin control de acceso que
+descarta la prueba y registra un pago falsificable; el propio README de FactorX admite la causa raíz,
+lo que corrobora el hallazgo 1 de VaultBridge). `docs/13` (sponsor) actualizado a tres defectos y
+asunto "Three coordinated disclosures". Canal por hallazgo: aviso de seguridad privado en el repo del
+equipo + copia a team@creditcoin.org, sin nombre público hasta respuesta o cierre del plazo (14 días).
+Si algún equipo acusa recibo antes del cierre, la narrativa pasa de "reportado" a "reportado y
+reconocido", que es la palanca de credibilidad que ningún rival puede fabricar. Pendiente del usuario:
+enviar. Opcional (versión barata de la contraparte externa): un tercero corre una liquidación real por
+el escrow en CC3 testnet, coste cero, para quitar el "self-dealing".

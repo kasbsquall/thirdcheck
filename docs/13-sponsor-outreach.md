@@ -4,7 +4,7 @@ Este documento es un borrador para que **tú** lo envíes. ThirdCheck no envía 
 
 ## Por qué este mensaje y qué esperar
 
-La razón legítima para escribir ya existe: encontraste dos defectos reales en envíos del propio
+La razón legítima para escribir ya existe: encontraste tres defectos reales en envíos del propio
 hackathon y los estás divulgando de forma coordinada (ver [10-disclosure-vaultbridge.md](10-disclosure-vaultbridge.md)).
 Ese es el gancho. El segundo párrafo, más corto, ofrece el gate para que lo miren. No es pedir un
 favor: les reportas bugs en su ecosistema, que es algo que quieren recibir.
@@ -25,7 +25,7 @@ Qué esperar, con honestidad:
 
 ## Correo (listo para copiar)
 
-**Asunto:** Two coordinated disclosures from the BUIDL CTC field, and a gate to catch this bug class
+**Asunto:** Three coordinated disclosures from the BUIDL CTC field, and a gate to catch this bug class
 
 Hi Creditcoin team,
 
@@ -34,16 +34,18 @@ Attestcoin consumer performs every verification the BlockProver precompile leave
 The precompile proves inclusion and continuity; everything a contract needs before it moves money on
 top of that is left to the integrator, and that gap is where cross-chain consumers fail.
 
-Reviewing the public submissions, I confirmed two defects of two distinct classes and am disclosing
-them to the teams privately first, following coordinated disclosure, cc'ing you since both concern the
-precompile integration:
+Reviewing the public submissions, I confirmed three defects of three distinct classes and am
+disclosing them to the teams privately first, following coordinated disclosure, cc'ing you since all
+three concern the precompile integration:
 
 1. A consumer whose on-chain proof verification cannot reach the real precompile (it calls a selector
    the precompile does not implement), with a second path that bypasses verification entirely.
 2. A consumer that replaces the protocol's inclusion+continuity proof with a single centralized
    `ecrecover` signature, so the whole guarantee reduces to one owner-controlled key.
+3. A consumer whose on-chain "verify and record" function discards the proof, calls no precompile, and
+   writes a forgeable payment record from unauthenticated caller data.
 
-Full write-ups are in the disclosures I'm sending the teams; happy to forward both to you directly.
+Full write-ups are in the disclosures I'm sending the teams; happy to forward all three to you directly.
 
 Separately, and only if it's useful to you: the same engine that found these ships as a GitHub Action,
 so an integrator fails CI before mainnet if their consumer skips the third check. It also runs as a
