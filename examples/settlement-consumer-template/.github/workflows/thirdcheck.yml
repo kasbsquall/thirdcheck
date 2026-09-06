@@ -1,7 +1,7 @@
 # ThirdCheck gate for this consumer. Runs on every push and PR, and is meant to be a required
 # check: a fork stays green because the template consumer does the third check correctly.
 #
-# Replace <owner> with the GitHub org or user that hosts the published ThirdCheck action, pinned
+# Replace kasbsquall with the GitHub org or user that hosts the published ThirdCheck action, pinned
 # to a release tag (@v1).
 
 name: ThirdCheck
@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: "20"
       - name: Third-check gate
-        uses: <owner>/thirdcheck@v1
+        uses: kasbsquall/thirdcheck@v1
         with:
           path: contracts
           fail-on: confirmed

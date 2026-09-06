@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      # Local action reference (./). Consumers use: uses: <owner>/thirdcheck@v1
+      # Local action reference (./). Consumers use: uses: kasbsquall/thirdcheck@v1
       - name: Third-check gate
         uses: ./
         with:

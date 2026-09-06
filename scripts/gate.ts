@@ -71,7 +71,7 @@ function main() {
     }
     lines.push("");
     lines.push("The precompile proves inclusion and continuity. Everything else is the third check.");
-    lines.push("Reproduce and read more: https://github.com/<thirdcheck-repo>");
+    lines.push("Reproduce and read more: https://github.com/kasbsquall/thirdcheck");
   }
   const summary = lines.join("\n");
   console.log("\n" + summary + "\n");

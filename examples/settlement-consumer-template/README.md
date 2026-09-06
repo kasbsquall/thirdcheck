@@ -24,7 +24,7 @@ npm install
 npm run compile
 ```
 
-Then wire the gate: open `.github/workflows/thirdcheck.yml` and replace `<owner>` with the GitHub
+Then wire the gate: open `.github/workflows/thirdcheck.yml` and replace `kasbsquall` with the GitHub
 org or user that hosts the published ThirdCheck action. Push, and mark the `third-check` check as
 required in your branch protection so a change that breaks the third check cannot merge.
 
@@ -57,5 +57,5 @@ place.
 ## The audit
 
 This consumer, the library, and the catalogue of twelve binding defects it defends against come from
-ThirdCheck: [github.com/&lt;owner&gt;/thirdcheck](https://github.com/<owner>/thirdcheck). The bench
+ThirdCheck: [github.com/&lt;owner&gt;/thirdcheck](https://github.com/kasbsquall/thirdcheck). The bench
 proves the hardened logic rejects every attack and releases the correct payment on Creditcoin CC3.

@@ -74,7 +74,7 @@ ThirdCheck is a security bench for Attestcoin consumers. It produces legitimate 
 thing and shows which consumers release funds against them. This library is the hardened logic that
 rejects every one of those attacks, lifted out so a new consumer starts correct. See the catalogue
 of twelve binding defects and the on-chain evidence at
-[github.com/&lt;owner&gt;/thirdcheck](https://github.com/<owner>/thirdcheck).
+[github.com/&lt;owner&gt;/thirdcheck](https://github.com/kasbsquall/thirdcheck).
 
 ## License
 

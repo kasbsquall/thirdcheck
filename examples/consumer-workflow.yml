@@ -6,7 +6,7 @@
 # a proof yet reports success.
 #
 # Fill the two placeholders below:
-#   <owner>  the GitHub org or user that hosts the published ThirdCheck action, then pin a tag (@v1).
+#   kasbsquall  the GitHub org or user that hosts the published ThirdCheck action, then pin a tag (@v1).
 #   path     the directory that holds your Solidity sources (change "contracts" if yours differs).
 
 name: ThirdCheck
@@ -25,7 +25,7 @@ jobs:
         with:
           node-version: "20"
       - name: Third-check gate
-        uses: <owner>/thirdcheck@v1
+        uses: kasbsquall/thirdcheck@v1
         with:
           # Directory to scan, relative to the repo root. Default is ".".
           path: contracts
