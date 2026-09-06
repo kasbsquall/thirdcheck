@@ -88,5 +88,3 @@ Kevin — ThirdCheck
   equipo lo confirma con la reproducción.
 - Evidencia completa por hallazgo en `data/static-VaultBridge.json` y `docs/09-findings-ecosistema.md`.
 - Si responden y arreglan antes del deck, es una historia aún mejor: "reportado y corregido".
-EOF
-echo OK

@@ -99,14 +99,35 @@ async function checkOnChain() {
   }
 }
 
-// B — the selector the VaultBridge finding rests on is not a precompile method.
-function checkProtocolFact() {
-  const fake = ["verifySingle", "verifyBatch"];
-  const offenders = fake.filter((s) => (REAL_SELECTORS as readonly string[]).includes(s));
-  if (offenders.length === 0) {
-    pass("Precompile surface", `real methods {${REAL_SELECTORS.join(", ")}}; verifySingle/verifyBatch are SDK names, not on-chain selectors`);
+// B — the precompile itself rejects the selector the VaultBridge finding rests on.
+// A live, keyless probe: 0x0FD2 replies "Unknown selector" to verifySingle, but dispatches verify.
+// This turns the finding from a static claim into an on-chain fact.
+async function checkSelectorLive() {
+  const fakeSel = ethers.id("verifySingle(uint256,uint256,bytes,bytes,bytes)").slice(0, 10);
+  const realSel = "0x7cc4e258"; // verify(uint64,uint64,bytes,tuple,tuple), from the SDK ABI
+  let provider: ethers.JsonRpcProvider;
+  try {
+    provider = new ethers.JsonRpcProvider(CC3_RPC);
+    const net = await provider.getNetwork();
+    if (Number(net.chainId) !== CC3_CHAIN_ID) throw new Error(`chainId ${net.chainId}`);
+  } catch {
+    // Offline: fall back to the static fact, labelled as such.
+    const offenders = ["verifySingle", "verifyBatch"].filter((s) => (REAL_SELECTORS as readonly string[]).includes(s));
+    info("Precompile selector", offenders.length === 0 ? "offline: verifySingle/verifyBatch are SDK names, not precompile selectors (static)" : "offline check inconclusive");
+    return;
+  }
+  const reasonOf = async (data: string): Promise<string> => {
+    try { await provider.call({ to: BLOCK_PROVER, data }); return "(returned)"; }
+    catch (e) { return (e as { reason?: string }).reason || "(revert)"; }
+  };
+  const fakeReason = await reasonOf(fakeSel);
+  const realReason = await reasonOf(realSel);
+  const fakeUnknown = /unknown selector/i.test(fakeReason);
+  const realDispatched = !/unknown selector/i.test(realReason);
+  if (fakeUnknown && realDispatched) {
+    pass("Precompile rejects fake selector (live)", `0x0FD2 replies "${fakeReason}" to verifySingle but dispatches verify ("${realReason}"); VaultBridge's verify path cannot reach the precompile`);
   } else {
-    fail("Precompile surface", `unexpected: ${offenders.join(", ")} listed as real`);
+    fail("Precompile rejects fake selector (live)", `verifySingle -> "${fakeReason}", verify -> "${realReason}"`);
   }
 }
 
@@ -127,11 +148,16 @@ function checkFindings() {
     fail("Confirmed defect", `expected VaultBridge only, got [${confirmedRepos.join(", ")}]`);
   }
 
-  const openReviewRepos = rep.repos.filter((r) => r.confirmed === 0 && r.findings.some((f) => f.verdict === "review")).map((r) => r.repo);
-  if (openReviewRepos.length === 0) {
-    pass("Open review items", "none: every production signal was read and resolved");
+  // Honest accounting: no OTHER repo carries unresolved review items; the confirmed repo
+  // (VaultBridge) does carry corroborating review signals, and we say so rather than hide them.
+  const otherOpen = rep.repos.filter((r) => r.confirmed === 0 && r.findings.some((f) => f.verdict === "review")).map((r) => r.repo);
+  const confirmedRepoReview = rep.repos
+    .filter((r) => r.confirmed > 0)
+    .reduce((n, r) => n + r.findings.filter((f) => f.verdict === "review").length, 0);
+  if (otherOpen.length === 0) {
+    pass("Open review items", `none in other repos; the confirmed repo carries ${confirmedRepoReview} corroborating review signal(s) of its own`);
   } else {
-    fail("Open review items", `${openReviewRepos.length} repos still unresolved: ${openReviewRepos.join(", ")}`);
+    fail("Open review items", `${otherOpen.length} other repos still unresolved: ${otherOpen.join(", ")}`);
   }
 
   // The confirmed VaultBridge finding must be anchored to real file:line evidence.
@@ -204,7 +230,7 @@ async function main() {
   console.log("\nThirdCheck · judge:verify\n");
 
   await checkOnChain();
-  checkProtocolFact();
+  await checkSelectorLive();
   checkFindings();
   checkScorecard();
   checkConformance();

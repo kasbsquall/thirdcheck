@@ -30,8 +30,9 @@ It reads the committed evidence and confirms it independently against the public
 - **on-chain** — every release the vulnerable escrow made is a real, mined CC3 transaction sent to
   the audited escrow (fetched by receipt, read-only), and the B-09 contrast is a clean pair: same
   proof, vulnerable releases, hardened reverts.
-- **protocol** — the selector the VaultBridge finding rests on (`verifySingle`) is genuinely not a
-  precompile method; the real surface is `verify`, `verifyAndEmit`, `calculateTxIndex`.
+- **protocol (live)** — a keyless `eth_call` to `0x0FD2` shows the precompile replies
+  `Unknown selector` to `verifySingle` (the selector the VaultBridge finding rests on) while it
+  dispatches the real `verify`. The finding is an on-chain fact, not just a static claim.
 - **findings** — the ecosystem triage stands behind exactly one source-confirmed defect
   (VaultBridge), with no open review items across the other 22 flagged repos.
 - **scorecard** — the field scorecard's own invariants hold (48 submissions, distributions sound).
@@ -49,8 +50,9 @@ ChainInfo views live with data chained from the current attestation frontier, pr
 views, and records how ThirdCheck reaches each. Auditing the third check requires the whole protocol,
 so ThirdCheck touches far more of it than a product does.
 
-Add `--reclone` to re-fetch VaultBridge's public source and re-derive the finding live with the
-analyzer, so nothing rests on a committed file:
+Add `--reclone` to re-fetch VaultBridge's public source and re-derive the finding's static signals
+live with the analyzer (the declared selector and the mock in `src/`), so the finding does not rest
+on a committed file:
 
 ```bash
 npm run judge:verify -- --reclone
