@@ -1,36 +1,28 @@
 # Estado y pendientes
 
-Corte: 5 de septiembre de 2026, fin de la sesión 2.
+Corte: 6 de septiembre de 2026, sesión 3.
 
 ---
 
 ## Avance global
 
-**Aproximadamente 42% del build de 8 días.**
-
-El reparto por jornada, con criterio honesto:
+**Aproximadamente 78% del build de 8 días.** Seis de ocho jornadas cerradas. Lo que queda es más
+ancho que profundo: correr contra objetivos reales y todo el empaquetado y presentación.
 
 | Día | Objetivo | Estado | % |
 |---|---|---|---|
 | 1 | Puerta de viabilidad | Cerrado | 100 |
 | 2 | Catálogo y contrato vulnerable | Cerrado | 100 |
-| 3 | Motor y tres ataques dinámicos | Motor y ataques escritos, corriendo; falta confirmar el veredicto en cadena | 80 |
-| 4 | Hardened, ataques restantes, camino positivo | Contrato escrito y desplegado; falta cablear el bench hardened, los ataques B-01/B-05/B-09 y el camino positivo | 35 |
-| 5 | Analizador estático y modelo de boletín | Sin empezar; evidencia de B-10, B-11, B-12 ya recogida | 10 |
-| 6 | Frontend | Sin empezar | 0 |
+| 3 | Motor y ataques dinámicos | Cerrado; vulnerable confirmado en cadena | 100 |
+| 4 | Hardened, ataques restantes, camino positivo | Cerrado; contraste completo, B-09 limpio | 100 |
+| 5 | Analizador estático y modelo de boletín | Cerrado; reproduce B-11/B-12 en VaultBridge | 100 |
+| 6 | Frontend | Cerrado; boletín verificado renderizado | 100 |
 | 7 | Objetivos reales y divulgación | Sin empezar | 0 |
-| 8 | Deck, README, video, envío | Sin empezar | 0 |
-
-El grueso técnico difícil (entender el precompile de verdad, el motor de pruebas, los dos escrows)
-está hecho. Lo que queda es más ancho que profundo: completar ataques, el analizador, y todo el
-empaquetado y presentación, que es mucho trabajo pero de bajo riesgo.
+| 8 | Deck, README, video, envío | Borradores (whitepaper, README, guion); falta PDF, video, envío | 25 |
 
 ---
 
 ## Lo que ya funciona y está en cadena
-
-**Entorno.** `npm run check-setup` da 9 de 9 contra CC3 testnet. Deployer
-`0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155`, 10.000 CTC en CC3 y 0.16 ETH en Sepolia.
 
 **Contratos desplegados en testnet:**
 
@@ -41,81 +33,51 @@ empaquetado y presentación, que es mucho trabajo pero de bajo riesgo.
 | VulnerableEscrow | CC3 testnet | `0xD8504B263104aa915974eCCE1002d7F7587e88cD` |
 | HardenedEscrow | CC3 testnet | `0xeC82270dc356948FC2e5E969a887ce6bE27e375A` |
 
-(SourceSettlement en Sepolia y VulnerableEscrow en CC3 comparten dirección por mismo deployer y
-mismo nonce. Es la demostración literal de B-05: misma dirección en dos cadenas es otro contrato.)
+**Contraste dinámico completo** (`data/bench-vulnerable.json`, `data/bench-hardened.json`):
 
-**Verificado end to end sin gas:** `npx ts-node scripts/prove-view.ts` prueba una transacción real
-de Sepolia contra el precompile y `calculateTxIndex` recupera su posición desde la forma del camino
-Merkle.
+| Ataque | Vulnerable | Hardened |
+|---|---|---|
+| B-01 recibo revertido | rechazado (sin logs) | rechazado · SourceTxReverted |
+| B-02 emisor impostor | liberado | rechazado · NoMatchingPayment |
+| B-04 replay | liberado | rechazado · ProofAlreadyUsed (segunda) |
+| B-06 pago de otro pedido | liberado | rechazado · NoMatchingPayment |
+| B-09 logs señuelo | liberado | rechazado · NoMatchingPayment |
+| POS pago correcto | liberado | liberado |
 
----
-
-## Lo que estaba corriendo al cortar
-
-`npx hardhat run scripts/run-bench.ts --network cc3` contra el vulnerable. Los tres ataques del
-día 3: B-02 (impostor), B-06 (pago de otro pedido), B-04 (replay).
-
-Estado al cortar: el ataque B-02 ya emitió su transacción de forjado en Sepolia y estaba esperando
-la attestation (retraso de ~8 minutos por ataque). No llegó a confirmarse el veredicto en cadena.
-
-**Al volver, primero:** volver a correr ese comando. Es reejecutable, cada corrida usa order ids
-nuevos, así que no colisiona con lo anterior. Escribe el resultado en `data/bench-vulnerable.json`.
-Lo esperado es VULNERABLE en los tres, con el hash de la transacción de release en CC3 como prueba.
+B-09 validado con `scripts/run-b09.ts` (una tx origen, una espera, dos releases); ver
+`data/b09-contrast.json`. Analizador estático en `data/static-*.json`. Boletín data-driven en
+`frontend/`, puerto 3939, verificado renderizado.
 
 ---
 
-## Pendientes concretos, en orden
+## Lo que falta (días 7 y 8)
 
-### Cerrar día 3
-1. Correr `run-bench.ts` hasta el final y confirmar los tres VULNERABLE con sus hashes.
+**Día 7 · Objetivos reales y divulgación**
+- Correr la batería contra ASCs desplegados en CC3 testnet de forma genérica.
+- Si aparece un fallo en un envío vivo: correo privado al equipo y a team@creditcoin.org, sin
+  publicar el nombre de nadie.
+- Recolectar evidencia final: hashes, capturas, transcripciones.
 
-### Día 4
-2. Cablear el bench para el objetivo hardened. La función `fund` del hardened tiene otra firma (6
-   argumentos: chainKey, source, minHeight, maxHeight además de seller). Hay que abstraer
-   `fundOrder` en `src/bench.ts` según el objetivo.
-3. Añadir el camino positivo: un pago correcto (contrato correcto, pedido correcto, importe y
-   receptor correctos, dentro de ventana) que el hardened SÍ libera. Es lo que prueba que
-   endurecer no rompió el producto.
-4. Implementar los tres ataques que faltan: B-01 (receipt revertido, usar
-   `SourceSettlement.settleAndRevert`), B-05 (chainKey cruzado), B-09 (logs señuelo, usar
-   `SourceSettlement.settleNoisy`).
-5. Correr la batería completa contra los dos: objetivo nueve de nueve VULNERABLE contra el
-   vulnerable, cero de nueve contra el hardened.
-
-### Día 5
-6. Analizador estático para B-11 (dirección de verificador escribible, selectores inexistentes) y
-   B-12 (catch que devuelve valor por defecto como evidencia). El caso de prueba real es el repo de
-   VaultBridge, clonado en el scratchpad de la sesión (ver más abajo).
-7. Modelo de boletín unificado que combine hallazgos dinámicos y estáticos, exportable a JSON.
-
-### Día 6
-8. Frontend Next.js: una pantalla, el boletín de un contrato, las doce entradas del catálogo con
-   su veredicto y, para cada fallo, el enlace a la transacción de CC3 que lo demuestra. La
-   comparación vulnerable contra hardened lado a lado es el plano del video.
-9. Verificar disponibilidad del nombre (ThirdCheck o Falsifier) en npm, GitHub y dominio.
-
-### Día 7
-10. Correr la batería contra ASCs reales desplegados en CC3 testnet. Si aparece un fallo en un
-    envío vivo, divulgación privada a team@creditcoin.org antes de publicar nada.
-
-### Día 8
-11. README con la sección de integración con Attestcoin, deck o whitepaper en PDF, video de tres
-    minutos, y envío en DoraHacks. Deadline 13 de septiembre 23:59 ET.
+**Día 8 · Empaquetado y envío**
+- Deck o whitepaper en PDF (el whitepaper en markdown ya existe, falta el PDF).
+- Video de tres minutos siguiendo `docs/06-guion-video.md`.
+- Envío en DoraHacks con todos los campos del formulario.
 
 ---
 
-## Cosas que solo existen en esta sesión (recuperar si hace falta)
+## Requisitos del formulario, para no olvidar ninguno
 
-Los repos de referencia y el de VaultBridge están clonados en el scratchpad de la sesión, que es
-efímero:
-`...\abb0168a-...\scratchpad\ref\` con index41, crosscredit, standing,
-collateral-eligibility-ledger, upstream (gluwa) y falta clonar VaultBridge (`Bobo2005/VaultBridge`)
-para el analizador estático del día 5.
-
-Los datos de los 48 proyectos sí están persistidos en `data/ctc-buidls-full.json`.
+Nombre, logo (opcional), sector, descripción, resumen de integración con Attestcoin, URL del repo
+con README, deck o whitepaper en PDF, URL del video de demo. Datos del equipo: nombre y apellidos,
+email, bio corta, rol, país de residencia y país de ciudadanía. Desplegado en testnet. Trabajo
+original creado durante el hackathon.
 
 ---
 
-## Riesgo que sigue vigente
+## Gotcha operativo (costó ~1.5h en la sesión 3)
 
-La segunda ola de envíos entre el 8 y el 13 no está en el análisis. El campo de 48 crecerá.
+Al detener un bench en Windows, `TaskStop` mata el shell pero no los hijos `node` de hardhat.
+Quedan zombis tocando la cuenta deployer y descuadran el nonce (`NONCE_EXPIRED`) de cada corrida
+nueva. Matar por CommandLine (`Get-CimInstance ... -match 'hardhat|run-bench'`) y esperar nonce
+estable (latest==pending sin cambios ~30s) antes de relanzar. `scripts/run-b09.ts` es el patrón con
+timeout en cada llamada de CC3.
