@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="116" viewBox="0 0 420 116" role="img" aria-label="ThirdCheck">
+  <rect width="420" height="116" rx="18" fill="#0d0f12"/>
+  <g transform="translate(34,30)">
+    <rect x="0" y="34" width="9" height="22" rx="4.5" fill="#8a8f98"/>
+    <rect x="15" y="24" width="9" height="32" rx="4.5" fill="#c2c7cf"/>
+    <rect x="30" y="10" width="9" height="46" rx="4.5" fill="#e0913a"/>
+    <path d="M31 29 l4.6 4.6 l8.4 -9" fill="none" stroke="#0d0f12" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="108" y="58" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="38" font-weight="600" letter-spacing="-1" fill="#eceef1">Third<tspan fill="#e0913a">Check</tspan></text>
+  <text x="110" y="82" font-family="'Segoe UI', system-ui, -apple-system, Helvetica, Arial, sans-serif" font-size="13" letter-spacing="0.5" fill="#8a8f98">the third check, by construction</text>
+</svg>

@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/thirdcheck-logo.svg" alt="ThirdCheck" width="360" />
+
 # ThirdCheck
 
 **A valid Attestcoin proof tells you a transaction happened. It never tells you it is the transaction your contract meant to act on. That gap is the third check, and it is where cross-chain money leaks.**

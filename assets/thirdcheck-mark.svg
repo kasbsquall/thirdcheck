@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 48 48" role="img" aria-label="ThirdCheck mark">
+  <rect x="7" y="26" width="7" height="15" rx="3.5" fill="#8a8f98"/>
+  <rect x="18" y="19" width="7" height="22" rx="3.5" fill="#c2c7cf"/>
+  <rect x="29" y="9" width="7" height="32" rx="3.5" fill="#e0913a"/>
+  <path d="M30 22.5 l3.4 3.4 l6.2 -6.6" fill="none" stroke="#0d0f12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

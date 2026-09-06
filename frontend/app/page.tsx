@@ -16,6 +16,7 @@ import { ConformanceSection } from "@/components/Conformance";
 import { LiveCheckSection } from "@/components/LiveCheck";
 import { ProductSection } from "@/components/Product";
 import { SettlementSection } from "@/components/Settlement";
+import { Mark } from "@/components/Mark";
 import {
   ShieldWarning,
   ShieldCheck,
@@ -27,7 +28,6 @@ import {
   FnIcon,
   ListChecks,
   Clock,
-  FileMagnifyingGlass,
   Circle,
 } from "@/components/icons";
 
@@ -169,9 +169,9 @@ export default function Page() {
         {/* Masthead */}
         <header className="rise" style={styles.masthead}>
           <div style={styles.brandRow}>
-            <FileMagnifyingGlass size={22} weight="light" style={{ color: "var(--vuln)" }} />
-            <span className="mono" style={styles.brand}>
-              ThirdCheck
+            <Mark size={26} />
+            <span style={styles.brand}>
+              Third<span style={styles.brandAccent}>Check</span>
             </span>
             <span style={styles.tag}>Attestcoin binding audit</span>
           </div>
@@ -405,7 +405,8 @@ const styles: Record<string, React.CSSProperties> = {
 
   masthead: { marginBottom: "3rem" },
   brandRow: { display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1.75rem" },
-  brand: { fontSize: 15, letterSpacing: "0.02em", fontWeight: 500 },
+  brand: { fontSize: 18, letterSpacing: "-0.015em", fontWeight: 600 },
+  brandAccent: { color: "var(--vuln)" },
   tag: {
     fontSize: 11,
     color: "var(--ink-faint)",
