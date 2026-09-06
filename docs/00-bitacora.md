@@ -823,3 +823,34 @@ con Playwright/ffmpeg del explorer y del boletín es materia prima para ese mome
 
 Pendiente para seguir sumando hacia el 1º: repetir la liquidación con contraparte externa (el usuario
 arregla la contraparte), volumen/adopción de terceros, y luego la nueva pasada de jurado.
+
+## D-47 · Mesa de jurado CEIP agnóstica tras la liquidación real minada (2026-09-06)
+
+Tres jueces CEIP agnósticos en paralelo (inversor VC, ingeniero de protocolo/ecosistema,
+track-fit), codenames neutrales (BRAVO = ThirdCheck), campo de cuatro finalistas con datos fieles
+extraídos de data/ctc-buidls-full.json: ALPHA=crosscredit, CHARLIE=index41, DELTA=COVENANT/CovenantX.
+Cada juez recibió el nuevo hecho minado (liquidación real por el hub) y su límite honesto (self-operator).
+
+Resultado, vuelco respecto a D-45 (que era crosscredit #1 unánime):
+
+| juez | #1 | #2 | #3 | #4 |
+|---|---|---|---|---|
+| inversor (VC) | BRAVO | ALPHA | DELTA | CHARLIE |
+| ing. protocolo/ecosistema | BRAVO | CHARLIE | ALPHA | DELTA |
+| track-fit | ALPHA | BRAVO | CHARLIE | DELTA |
+
+2 de 3 jueces ponen a ThirdCheck (BRAVO) en 1º. Gana por votos de primer lugar (2 vs 1).
+- Ing.: ecosystem-strengthening 95 (el más alto del campo), depth 85; la liquidación minada validada
+  como "crown jewel empírico". #1 claro.
+- Inversor: investabilidad 78, ThirdCheck #1; "la capa de la que dependen las apps", mayor founder-signal.
+  Tope en 78 (no 90) por pre-tracción: sin volumen externo.
+- Track-fit: único que deja a ThirdCheck 2º, por dos huecos: (1) vídeo diferido = fallo de requisito
+  obligatorio; (2) liquidación self-operator = "parcialmente escenificada".
+
+Convergencia de los tres sobre la palanca de #1 unánime: una liquidación real conducida por una
+CONTRAPARTE EXTERNA (segunda wallet que paga en Sepolia y cobra en CC3 por el hub, distinta del
+deployer), Y que esa grabación sea el vídeo. Cierra los dos huecos del juez de track-fit a la vez.
+
+Encaja con la decisión del usuario: el vídeo va al final; cuando se produzca con contraparte externa,
+se voltea también al tercer juez. Estado: 2-1 a favor con margen; el 1º unánime queda a un artefacto
+(liquidación con contraparte externa grabada como vídeo).
