@@ -177,9 +177,10 @@ export default function Page() {
             is the third check, and it is left to the developer.
           </h1>
           <p style={styles.sub}>
-            ThirdCheck builds legitimate Attestcoin proofs of things that are not the payment for the
-            order they release, and submits them. Every proof below passes the precompile. What
-            varies is whether the consumer&rsquo;s third check catches it.
+            The precompile says nothing about the emitter, the event, the receipt status, the order, or
+            whether you already counted it. ThirdCheck builds real Attestcoin proofs, then uses them to
+            release the wrong order. Every proof below passes the precompile. What varies is whether the
+            consumer&rsquo;s third check catches the swap.
           </p>
         </header>
 
@@ -278,8 +279,8 @@ export default function Page() {
               <FnIcon size={16} weight="light" style={{ color: "var(--vuln)" }} />
               <span style={styles.staticTitle}>Source-visible defects</span>
               <span style={styles.staticNote}>
-                found statically, no chain needed. Target shown is a public submission, cited as
-                evidence that the catalogue describes real code.
+                found statically, no chain needed. Target shown is a public hackathon submission, cited
+                as evidence that the catalogue describes real code.
               </span>
             </div>
             <div style={styles.staticList}>

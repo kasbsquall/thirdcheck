@@ -6,8 +6,6 @@ import {
   Warning,
   CheckCircle,
   XCircle,
-  Circle,
-  ArrowSquareOut,
 } from "@/components/icons";
 
 interface LiveFinding {
@@ -77,11 +75,24 @@ contract SafeEscrow {
     }
 }`;
 
+// A real third-party submission from the field. Its repo carries a self-declared
+// vulnerable control (NaiveManager) the scan flags, and a hardened path it does not.
+const REAL_REPO = "https://github.com/Nuel-osas/deadswitch";
+
 const VERDICT_STYLE = {
   pass: { color: "var(--safe)", bg: "var(--safe-bg)", Icon: CheckCircle, label: "passes the third check" },
-  review: { color: "var(--ink)", bg: "transparent", Icon: Warning, label: "review-class findings" },
-  fail: { color: "var(--vuln)", bg: "var(--vuln-bg)", Icon: XCircle, label: "would fail the CI gate" },
+  review: { color: "var(--vuln)", bg: "var(--vuln-bg)", Icon: Warning, label: "findings to review, none blocking" },
+  fail: { color: "var(--err)", bg: "var(--err-bg)", Icon: XCircle, label: "would fail the CI gate" },
 } as const;
+
+/** Turn a raw fetch/route error into something a judge can act on. */
+function humanError(raw: string): string {
+  if (/\b403\b/.test(raw)) return "GitHub is rate-limiting anonymous requests (60/hour, shared). Wait a minute and retry, or paste the source directly.";
+  if (/\b404\b/.test(raw)) return "That repository or file could not be found. It may be private, renamed, or the link may be a page rather than a repo or a .sol file.";
+  if (/No Solidity/i.test(raw)) return "No Solidity or TypeScript files were found in that repository.";
+  if (/too large/i.test(raw)) return "That source is over the 400 KB limit for a single paste.";
+  return raw;
+}
 
 export function LiveCheckSection() {
   const [mode, setMode] = useState<Mode>("paste");
@@ -105,7 +116,7 @@ export function LiveCheckSection() {
       if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
       setResult(data as CheckResult);
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      setError(humanError(e instanceof Error ? e.message : String(e)));
     } finally {
       setLoading(false);
     }
@@ -121,105 +132,134 @@ export function LiveCheckSection() {
     }
   }
 
-  function loadSample(mode: Mode, value: string) {
-    setMode(mode);
-    if (mode === "paste") {
-      setSource(value);
-      run({ source: value });
-    } else {
-      setUrl(value);
-      run({ url: value });
-    }
+  // Switching mode invalidates a verdict tied to the other input; clear it.
+  function switchMode(next: Mode) {
+    if (next === mode) return;
+    setMode(next);
+    setResult(null);
+    setError(null);
   }
 
+  function loadPaste(value: string) {
+    switchMode("paste");
+    setSource(value);
+    run({ source: value });
+  }
+  function loadRepo(value: string) {
+    switchMode("url");
+    setUrl(value);
+    run({ url: value });
+  }
+
+  const canRun = !loading && (mode === "paste" ? source.trim().length > 0 : url.trim().length > 0);
+
   return (
-    <section className="rise" style={{ ...styles.section, animationDelay: "160ms" }}>
-      <div style={styles.head}>
-        <FileMagnifyingGlass size={16} weight="light" style={{ color: "var(--vuln)" }} />
-        <span style={styles.title}>Check a contract yourself</span>
-        <span style={styles.note}>
-          Paste any Attestcoin consumer, or point at a GitHub repo or file. It runs the exact engine
-          the CI gate runs, and returns the same verdict a pull request would get. No key, nothing
-          stored.
-        </span>
-      </div>
-
-      <div style={styles.examples}>
-        <span style={styles.exLabel}>try</span>
-        <button type="button" className="chip" style={styles.chip} onClick={() => loadSample("paste", VULN_SAMPLE)}>
-          a consumer that skips it
-        </button>
-        <button type="button" className="chip" style={styles.chip} onClick={() => loadSample("paste", CLEAN_SAMPLE)}>
-          one that does it right
-        </button>
-        <button
-          type="button"
-          className="chip"
-          style={styles.chip}
-          onClick={() => loadSample("url", "https://github.com/Nuel-osas/deadswitch")}
-        >
-          scan a live repo
-        </button>
-      </div>
-
-      <div style={styles.tabs}>
-        <button
-          type="button"
-          onClick={() => setMode("paste")}
-          style={{ ...styles.tab, ...(mode === "paste" ? styles.tabOn : {}) }}
-        >
-          paste source
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode("url")}
-          style={{ ...styles.tab, ...(mode === "url" ? styles.tabOn : {}) }}
-        >
-          github url
-        </button>
-      </div>
-
-      {mode === "paste" ? (
-        <textarea
-          className="mono"
-          value={source}
-          onChange={(e) => setSource(e.target.value)}
-          placeholder="pragma solidity ^0.8.20; contract MyConsumer { ... }"
-          spellCheck={false}
-          style={styles.textarea}
-        />
-      ) : (
-        <input
-          className="mono"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && onCheck()}
-          placeholder="https://github.com/owner/repo  ·  or a link to one .sol file"
-          style={styles.input}
-        />
-      )}
-
-      <div style={styles.actions}>
-        <button type="button" onClick={onCheck} disabled={loading} style={styles.run}>
-          {loading ? "checking…" : "run the third check"}
-        </button>
-        {result && (
-          <span className="mono" style={styles.scanned}>
-            {result.filesScanned} file{result.filesScanned === 1 ? "" : "s"} scanned
-          </span>
-        )}
-      </div>
-
-      {loading && <div className="pulse" style={styles.skeleton} aria-hidden />}
-
-      {error && (
-        <div style={styles.error}>
-          <XCircle size={14} weight="light" style={{ color: "var(--err)" }} />
-          <span style={styles.errorText}>{error}</span>
+    <section className="rise" style={{ marginTop: "3.5rem" }}>
+      <div className="lc-card">
+        <div className="lc-head">
+          <FileMagnifyingGlass size={17} weight="light" style={{ color: "var(--vuln)" }} />
+          <span className="lc-title">Check any contract, or scan a live GitHub repo</span>
+          <span className="lc-live">live</span>
         </div>
-      )}
+        <p className="lc-note">
+          Paste an Attestcoin consumer, or give it any GitHub repo or <span className="mono">.sol</span> link
+          and it pulls and scans the live code. Same engine the CI gate runs, same verdict a pull request
+          would get. No key, nothing stored.
+        </p>
 
-      {result && !loading && <Verdict result={result} />}
+        {/* Mode switch: a real segmented control, distinct from the example row below. */}
+        <div className="lc-modes" role="tablist" aria-label="Input mode">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "paste"}
+            className="lc-mode"
+            onClick={() => switchMode("paste")}
+          >
+            paste source
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "url"}
+            className="lc-mode"
+            onClick={() => switchMode("url")}
+          >
+            <span className="lc-dot" aria-hidden />
+            scan github repo
+          </button>
+        </div>
+
+        {mode === "paste" ? (
+          <>
+            <textarea
+              className="lc-field"
+              value={source}
+              onChange={(e) => { setSource(e.target.value); if (error) setError(null); }}
+              onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === "Enter") onCheck(); }}
+              placeholder="pragma solidity ^0.8.20; contract MyConsumer { ... }"
+              spellCheck={false}
+              aria-label="Solidity source to check"
+            />
+            <div className="lc-srcnote">
+              <span className="lc-hint">press <span className="lc-kbd">Ctrl/Cmd + Enter</span> to run</span>
+            </div>
+          </>
+        ) : (
+          <>
+            <input
+              className="lc-url mono"
+              value={url}
+              onChange={(e) => { setUrl(e.target.value); if (error) setError(null); }}
+              onKeyDown={(e) => { if (e.key === "Enter") onCheck(); }}
+              placeholder="https://github.com/owner/repo  ·  or a link to one .sol file"
+              aria-label="GitHub repository or file URL to scan"
+            />
+            <div className="lc-srcnote">
+              It fetches the repository&rsquo;s Solidity live and scans every consumer. Two anonymous GitHub
+              calls per run, so if it rate-limits, wait a minute or paste the source instead.
+            </div>
+          </>
+        )}
+
+        <div className="lc-actions">
+          <button type="button" className="lc-run" onClick={onCheck} disabled={!canRun}>
+            {loading ? "checking…" : "run the third check"}
+          </button>
+          {result && (
+            <span className="lc-scanned" title={result.scanned}>
+              {result.filesScanned} file{result.filesScanned === 1 ? "" : "s"} scanned · {result.scanned}
+            </span>
+          )}
+        </div>
+
+        {/* Examples sit below the controls; secondary weight, clearly a different row. */}
+        <div className="lc-examples">
+          <span className="lc-exlabel">try</span>
+          <button type="button" className="lc-chip" onClick={() => loadPaste(VULN_SAMPLE)}>
+            a consumer that skips the check
+          </button>
+          <button type="button" className="lc-chip" onClick={() => loadPaste(CLEAN_SAMPLE)}>
+            one that does it right
+          </button>
+          <button type="button" className="lc-chip" onClick={() => loadRepo(REAL_REPO)}>
+            scan a real submission
+          </button>
+        </div>
+
+        <div aria-live="polite" aria-busy={loading}>
+          {loading && <div className="lc-skeleton pulse" aria-hidden />}
+
+          {error && !loading && (
+            <div className="lc-error">
+              <XCircle size={15} weight="light" style={{ color: "var(--err)", flexShrink: 0, marginTop: 1 }} />
+              <span className="lc-errtext">{error}</span>
+            </div>
+          )}
+
+          {result && !loading && <Verdict result={result} />}
+        </div>
+      </div>
     </section>
   );
 }
@@ -227,159 +267,56 @@ export function LiveCheckSection() {
 function Verdict({ result }: { result: CheckResult }) {
   const v = VERDICT_STYLE[result.verdict];
   return (
-    <div style={styles.result}>
-      <div style={{ ...styles.verdictBar, borderColor: v.color }}>
-        <span style={{ ...styles.verdictBadge, color: v.color, background: v.bg }}>
+    <div className="lc-result">
+      <div className="lc-verdict">
+        <span className="lc-badge" style={{ color: v.color, background: v.bg }}>
           <v.Icon size={15} weight="light" />
           <span className="mono">{v.label}</span>
         </span>
-        <span className="mono" style={styles.counts}>
+        <span className="lc-counts">
           {result.counts.error} defect-class · {result.counts.review} review
         </span>
       </div>
+      <p className="lc-legend">
+        Defect-class findings fail the gate; review findings flag something a human should confirm.
+      </p>
 
       {result.findings.length === 0 ? (
-        <p style={styles.clean}>
-          Every proof consumer scanned reaches the precompile and binds what it acts on. Nothing to
-          flag.
+        <p className="lc-clean">
+          Every proof consumer scanned reaches the precompile and binds what it acts on. Nothing to flag.
         </p>
       ) : (
-        <div style={styles.findingList}>
-          {result.findings.map((f, i) => (
-            <div
-              className="row"
-              key={`${f.file}:${f.line}:${f.id}:${i}`}
-              style={{ ["--i" as string]: Math.min(i, 7), ...styles.finding }}
-            >
-              <div style={styles.findingTop}>
-                <span
-                  className="mono"
-                  style={{
-                    ...styles.sev,
-                    color: f.severity === "error" ? "var(--vuln)" : "var(--ink-dim)",
-                    borderColor: f.severity === "error" ? "var(--vuln)" : "var(--line-strong)",
-                  }}
-                >
-                  {f.severity === "error" ? "fail" : "review"}
-                </span>
-                <span className="mono" style={styles.fid}>
-                  {f.id}
-                </span>
-                <span style={styles.ftitle}>{f.title}</span>
+        <div className="lc-list">
+          {result.findings.map((f, i) => {
+            const isErr = f.severity === "error";
+            return (
+              <div
+                className="lc-finding row"
+                key={`${f.file}:${f.line}:${f.id}:${i}`}
+                style={{ ["--i" as string]: Math.min(i, 7) }}
+              >
+                <div className="lc-ftop">
+                  <span
+                    className="lc-sev"
+                    style={{
+                      color: isErr ? "var(--err)" : "var(--vuln)",
+                      borderColor: isErr ? "var(--err)" : "var(--vuln)",
+                    }}
+                  >
+                    {isErr ? "defect" : "review"}
+                  </span>
+                  <span className="lc-fid">{f.id}</span>
+                  <span className="lc-ftitle">{f.title}</span>
+                </div>
+                <div className="lc-floc">
+                  {f.file}:{f.line} · {f.evidence}
+                </div>
+                <p className="lc-fnote">{f.note}</p>
               </div>
-              <div className="mono" style={styles.floc}>
-                {f.file}:{f.line} · {f.evidence}
-              </div>
-              <p style={styles.fnote}>{f.note}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  section: { marginTop: "3.5rem" },
-  head: { display: "flex", alignItems: "baseline", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1.25rem" },
-  title: { fontSize: 15, fontWeight: 600, letterSpacing: "-0.01em" },
-  note: { fontSize: 12, color: "var(--ink-faint)", lineHeight: 1.45, maxWidth: 560 },
-
-  examples: { display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1rem" },
-  exLabel: { fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ink-faint)" },
-  chip: {
-    fontSize: 12,
-    color: "var(--ink-dim)",
-    background: "var(--panel)",
-    border: "1px solid var(--line)",
-    borderRadius: 2,
-    padding: "4px 10px",
-    cursor: "pointer",
-  },
-
-  tabs: { display: "flex", gap: "0.4rem", marginBottom: "0.6rem" },
-  tab: {
-    fontSize: 12,
-    color: "var(--ink-faint)",
-    background: "transparent",
-    border: "1px solid var(--line)",
-    borderRadius: 2,
-    padding: "4px 12px",
-    cursor: "pointer",
-  },
-  tabOn: { color: "var(--ink)", borderColor: "var(--line-strong)", background: "var(--panel)" },
-
-  textarea: {
-    width: "100%",
-    minHeight: 220,
-    resize: "vertical",
-    fontSize: 12.5,
-    lineHeight: 1.55,
-    color: "var(--ink)",
-    background: "var(--panel)",
-    border: "1px solid var(--line)",
-    borderRadius: 3,
-    padding: "0.9rem 1rem",
-    outlineColor: "var(--vuln)",
-  },
-  input: {
-    width: "100%",
-    fontSize: 12.5,
-    color: "var(--ink)",
-    background: "var(--panel)",
-    border: "1px solid var(--line)",
-    borderRadius: 3,
-    padding: "0.75rem 1rem",
-    outlineColor: "var(--vuln)",
-  },
-
-  actions: { display: "flex", alignItems: "center", gap: "1rem", marginTop: "0.9rem" },
-  run: {
-    fontSize: 13,
-    fontWeight: 500,
-    color: "var(--ground)",
-    background: "var(--ink)",
-    border: "1px solid var(--ink)",
-    borderRadius: 3,
-    padding: "0.55rem 1.2rem",
-    cursor: "pointer",
-  },
-  scanned: { fontSize: 11.5, color: "var(--ink-faint)" },
-
-  skeleton: {
-    marginTop: "1.5rem",
-    height: 90,
-    borderRadius: 3,
-    background: "var(--panel)",
-    border: "1px solid var(--line)",
-  },
-
-  error: { display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "1.25rem" },
-  errorText: { fontSize: 12.5, color: "var(--err)" },
-
-  result: { marginTop: "1.5rem" },
-  verdictBar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: "1rem",
-    flexWrap: "wrap",
-    border: "1px solid",
-    borderRadius: 3,
-    padding: "0.8rem 1.1rem",
-    marginBottom: "1rem",
-  },
-  verdictBadge: { display: "inline-flex", alignItems: "center", gap: "0.4rem", fontSize: 13, padding: "3px 9px", borderRadius: 2 },
-  counts: { fontSize: 11.5, color: "var(--ink-faint)" },
-
-  clean: { fontSize: 13, color: "var(--ink-dim)", lineHeight: 1.5, margin: 0 },
-
-  findingList: { border: "1px solid var(--line)", borderRadius: 3, overflow: "hidden", background: "var(--panel)" },
-  finding: { padding: "0.9rem 1.1rem", borderTop: "1px solid var(--line)" },
-  findingTop: { display: "flex", alignItems: "baseline", gap: "0.6rem", flexWrap: "wrap" },
-  sev: { fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.04em", border: "1px solid", borderRadius: 2, padding: "1px 6px" },
-  fid: { fontSize: 12, color: "var(--ink-dim)" },
-  ftitle: { fontSize: 13.5, color: "var(--ink)", lineHeight: 1.35 },
-  floc: { fontSize: 11.5, color: "var(--ink-faint)", marginTop: "0.35rem" },
-  fnote: { fontSize: 12, color: "var(--ink-dim)", lineHeight: 1.5, margin: "0.5rem 0 0", maxWidth: 720 },
-};

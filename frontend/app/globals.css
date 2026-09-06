@@ -12,7 +12,8 @@
 
   --ink: #e8e9ea;
   --ink-dim: #9a9da3;
-  --ink-faint: #666a71;
+  /* Lifted from #666a71 (~3.4:1, under AA) toward AA for the many real-content labels that use it. */
+  --ink-faint: #7a7e85;
 
   /* Signals. Amber for the vulnerable finding, a muted teal for safe. One accent each, used sparingly. */
   --vuln: #e0913a;
@@ -71,3 +72,82 @@ a { color: inherit; text-decoration: none; }
 }
 
 ::selection { background: rgba(224, 145, 58, 0.25); }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Live checker. The one interactive station on the page, so it is framed and
+   elevated above the read-only report sections, and every control carries the
+   six states inline styles cannot express.
+   ───────────────────────────────────────────────────────────────────────── */
+.lc-card { margin-top: 3.5rem; border: 1px solid var(--line-strong); background: var(--panel);
+  border-radius: 3px; padding: clamp(1.1rem, 2.5vw, 1.6rem); }
+.lc-head { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
+.lc-title { font-size: 17px; font-weight: 600; letter-spacing: -0.015em; color: var(--ink); }
+.lc-live { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--vuln); border: 1px solid var(--vuln); border-radius: 2px; padding: 1px 6px; }
+.lc-note { font-size: 12.5px; color: var(--ink-dim); line-height: 1.5; max-width: 64ch; margin: 0 0 1.4rem; }
+
+/* Segmented mode control: a real switch, not a second row of chips. */
+.lc-modes { display: inline-flex; gap: 2px; padding: 3px; background: var(--ground);
+  border: 1px solid var(--line-strong); border-radius: 3px; margin-bottom: 0.7rem; }
+.lc-mode { display: inline-flex; align-items: center; gap: 0.4rem; font-family: var(--sans); font-size: 12.5px;
+  color: var(--ink-dim); background: transparent; border: none; border-radius: 2px; padding: 6px 14px;
+  cursor: pointer; transition: color 140ms, background 140ms; }
+.lc-mode:hover { color: var(--ink); }
+.lc-mode:focus-visible { outline: 2px solid var(--vuln); outline-offset: 2px; }
+.lc-mode[aria-selected="true"] { color: var(--ink); background: var(--panel-2);
+  box-shadow: inset 0 -2px 0 var(--vuln); }
+.lc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--vuln); display: inline-block; }
+
+.lc-field, .lc-url { width: 100%; font-family: var(--mono); color: var(--ink); background: var(--panel-2);
+  border: 1px solid var(--line-strong); border-radius: 2px; padding: 0.9rem 1rem; }
+.lc-field { min-height: 230px; resize: vertical; font-size: 12.5px; line-height: 1.6; tab-size: 4; }
+.lc-url { font-size: 13px; }
+.lc-field:focus, .lc-url:focus { outline: none; border-color: var(--vuln); }
+.lc-field::placeholder, .lc-url::placeholder { color: var(--ink-faint); }
+
+.lc-srcnote { font-size: 11.5px; color: var(--ink-faint); margin-top: 0.5rem; line-height: 1.5; }
+.lc-hint { font-size: 11px; color: var(--ink-faint); }
+.lc-kbd { font-family: var(--mono); color: var(--ink-dim); }
+
+.lc-actions { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; }
+.lc-run { font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--ground);
+  background: var(--ink); border: 1px solid var(--ink); border-radius: 2px; padding: 0.6rem 1.3rem;
+  cursor: pointer; transition: opacity 140ms, transform 120ms; }
+.lc-run:hover:not(:disabled) { opacity: 0.9; }
+.lc-run:active:not(:disabled) { transform: scale(0.985); }
+.lc-run:focus-visible { outline: 2px solid var(--vuln); outline-offset: 2px; }
+.lc-run:disabled { opacity: 0.4; cursor: default; }
+.lc-scanned { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.lc-examples { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.9rem; }
+.lc-exlabel { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-faint); }
+.lc-chip { font-family: var(--sans); font-size: 12px; color: var(--ink-dim); background: var(--panel-2);
+  border: 1px solid var(--line); border-radius: 2px; padding: 4px 10px; cursor: pointer;
+  transition: color 140ms, border-color 140ms; }
+.lc-chip:hover { color: var(--ink); border-color: var(--line-strong); }
+.lc-chip:focus-visible { outline: 2px solid var(--vuln); outline-offset: 2px; }
+
+.lc-skeleton { margin-top: 1.5rem; height: 92px; border-radius: 3px; background: var(--panel-2); border: 1px solid var(--line); }
+.lc-error { display: flex; align-items: flex-start; gap: 0.5rem; margin-top: 1.4rem;
+  border: 1px solid var(--line-strong); border-radius: 3px; padding: 0.8rem 1rem; }
+.lc-errtext { font-size: 12.5px; color: var(--ink); line-height: 1.5; }
+
+.lc-result { margin-top: 1.5rem; }
+.lc-verdict { display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  flex-wrap: wrap; border: 1px solid var(--line-strong); border-radius: 3px; padding: 0.85rem 1.1rem; }
+.lc-badge { display: inline-flex; align-items: center; gap: 0.45rem; font-family: var(--mono); font-size: 13px;
+  padding: 4px 10px; border-radius: 2px; }
+.lc-counts { font-family: var(--mono); font-size: 11.5px; color: var(--ink-dim); }
+.lc-legend { font-size: 11.5px; color: var(--ink-faint); margin: 0.6rem 0 0; line-height: 1.5; }
+.lc-clean { font-size: 13px; color: var(--ink-dim); line-height: 1.55; margin: 1rem 0 0; }
+.lc-list { border: 1px solid var(--line); border-radius: 3px; overflow: hidden; background: var(--panel-2); margin-top: 1rem; }
+.lc-finding { padding: 0.95rem 1.15rem; border-top: 1px solid var(--line); }
+.lc-finding:first-child { border-top: none; }
+.lc-ftop { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; }
+.lc-sev { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.04em;
+  border: 1px solid; border-radius: 2px; padding: 1px 6px; }
+.lc-fid { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); }
+.lc-ftitle { font-size: 13.5px; color: var(--ink); line-height: 1.35; }
+.lc-floc { font-family: var(--mono); font-size: 11.5px; color: var(--ink-faint); margin-top: 0.4rem; word-break: break-word; }
+.lc-fnote { font-size: 12px; color: var(--ink-dim); line-height: 1.5; margin: 0.55rem 0 0; max-width: 78ch; }

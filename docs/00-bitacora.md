@@ -514,3 +514,27 @@ para revisión pre-integración del ecosistema, sin presión ("No expectation ei
 envía correos: el envío es decisión de Kevin. Encuadre honesto anotado: enviarlo depende de él, que
 respondan no; es palanca de bajo costo y techo alto, no una apuesta; una respuesta, aunque sea
 "gracias, lo revisamos", es cita usable sobre el eje de adopción.
+
+**D-36. Revisión UX/UI del verificador (3 subagentes) y ajustes.** Tres revisores en paralelo (diseño
+visual, interacción, UX writing) confirmaron la queja: la estación interactiva tenía MENOS peso visual
+que las tablas de solo-lectura, y el toggle era el control más débil de la página (texto ink-faint
+~3.4:1 sobre transparente, activo casi invisible). Aplicado en LiveCheck.tsx + globals.css:
+- Estación enmarcada (borde line-strong + panel), inputs elevados a panel-2. Antes flotaban sobre el
+  fondo sin marco mientras las tablas pasivas sí lo tenían: jerarquía invertida, corregida.
+- Toggle rehecho como control segmentado real: track bordeado, activo con relleno panel-2 + subrayado
+  ámbar inset, role=tab/aria-selected. Verificado: activo resuelve a panel-2 + inset e0913a.
+- Estilos movidos a clases CSS (.lc-*): recuperados los seis estados (hover/focus-visible/active/
+  disabled) que los estilos inline habían matado. Botón run con disabled real (dim + cursor) y
+  deshabilitado si el campo está vacío.
+- GitHub scan subido a protagonista: en el título ("Check any contract, or scan a live GitHub repo"),
+  en el copy, con punto ámbar "live" en la pestaña y chip "scan a real submission".
+- Vocabulario de severidad unificado: badge "defect"/"review" + línea de leyenda. Colores de veredicto
+  corregidos (estaban invertidos): pass=teal, review=ámbar, fail=rojo. Verificado: fake-selector →
+  "would fail the CI gate" con chip defect en rojo (--err).
+- Errores legibles y recuperables (403 rate-limit, 404 no encontrado/privado) en vez del string crudo;
+  se limpian al cambiar de modo o editar. Submit por Ctrl/Cmd+Enter en paste. Veredicto anclado a su
+  fuente (result.scanned mostrado). aria-live en la zona de resultado. --ink-faint subido de #666a71 a
+  #7a7e85 (de ~3.4:1 a ~AA) para los muchos labels de contenido real.
+Frontend typecheck limpio; verificado por DOM extremo a extremo (paste review, fake-selector defect,
+mode switch limpia veredicto, input URL con dot). El error de consola "evidenced" sigue siendo el
+buffer stale de siempre (mismo digest), no vivo.
