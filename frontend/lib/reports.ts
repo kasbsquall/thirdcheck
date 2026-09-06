@@ -165,5 +165,26 @@ export const CATALOGUE: CatalogueEntry[] = [
   { id: "B-12", title: "Off-chain failure treated as a negative observation", detection: "static" },
 ];
 
+/** A real end-to-end settlement through the SettlementHub, mined on CC3. */
+export interface HubSettlement {
+  hub: string;
+  orderId: string;
+  operator: string;
+  seller: string;
+  amount: string;
+  chainKey: number;
+  payout: string | null;
+  fee: string | null;
+  released: boolean;
+  sourceTx: { hash: string; block: number; url: string };
+  openOrderTx: { hash: string; url: string };
+  settleTx: { hash: string; block: number; url: string };
+  generatedAt: string;
+}
+
+export function loadHubSettlement(): HubSettlement | null {
+  return readJson<HubSettlement>("hub-settlement.json");
+}
+
 export const CC3_EXPLORER = "https://creditcoin-testnet.blockscout.com/tx/";
 export const SEPOLIA_EXPLORER = "https://sepolia.etherscan.io/tx/";

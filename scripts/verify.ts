@@ -278,6 +278,37 @@ async function checkProtocol() {
   }
 }
 
+// G — the rails are not just deployed, they have SETTLED a real order end to end on CC3. Reads the
+// committed settlement report, then confirms the on-chain settle tx mined, the order is released, and
+// a protocol fee was captured, all straight off the public RPC.
+async function checkSettlement() {
+  const label = "Rails settled a real order (live)";
+  try {
+    const path = resolve(DATA, "hub-settlement.json");
+    if (!existsSync(path)) return info(label, "no hub-settlement.json committed");
+    const r = JSON.parse(readFileSync(path, "utf8"));
+    const provider = new ethers.JsonRpcProvider(CC3_RPC);
+    const rcpt = await provider.getTransactionReceipt(r.settleTx.hash);
+    if (!rcpt || rcpt.status !== 1) return fail(label, `settle tx ${short(r.settleTx.hash)} not mined ok`);
+    const hub = new ethers.Contract(r.hub, [
+      "event OrderSettled(bytes32 indexed orderId, address indexed seller, uint256 payout, uint256 fee)",
+      "function orders(bytes32) view returns (address operator,address seller,uint256 amount,uint64 expectedChainKey,address expectedSource,uint64 minHeight,uint64 maxHeight,bool released)",
+    ], provider);
+    const released = (await hub.orders(r.orderId)).released;
+    const evt = rcpt.logs
+      .map((l) => { try { return hub.interface.parseLog(l); } catch { return null; } })
+      .find((p) => p?.name === "OrderSettled");
+    const fee = evt?.args?.fee as bigint | undefined;
+    if (released && evt && fee !== undefined && fee > 0n) {
+      pass(label, `order released via ${short(r.settleTx.hash)} on CC3; fee ${ethers.formatEther(fee)} captured (source ${short(r.sourceTx.hash)} on Sepolia)`);
+    } else {
+      fail(label, `released=${released}, OrderSettled=${!!evt}, fee=${fee}`);
+    }
+  } catch (e) {
+    info(label, `unreachable (${errMsg(e)})`);
+  }
+}
+
 async function main() {
   const reclone = process.argv.includes("--reclone");
   console.log("\nThirdCheck · judge:verify\n");
@@ -288,6 +319,7 @@ async function main() {
   checkScorecard();
   checkConformance();
   await checkProtocol();
+  await checkSettlement();
   if (reclone) checkReclone();
 
   const width = Math.max(...results.map((r) => r.label.length));

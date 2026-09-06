@@ -4,6 +4,7 @@ import {
   loadStatic,
   loadScorecard,
   loadConformance,
+  loadHubSettlement,
   CATALOGUE,
   CC3_EXPLORER,
   SEPOLIA_EXPLORER,
@@ -14,6 +15,7 @@ import { ScorecardSection } from "@/components/Scorecard";
 import { ConformanceSection } from "@/components/Conformance";
 import { LiveCheckSection } from "@/components/LiveCheck";
 import { ProductSection } from "@/components/Product";
+import { SettlementSection } from "@/components/Settlement";
 import {
   ShieldWarning,
   ShieldCheck,
@@ -153,6 +155,7 @@ export default function Page() {
   const vaultbridge = loadStatic("VaultBridge");
   const scorecard = loadScorecard();
   const conformance = loadConformance();
+  const settlement = loadHubSettlement();
 
   const dynamicIds = CATALOGUE.filter((c) => c.detection === "dynamic").map((c) => c.id);
   const vulnCount = dynamicIds.filter((id) => findingById(vulnerable, id)?.status === "accepted").length;
@@ -213,6 +216,9 @@ export default function Page() {
           attacksRejected={hardSafeCount}
           attacksTotal={dynamicIds.length}
         />
+
+        {/* The rails proven: a real order settled end to end, with the fee taken */}
+        <SettlementSection data={settlement} />
 
         {/* The contrast table */}
         <section className="rise" style={{ animationDelay: "100ms" }}>

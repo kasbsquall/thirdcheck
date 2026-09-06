@@ -169,6 +169,15 @@ Two contracts turn that thesis into value that flows on-chain, both deployed on 
 
 The two are linked so that being provably safe is cheaper than not being: a verified operator settles at a lower fee. That link is live and keyless to check. `npm run judge:verify` reads the deployed contracts and confirms a verified operator is quoted 0.10% against an unverified operator's 0.25% on the same amount.
 
+The rails are not only deployed, they have settled a real order end to end. A payment was made on Sepolia through `SourceSettlement`, the matching order was opened and funded on the hub on CC3, and once the source block crossed the attestation frontier the hub's `settle` ran the full third check, took the protocol fee and paid the seller. Both transactions are public:
+
+| step | chain | transaction |
+|---|---|---|
+| source payment | Ethereum Sepolia | [`0x36979b86…a8639e`](https://sepolia.etherscan.io/tx/0x36979b8682017196a2b903dc3e04e61d785f4893bdca95ead6dbf56299a8639e) |
+| settlement | Creditcoin CC3 | [`0xbeb49165…1441a3`](https://creditcoin-testnet.blockscout.com/tx/0xbeb49165dc1fe78842f33d450fe2c06e04ea86fd795a8bf518951a12a81441a3) |
+
+The settlement released 0.0009975 to the seller and captured 0.0000025 as the protocol fee, the 0.25% quoted for an unverified operator. `judge:verify` reads the mined `settle` transaction off the public RPC and confirms the order is released and the fee was taken.
+
 ## Deployed addresses (testnet)
 
 | contract | chain | address |

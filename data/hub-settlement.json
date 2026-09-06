@@ -1,0 +1,30 @@
+{
+  "network": "cc3-testnet",
+  "hub": "0x676a74fa6542BEd2dD4A16EF122f75968329B1B0",
+  "orderId": "0x0695de89f2ad701ef40399184ab65b232d7ec98c0fa6ef970d596ecfff0b6756",
+  "operator": "0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155",
+  "seller": "0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155",
+  "treasury": "0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155",
+  "amount": "0.001",
+  "chainKey": 1,
+  "quotedFee": "0.0000025",
+  "payout": "0.0009975",
+  "fee": "0.0000025",
+  "released": true,
+  "sourceTx": {
+    "hash": "0x36979b8682017196a2b903dc3e04e61d785f4893bdca95ead6dbf56299a8639e",
+    "block": 11647746,
+    "url": "https://sepolia.etherscan.io/tx/0x36979b8682017196a2b903dc3e04e61d785f4893bdca95ead6dbf56299a8639e"
+  },
+  "openOrderTx": {
+    "hash": "0x6da8aeceb73dadaccac3a9705146f61d66bab55af7b0e56f786e3039b6124fe0",
+    "url": "https://creditcoin-testnet.blockscout.com/tx/0x6da8aeceb73dadaccac3a9705146f61d66bab55af7b0e56f786e3039b6124fe0"
+  },
+  "settleTx": {
+    "hash": "0xbeb49165dc1fe78842f33d450fe2c06e04ea86fd795a8bf518951a12a81441a3",
+    "block": 5440969,
+    "url": "https://creditcoin-testnet.blockscout.com/tx/0xbeb49165dc1fe78842f33d450fe2c06e04ea86fd795a8bf518951a12a81441a3"
+  },
+  "proofHeight": 11647746,
+  "generatedAt": "2026-09-06T14:20:39.436Z"
+}
