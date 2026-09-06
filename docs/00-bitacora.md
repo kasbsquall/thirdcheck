@@ -506,3 +506,11 @@ selector falso → fail B-11; limpio → pass; carryproof por URL de GitHub → 
 fetch y renderiza el veredicto. Frontend typecheck limpio (incl. el import cross-root). judge:verify
 9/9. El error de consola "evidenced" es el buffer stale de sesiones previas (mismo digest); la única
 ocurrencia de "evidenced" en el HTML servido es texto de dato, no una referencia.
+
+**D-35. Mensaje de acercamiento al sponsor (opción D), borrador.** `docs/13-sponsor-outreach.md`. Un
+solo correo a team@creditcoin.org que se apoya en las dos divulgaciones responsables (la razón
+legítima para escribir) y, en un segundo párrafo más corto, ofrece el gate y el verificador en vivo
+para revisión pre-integración del ecosistema, sin presión ("No expectation either way"). ThirdCheck no
+envía correos: el envío es decisión de Kevin. Encuadre honesto anotado: enviarlo depende de él, que
+respondan no; es palanca de bajo costo y techo alto, no una apuesta; una respuesta, aunque sea
+"gracias, lo revisamos", es cita usable sobre el eje de adopción.
