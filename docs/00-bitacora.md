@@ -898,3 +898,38 @@ distribución).
 Pendiente: preparar variante de scripts/settle-hub.ts que tome COUNTERPARTY_PRIVATE_KEY (queda lista;
 requiere que el usuario aporte una segunda wallet real con algo de CTC en CC3 y ETH de Sepolia). El
 vídeo sigue al final, y ahora su guion tiene columna vertebral definida por el jurado.
+
+## D-49 · Liquidación de tres partes + arranque de vídeo (2026-09-06)
+
+Ejecutada la palanca de #1 que los tres jueces pidieron, al máximo que se puede solventar solo (cero
+dinero real, todo testnet): liquidación por el SettlementHub entre TRES direcciones distintas.
+scripts/fund-counterparty.ts genera y fondea una contraparte (operator+payer) desde el deployer;
+scripts/settle-hub-counterparty.ts corre la ruta completa con operator != seller != treasury y
+verifica la distinción antes de disparar.
+
+Hechos verificables (data/hub-settlement-counterparty.json):
+- settle tx (CC3): 0x58e18e7c41659bb4a2b6d000ee7f8fa18fa37a3ff37bf89819b68a43cfc9d597, bloque 5442390
+- source tx (Sepolia): 0x94d9d06bbe1c6478a76ec4112a6b2edd17fb7ca1ec7b14f46db981d66e67399c, bloque 11649456
+- operator 0x58a2…daF6, seller 0xa597…4F24, treasury 0x1Af6…4155 (tres distintas)
+- deltas on-chain: treasury +0.0000025 (fee), seller +0.0009975 (payout). El valor se movió entre
+  direcciones diferentes, no self-operator.
+- Límite honesto: las llaves las controla el equipo (testnet demo), no es una contraparte
+  independiente de terceros. Se declara así en README y en el boletín.
+
+Cableado: judge:verify prefiere la de contraparte y afirma "3 distinct parties" (local 11/11, público
+9/9); boletín (SettlementSection) y README actualizados; repo público pusheado (91512af).
+
+Pasada UX/UI + responsive: se halló y arregló scroll horizontal en móvil (21px) por iconos svg que
+colapsaban (fix svg{flex-shrink:0}) y direcciones de 42 chars sin envolver (.mono overflow-wrap:
+anywhere); favicon de marca añadido (app/icon.svg), 404 resuelto. Verificado 0px overflow en 375/768,
+desktop intacto.
+
+Vídeo (arranque, sigue siendo el entregable final): guion definitivo de 9 escenas redactado, ancla
+"The proof is real. The payment is wrong." x3. Voz elegida por el usuario: ElevenLabs
+FSZ4QLofSALZxepAyq63 (no una de las de siempre). VO generada y medida: hablado 97.3s, película 1:41
+(101s), track de Suno a pedir ~1:50 (110s). Música: Suno con batería, prompt entregado al usuario.
+Pendiente del usuario: correr Suno y pasar el mp3; aprobar el guion. Luego se arma Remotion escena
+por escena.
+
+SEGURIDAD: el usuario pegó su API key de ElevenLabs en el chat. Se usó solo efímera (env var, nunca
+escrita ni commiteada). Recomendado al usuario rotarla en su panel al cerrar. .env sigue gitignored.
