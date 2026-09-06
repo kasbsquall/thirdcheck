@@ -757,3 +757,35 @@ escanean limpio en el engine. `scripts/deploy-protocol.ts` nuevo.
 Encuadre: ThirdCheck pasa de "auditor" a "los rieles seguros del dinero cross-chain en Creditcoin, con
 registro de confianza", track DeFi claro y tesis de inversión con captura de valor sobre el flujo y
 camino a mainnet (CC3 mainnet existe, Chainkey 1). Pendiente: sincronizar al repo público.
+
+---
+
+## 2026-09-06 · Sesión (cont.) — re-score jurado CEIP tras el pivote
+
+**D-45. Re-corrido el jurado CEIP (mismos tres jueces) con el pivote ya desplegado.** Rivales
+idénticos para comparar. Overall:
+
+| proyecto | ing. protocolo | inversor | track/producto | promedio | anterior |
+|---|---|---|---|---|---|
+| crosscredit | 86 | 80 | 88 | 84.7 | 84.7 |
+| ThirdCheck | 84 | 73 | 85 | 80.7 | 76.3 |
+| index41 | 80 | 66 | 79 | 75.0 | 75.0 |
+| COVENANT | 57 | 59 | 67 | 61.0 | 62.0 |
+
+Ranking unánime en los tres jueces (ambas rondas): crosscredit > ThirdCheck > index41 > COVENANT.
+CEIP fast-track top-3 unánime: crosscredit, ThirdCheck, index41. ThirdCheck sigue 2º, no voltea el 1º,
+pero el pivote movió exactamente los dos ejes atacados y cerró la brecha compuesta a la mitad:
+
+- Investabilidad (inversor): 62 -> 73 (+11). ThirdCheck pasó de 3º a 2º en el lente de inversión.
+- Track fit (juez de track): 57 -> 74 (+17). "Cruza de meta-herramienta a infraestructura de
+  settlement DeFi de verdad".
+- Ecosystem strengthening (ing. protocolo): el mayor motor de su subida; 88, el más alto del campo.
+- Brecha compuesta a crosscredit: 8.4 -> 4.0 puntos.
+
+Por qué sigue sin ganar el 1º, y los tres convergen: crosscredit tiene integración Attestcoin profunda
+Y ejecutada on-chain en txs reales (ciclo de préstamo real); ThirdCheck es amplio pero mayormente
+eth_call/probe, y el SettlementHub está desplegado y config-wired pero NINGUNA orden se ha liquidado
+por él on-chain todavía (lo citaron el inversor y el ingeniero). Palanca de #1 más clara: ejecutar una
+liquidación real de extremo a extremo por el SettlementHub en CC3 (idealmente con contraparte externa),
+que convierte el "desplegado pero nunca liquidado / sin volumen" en un hecho minado. Después: volumen/
+adopción de terceros, y el vídeo al final.
