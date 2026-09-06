@@ -165,3 +165,30 @@ Día 7 (objetivos reales, divulgación) y día 8 (deck PDF, video, envío) pendi
 
 **Al retomar:** en cuanto termine el bench del vulnerable, correr
 `npx hardhat run scripts/run-bench.ts --network cc3 -- --target hardened`.
+
+**D-20. Bench del hardened completado, con un hallazgo sobre B-09.** Corrido de dos fases contra
+`HardenedEscrow` (`0xeC82270dc356948FC2e5E969a887ce6bE27e375A`). Resultado: B-01, B-02, B-04 y B-06
+SAFE (rechazados con custom error; B-04 libera la primera y rechaza la segunda, el guard de replay
+actúa), POS OK (libera el pago correcto). Reporte en `data/bench-hardened.json`.
+
+Fix aplicado durante la corrida (`src/proof.ts`): `buildProof` llevaba las llamadas al prover sin
+timeout, y una se colgó indefinidamente en B-04 en el primer intento. Ahora cada intento corta a los
+90s y reintenta 3 veces; si el prover no responde, el ataque sale ERROR y la corrida termina en vez
+de colgarse. También se documentó una fuente de fragilidad operativa: matar una corrida deja fund tx
+en vuelo que se minan tarde y descuadran el nonce del siguiente arranque (NONCE_EXPIRED). Mitigación:
+esperar a que `getTransactionCount(latest)==pending` antes de relanzar.
+
+**B-09 no da contraste limpio y NO es un defecto del hardened.** `settleNoisy` emite señuelos y
+después hace el pago real del pedido correcto. El hardened escanea todos los logs, salta los señuelos
+y encuentra el log verdadero, por eso libera: es la conducta correcta, el pago existió. El vulnerable
+también libera pero leyendo el señuelo del índice 0 (pedido 0, monto 0), y ahí sí es defecto. Los dos
+"aceptan" por razones opuestas, así que la fila B-09 no separa SAFE/VULNERABLE. El veredicto del
+bench (aceptado=VULNERABLE para no-POS) mal etiqueta este caso.
+
+Pendiente (requiere ok): rediseñar el ataque B-09 para que sea genuinamente adversario contra el
+hardened. El pago real debe ir a otro destinatario u otro pedido, y el señuelo cargar los campos del
+pedido objetivo sin transferencia real; así el vulnerable se deja engañar por el log[0] y el hardened
+rechaza con NoMatchingPayment. Toca cambiar `settleNoisy` (redeploy en Sepolia) y volver a correr.
+
+**Al retomar (espera ok):** decidir si rediseñar B-09 o recategorizarlo en el catálogo y el boletín
+como prueba de robustez ante señuelos (que el hardened pasa) en vez de ataque a rechazar.

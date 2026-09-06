@@ -64,17 +64,47 @@ export async function waitUntilAttested(
   process.stdout.write(` ok (${((Date.now() - started) / 1000).toFixed(0)}s)\n`);
 }
 
+function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    p.then((v) => { clearTimeout(timer); resolve(v); }, (e) => { clearTimeout(timer); reject(e); });
+  });
+}
+
 /**
  * Fetches proofs for a transaction and shapes them for the precompile. The block must already
  * be attested; call waitUntilAttested first.
+ *
+ * The prover call is wrapped in a per-attempt timeout with a few retries, because the SDK's own
+ * getProof has no timeout: a single stuck request would otherwise hang the whole run forever.
  */
 export async function buildProof(
   chainKey: number,
   proverUrl: string,
-  txHash: string
+  txHash: string,
+  opts: { attemptTimeoutMs?: number; retries?: number } = {}
 ): Promise<PrecompileProof> {
   const builder = new proofProvider.service.ProofBuilder(chainKey, proverUrl);
-  const result = await builder.getProof(txHash);
+  const attemptTimeoutMs = opts.attemptTimeoutMs ?? 90_000;
+  const retries = opts.retries ?? 3;
+
+  let result: Awaited<ReturnType<typeof builder.getProof>> | undefined;
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      result = await withTimeout(builder.getProof(txHash), attemptTimeoutMs, `prover getProof(${txHash.slice(0, 12)}…)`);
+      break;
+    } catch (e) {
+      lastErr = e;
+      if (attempt < retries) {
+        process.stdout.write(`    prover attempt ${attempt} failed (${e instanceof Error ? e.message : String(e)}); retrying\n`);
+        await new Promise((r) => setTimeout(r, 3_000));
+      }
+    }
+  }
+  if (!result) {
+    throw new Error(`prover unreachable for ${txHash}: ${lastErr instanceof Error ? lastErr.message : String(lastErr)}`);
+  }
   if (!result.success || !result.data) {
     throw new Error(`prover failed for ${txHash}: ${result.error ?? "no data"}`);
   }
