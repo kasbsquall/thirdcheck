@@ -481,3 +481,28 @@ recibo); el `NaiveManager` de Deadswitch marca B-01+B-02 (su propio control vuln
 publicaron como inseguro); nuestro VulnerableEscrow marca B-01+B-02 (verdadero positivo, es su razón
 de existir), HardenedEscrow limpio. Gate dogfood exit 0 (los nuevos son avisos, no rompen build).
 judge:verify 11/11 con --reclone (VaultBridge y Sovereign se re-derivan igual).
+
+**D-34. Verificador en vivo: el jurado corre el gate desde el boletín (opción A).** El diferenciador
+que ningún competidor-producto puede copiar sin dejar de ser producto. Cualquiera pega un contrato
+Attestcoin o apunta a un repo/archivo de GitHub y recibe el mismo veredicto que daría el gate de CI.
+Convierte al jurado en usuario durante el propio jurado, que es la respuesta directa al eje de adopción.
+
+Arquitectura sin duplicar lógica: se extrajo el motor puro (sin `fs`) a `src/engine.ts`
+(`analyzeSource(rel, content)` + todos los chequeos + `stripComments`). `src/static.ts` quedó como el
+walker de fs que lo consume; el gate y el CLI no cambian. El frontend expone el motor por una API
+route de servidor (`frontend/app/api/check/route.ts`, runtime nodejs) que importa el mismo
+`src/engine.ts`: sin bundling al cliente, sin CORS. El gate en CI y el veredicto en el navegador salen
+del mismo código, por construcción.
+
+La route acepta `{source}` (pega) o `{url}` (GitHub: un archivo vía raw, o un repo vía la API de
+árboles con tope de 40 archivos y filtrado de node_modules/forge-std). Espejo de la regla de severidad
+del gate para que el veredicto web (pass/review/fail) coincida con CI. Componente cliente
+`LiveCheck.tsx` con el sistema de diseño del boletín (tokens, iconos Phosphor, tabular nums, motion,
+estado de carga con skeleton, sin valores por defecto durante el fetch). Chips de ejemplo de un clic:
+consumidor que se la salta (review), uno que la hace bien (pass), y escanear un repo vivo.
+
+Verificado end-to-end contra el server local: pega vulnerable → review B-01+B-02 (línea correcta);
+selector falso → fail B-11; limpio → pass; carryproof por URL de GitHub → pass. UI: el chip dispara el
+fetch y renderiza el veredicto. Frontend typecheck limpio (incl. el import cross-root). judge:verify
+9/9. El error de consola "evidenced" es el buffer stale de sesiones previas (mismo digest); la única
+ocurrencia de "evidenced" en el HTML servido es texto de dato, no una referencia.

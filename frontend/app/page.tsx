@@ -12,6 +12,7 @@ import {
 } from "@/lib/reports";
 import { ScorecardSection } from "@/components/Scorecard";
 import { ConformanceSection } from "@/components/Conformance";
+import { LiveCheckSection } from "@/components/LiveCheck";
 import {
   ShieldWarning,
   ShieldCheck,
@@ -298,6 +299,9 @@ export default function Page() {
             </div>
           </section>
         )}
+
+        {/* Live checker: a judge runs the gate on any contract, right here */}
+        <LiveCheckSection />
 
         {/* Ecosystem scorecard */}
         {scorecard && <ScorecardSection data={scorecard} />}
