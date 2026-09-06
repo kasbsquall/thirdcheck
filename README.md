@@ -150,6 +150,14 @@ Attestcoin is the subject here, not a component. ThirdCheck exercises the real p
 
 One correction was needed to build this: the precompile's real surface is `verify` and `verifyAndEmit` (single and batch) plus `calculateTxIndex`. `verifySingle` and `verifyBatch` are SDK method names, not on-chain selectors, so a contract that declares them against `0x0FD2` cannot reach the real precompile. That is catalogue entry B-11, and the analyzer flags it automatically.
 
+## Why this is a Creditcoin ecosystem bet
+
+Track: DeFi. ThirdCheck is the safety layer for cross-chain DeFi settlement on Attestcoin, and it ships a working settlement primitive, `SettlementConsumer`, that any lending, trading, or RWA app can build on.
+
+The precompile is what makes cross-chain value flow possible on Creditcoin. Every unit of value that moves through it depends on a consumer getting the third check right, and the field review shows most do not. That unaddressed risk is the ceiling on how much value the ecosystem can safely carry. ThirdCheck removes it from three sides: the analyzer and CI gate stop the bug before mainnet, the library ships the correct implementation as a two-call dependency, and the bench proves the difference with real on-chain transactions.
+
+The wedge is to be the default pre-mainnet gate for every Attestcoin consumer, the way a linter or a test suite is default rather than optional. From there the path is to be the security layer of the ecosystem: continuous CI verification, runtime monitoring of deployed consumers, and audit-grade review, offered as a service while the gate and the library stay free and drive adoption. The flywheel is direct. Safer consumers let Creditcoin carry more cross-chain value, which pulls in more builders and more value, and each new consumer needs the third check. ThirdCheck grows as the ecosystem it protects grows.
+
 ## Deployed addresses (testnet)
 
 | contract | chain | address |
