@@ -432,3 +432,28 @@ thirdcheck.yml` corre el gate sobre nuestros propios `contracts/` (dogfooding + 
 con sección "Use it in CI". Script npm `gate` añadido. Esto convierte "otros lo correrán" en "aquí
 está el gate que añades a tu repo": usuario durable (cualquier integrador) y comprador (el protocolo).
 Pendiente del lado usuario: acercamiento al sponsor para adoptarlo como check pre-integración.
+
+**D-32. Cinco entrantes tardíos (campo 48 → 53). Re-evaluación con lectura de fuente.** Diff contra
+la API pública de DoraHacks (hackathon 2290, `page` param, no `offset` que se ignora): 5 nuevos, los 48
+originales siguen. Clonados y pasados por el analizador (0 hallazgos automáticos) y leídos a mano:
+- **CarryProof** (deep, 96): rotaciones de yield ERC-4626/Aave probadas. Chequea status, fija emisor
+  por vault registrado, firma de evento, itera todos los logs (rutas multi-evento), liga owner/assets/
+  shares, replay por queryId. De los más profundos del campo en la tercera comprobación.
+- **Ledgerline** (deep): agregación de ingresos DePIN multi-red para préstamo. Replay fino por
+  operator+source+period; salta logs no registrados citando el vector de censura por decoy-log
+  (gluwa/USC-Builder-Examples#37). Sin video.
+- **Deadswitch** (deep): liquidación cross-chain gatillada por atestación, y él mismo un banco
+  adversario (NaiveManager vs endurecido + Attacker/MaliciousVault/DecoyVault). Retracta con honestidad
+  un claim B-01 previo erróneo. Temáticamente el más cercano a ThirdCheck, acotado a un producto.
+- **RWAs by Attest** (light): declara 0x0FD2 pero nunca llama al precompilo en el verificador;
+  verifyAndMintReceipt es onlyOwner y confía en booleanos/campos que pasa el llamador. Replay y ventana
+  de bloque reales, pero la prueba no se liga al objeto de negocio on-chain. Brecha claim/código, no
+  exploit no-autenticado (gateado por owner).
+- **Farebox** (absent): sin repo público al momento; solo demo testnet + video. Tercera comprobación no
+  evaluable desde fuente; puntuado absent por evidencia disponible, no por defecto.
+
+Efecto en el campo: profundidad deep 16 → 19. El marco "nadie más hace la tercera comprobación" ya no
+es literal: carryproof, ledgerline y deadswitch la hacen bien. Eso valida la tesis de ThirdCheck y a la
+vez obliga a matizar la retórica de "campo universalmente ingenuo". judge:verify sigue 9/9 (la
+invariante de scorecard usa sc.total, se autoajusta a 53). Números de guion actualizados: 53 leídos,
+B-05 14/49, B-09 8/37.

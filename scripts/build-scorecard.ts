@@ -252,6 +252,28 @@ const ROWS: Row[] = [
     redFlags: ["B-12 core on-chain submission, Aave calls and event listening all mocked (self-disclosed)"],
     evidence: ev(true,false,true,false),
     note: "Liquidation sentinel with MCP tools; the submission states on-chain proof submission, Aave calls and event listening are mocked. Architecture, not a working integration." },
+
+  // ── Late entrants (added after the first 48; source re-read and analyzer re-run on 2026-09-06) ──
+  { id: "P49", name: "CarryProof", track: "DeFi", depth: "deep",
+    checks: c("y","y","y","y","y","y","y","p","y"), redFlags: [],
+    evidence: ev(true,true,false,false),
+    note: "Real ERC-4626/Aave yield-rotation ledger. RotationVerifierASC decodes the receipt, reverts on status != 1, pins each log to the registered vault, checks the event signature and topic/data lengths, iterates every log (handles multi-event router paths), binds owner/assets/shares, and keys replay on the base queryId. Among the deepest third-check implementations in the field. Block window not explicitly constrained (height recorded, proofs expire naturally)." },
+  { id: "P50", name: "Ledgerline", track: "DePIN", depth: "deep",
+    checks: c("y","y","y","y","p","y","y","n","y"), redFlags: [],
+    evidence: ev(true,false,true,false),
+    note: "DePIN cross-network income aggregation for undercollateralized lending. IncomeRegistry checks receipt status, pins the emitter to registered networks, checks the PaymentMade signature and topic/data lengths, and keys replay on operator+source+period (fine-grained). Skips unregistered logs rather than reverting, citing the decoy-log censorship vector (gluwa/USC-Builder-Examples#37) — a deep, correct choice. No demo video; chain identity used at the base but credit is keyed on source address rather than chainKey." },
+  { id: "P51", name: "Deadswitch", track: "DeFi", depth: "deep",
+    checks: c("y","y","y","y","y","y","y","n","p"), redFlags: [],
+    evidence: ev(true,false,true,false),
+    note: "Attestation-triggered cross-chain liquidation, and itself an adversarial bench: NaiveManager (guards removed) vs the hardened DeadswitchManager, plus Attacker/MaliciousVault/DecoyVault to execute the emitter-guard hole on-chain. Hardened path checks receipt status, pins sourceVault, checks event sig, topics.length and data.length. Carries an honest retraction of an earlier wrong B-01 claim in SECURITY.md. Takes logs[0] on a documented single-event-per-tx assumption. Thematically the closest submission to ThirdCheck, scoped to one product rather than the field." },
+  { id: "P52", name: "RWAs by Attest", track: "DeFi", depth: "light",
+    checks: c("p","n","n","y","p","n","n","y","na"), redFlags: [],
+    evidence: ev(true,true,true,false),
+    note: "RWA ownership attestation. OwnershipVerifier declares the 0x0FD2 constant but never calls the precompile on-chain: verifyAndMintReceipt is onlyOwner and trusts caller-supplied booleans (sourceTxSuccessful) and fields (wallet, assetId, sourceTxHash) rather than decoding them from a proof. It has a real replay guard and an explicit block window, but the proof is not bound to the business object on-chain — the header claims 'we check status ourselves' while the code takes the status as a parameter. Gated by owner trust, so not an unauthenticated exploit, but a genuine claim/code gap on the third check." },
+  { id: "P53", name: "Farebox", track: "Infra", depth: "absent",
+    checks: c("n","n","n","n","n","na","n","na","n"), redFlags: [],
+    evidence: ev(true,true,true,false),
+    note: "Prepaid account-less compute credits (metered RPC/AI inference) settled against an on-chain usage root. No public repository at review time (live testnet demo and video only), so the third check could not be assessed from source. Scored absent on evidence available, not on a defect." },
 ];
 
 const DEPTH_SCORE: Record<Depth, number> = { deep: 1, solid: 0.7, light: 0.4, absent: 0.1 };

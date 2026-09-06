@@ -86,9 +86,9 @@ The precompile is powerful and new. This is how the ecosystem built on it stays 
 
 ## Notes for the edit
 
-- Numbers to keep consistent everywhere (deck, boletín, narración): 48 submissions read, 2
+- Numbers to keep consistent everywhere (deck, boletín, narración): 53 submissions read, 2
   source-confirmed defects (2 distinct classes), 15/16 precompile entry points, 76 raw flags triaged,
-  distribution figures B-05 12/44 and B-09 6/33.
+  distribution figures B-05 14/49 and B-09 8/37.
 - Do NOT name the flagged project on screen or in audio until disclosure is acknowledged; the boletín
   shows it anonymized. If disclosure is answered before recording, you may say "reported and fixed",
   which is stronger.

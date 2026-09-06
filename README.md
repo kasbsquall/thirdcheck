@@ -37,7 +37,7 @@ It reads the committed evidence and confirms it independently against the public
   classes (a verify path that cannot reach the precompile; a protocol proof replaced by a
   centralized signature), each re-derivable from the public source with `--reclone`, and no open
   review items across the other flagged repos.
-- **scorecard** — the field scorecard's own invariants hold (48 submissions, distributions sound).
+- **scorecard** — the field scorecard's own invariants hold (53 submissions, distributions sound).
 - **protocol surface** — the conformance run exercised 15 of the 16 precompile entry points (the
   only gap is the batch `verifyAndEmit`, which needs a funded run), against a typical consumer's one.
 
