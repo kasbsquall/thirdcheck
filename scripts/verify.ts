@@ -226,6 +226,13 @@ function checkReclone() {
       derived: (f: { title: string }[]) => f.some((x) => /signature, not the precompile/i.test(x.title)),
       label: "attestation-by-signature (no precompile)",
     },
+    {
+      repo: "FactorX",
+      url: "https://github.com/Ebubechukwucyber/FactorX.git",
+      derived: (f: { title: string; file: string }[]) =>
+        f.some((x) => /without verifying the proof/i.test(x.title) && /AttestcoinVerifier\.sol/.test(x.file)),
+      label: "records an attestation without verifying the proof",
+    },
   ];
   for (const t of targets) {
     let dir = "";

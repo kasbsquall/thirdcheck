@@ -146,6 +146,42 @@ function checkSignatureInsteadOfPrecompile(file: string, rel: string, content: s
 }
 
 /**
+ * B-11e. An "attestation" recorder that takes a proof parameter and discards it. The function accepts
+ * `bytes ... proof` (or encodedTransaction), does no on-chain verification anywhere in the file, and
+ * writes state (records/mints/emits) from caller-supplied values. The proof is decorative; verification,
+ * if it happens at all, is off-chain and the on-chain record is forgeable. Fires only when the file
+ * makes no precompile/decoder/ecrecover call AND the proof parameter appears as a bare discard.
+ */
+function checkDiscardedProof(file: string, rel: string, content: string): StaticFinding[] {
+  if (extname(file) !== ".sol" || isTestPath(rel)) return [];
+  // If the file does any real verification, this is not the pattern (other checks cover those).
+  const doesVerify = /verifyAndEmit|calculateTxIndex|BlockProver|0x0*0?FD2|decodeReceiptFields|\becrecover\s*\(|\.verify\s*\(/i.test(content);
+  if (doesVerify) return [];
+  if (!/attest|verif|proof|record/i.test(content)) return [];
+  const fnRe = /function\s+(\w+)\s*\(([^)]*)\)/g;
+  const findings: StaticFinding[] = [];
+  let m: RegExpExecArray | null;
+  while ((m = fnRe.exec(content))) {
+    const params = m[2];
+    const pm = /bytes(?:\s+(?:calldata|memory))?\s+(proof|proofData|encodedTransaction|attestation)\b/.exec(params);
+    if (!pm) continue;
+    const pname = pm[1];
+    // The tell: the parameter is discarded as a bare statement to silence "unused", i.e. never used.
+    const discarded = new RegExp(`(^|[;{}])\\s*${pname}\\s*;`, "m").test(content);
+    if (!discarded) continue;
+    findings.push({
+      id: "B-11",
+      title: "Records an attestation without verifying the proof",
+      file: rel,
+      line: lineOf(content, m.index),
+      evidence: `${m[1]}(...) takes bytes ${pname} and discards it (\`${pname};\`)`,
+      note: `The function accepts a proof and never verifies it: the ${pname} parameter is discarded and the file makes no precompile, decoder, or signature check. State is written from caller-supplied values, so the on-chain record is forgeable — verification, if any, happens off-chain and is not enforced here. Verify the proof on-chain against 0x0FD2 and bind what you record to the decoded, proven fields.`,
+    });
+  }
+  return findings;
+}
+
+/**
  * B-01. Decodes a proven receipt but never reads receiptStatus. On EVM sources a reverted tx carries
  * no logs, so a log-presence check often masks this — reported as review, not a build failure.
  */
@@ -242,6 +278,7 @@ export function analyzeSource(rel: string, content: string): StaticFinding[] {
     ...checkSwappableVerifier(file, rel, content),
     ...checkVerifierMock(file, rel, content),
     ...checkSignatureInsteadOfPrecompile(file, rel, content),
+    ...checkDiscardedProof(file, rel, code),
     ...checkReceiptStatusUnchecked(file, rel, code),
     ...checkEmitterUnpinned(file, rel, code),
     ...checkCatchAsEvidence(file, rel, content),

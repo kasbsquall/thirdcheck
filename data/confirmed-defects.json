@@ -31,6 +31,21 @@
       ],
       "liveProof": "n/a (source fact); the ThirdCheck analyzer flags it as 'Attestation verified by signature, not the precompile'",
       "reproduce": "npm run conformance is unrelated; scan with the analyzer: analyzeTree over the cloned repo yields the B-11 signature-not-precompile finding"
+    },
+    {
+      "repo": "FactorX",
+      "class": "on-chain recorder discards the proof and trusts unauthenticated caller data",
+      "catalogue": "B-11",
+      "summary": "The on-chain 'verify' function takes a proof and discards it (a bare `proof;` no-op), performs no precompile call, and records a 'PaymentVerified' event, mints a credit passport, and writes to the registry entirely from caller-supplied values. It has no access control, so anyone can fabricate an invoice payment and mint themselves a credit passport for free. The project's own README states the on-chain verifyAndEmit selector did not match on this testnet, so verification was moved off-chain to the SDK verifySingle, leaving the on-chain record unauthenticated. This independently corroborates the VaultBridge selector finding and adds a distinct class: verification claimed off-chain, on-chain record forgeable.",
+      "evidence": [
+        "src/AttestcoinVerifier.sol:62 verifyAndRecord is external with no access-control modifier",
+        "src/AttestcoinVerifier.sol:76 `proof;` — the proof parameter is discarded, never decoded or verified",
+        "src/AttestcoinVerifier.sol:89 emits PaymentVerified from caller-supplied payer/beneficiary/amount",
+        "no verifyAndEmit / calculateTxIndex / EvmV1Decoder / 0x0FD2 reference anywhere in the contract",
+        "README.md:127 and docs/ATTESTCOIN_INTEGRATION.md: on-chain verifyAndEmit selector did not match; verification moved off-chain to the SDK verifySingle"
+      ],
+      "liveProof": "n/a (source fact); the ThirdCheck analyzer flags it as 'Records an attestation without verifying the proof'",
+      "reproduce": "analyzeTree over the cloned repo yields the B-11 discarded-proof finding on src/AttestcoinVerifier.sol:62"
     }
   ]
 }

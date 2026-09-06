@@ -21,6 +21,7 @@ function severityOf(f: StaticFinding): Sev {
   if (t.includes("signature, not the precompile")) return "error";
   if (t.includes("selector the precompile does not implement")) return "error";
   if (t.includes("swappable after deployment")) return "error";
+  if (t.includes("without verifying the proof")) return "error"; // discarded proof, forgeable record
   if (t.includes("reports success")) return "error"; // blanked proof but success:true
   return "warning"; // mock-in-src, catch-returns-null on a proof path
 }

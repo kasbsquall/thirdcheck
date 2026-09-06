@@ -143,6 +143,7 @@ function isErrorClass(f: StaticFinding): boolean {
     t.includes("signature, not the precompile") ||
     t.includes("selector the precompile does not implement") ||
     t.includes("swappable after deployment") ||
+    t.includes("without verifying the proof") ||
     t.includes("reports success")
   );
 }

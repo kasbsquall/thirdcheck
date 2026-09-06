@@ -62,10 +62,11 @@ That is a protocol-adoption risk, and nobody else in the field is measuring it."
 ## 2:00-2:35 · The tool, and its honesty
 
 Narración: "The analyzer raised seventy-six flags across twenty-three projects. A tool that cries
-wolf is worthless, so I read the source of every production signal. It stands behind two confirmed
-defects, of two different classes — one contract whose verify path can't reach the precompile,
-another that replaced the protocol proof with a single signer's signature — both disclosed
-responsibly, both re-derivable from the public source. The other flags — authorized-caller
+wolf is worthless, so I read the source of every production signal. It stands behind three confirmed
+defects, of three different classes — one contract whose verify path can't reach the precompile,
+another that replaced the protocol proof with a single signer's signature, a third that discards the
+proof entirely and records a forgeable payment from unauthenticated caller data — all disclosed
+responsibly, all re-derivable from the public source. The other flags — authorized-caller
 roles, test mocks — I cleared by hand, and then I hardened the analyzer so it clears them itself."
 
 (Pantalla: `npm run judge:verify` completo, las 9-10 líneas en verde.)
@@ -86,8 +87,8 @@ The precompile is powerful and new. This is how the ecosystem built on it stays 
 
 ## Notes for the edit
 
-- Numbers to keep consistent everywhere (deck, boletín, narración): 53 submissions read, 2
-  source-confirmed defects (2 distinct classes), 15/16 precompile entry points, 76 raw flags triaged,
+- Numbers to keep consistent everywhere (deck, boletín, narración): 53 submissions read, 3
+  source-confirmed defects (3 distinct classes), 15/16 precompile entry points, 76 raw flags triaged,
   distribution figures B-05 14/49 and B-09 8/37.
 - Do NOT name the flagged project on screen or in audio until disclosure is acknowledged; the boletín
   shows it anonymized. If disclosure is answered before recording, you may say "reported and fixed",

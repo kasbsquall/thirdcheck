@@ -562,3 +562,34 @@ Por qué esta jugada y no otra: de las tres opciones de producto, B+C es la úni
 generalista (mejor historia) y protocolo (consumidor real, no solo bench). Testnet a propósito: el
 proyecto es testnet-only por diseño; mover valor en mainnet es acción irreversible que no ejecutamos.
 Frontend typecheck limpio; 8 secciones; enlaces de dinero real verificados por DOM.
+
+---
+
+## 2026-09-06 · Sesión (cont.) — tercer defecto confirmado
+
+**D-38. Tercer defecto confirmado (FactorX) y regla de analizador que lo caza.** El campo tenía dos
+defectos confirmados de dos clases; el tercero añade una clase nueva y sube la afirmación pública de
+"dos" a "tres". FactorX (`src/AttestcoinVerifier.sol`): `verifyAndRecord` es `external` sin control de
+acceso (línea 62), descarta la prueba con un no-op `proof;` (línea 76), no llama al precompilado en
+ningún punto, y emite `PaymentVerified` + escribe el registro con valores del propio caller (línea
+89). Cualquiera fabrica un pago de factura y se acuña un pasaporte de crédito gratis. El propio README
+del proyecto (README.md:127) admite que el selector on-chain `verifyAndEmit` no coincidió en esta
+testnet y que movieron la verificación off-chain al SDK `verifySingle`, dejando el registro on-chain
+sin autenticar. Esto corrobora de forma independiente el hallazgo de selector de VaultBridge y añade
+la clase "verificación reclamada off-chain, registro on-chain falsificable".
+
+Clase: "on-chain recorder discards the proof and trusts unauthenticated caller data" (catálogo B-11).
+
+Implementación: `checkDiscardedProof` en `src/engine.ts` (dispara solo en .sol no-test, que mencione
+attest/verif/proof/record, que NO tenga ruta de verificación real, con un parámetro `bytes` llamado
+proof/proofData/encodedTransaction/attestation descartado con `${pname};` bare). Validado: dispara
+solo en FactorX (AttestcoinVerifier.sol:62), cero falsos positivos sobre carryproof/ledgerline/
+deadswitch/rwas/vaultpulse/borrowiq y nuestros contratos. Marcado error-class en `scripts/gate.ts`,
+`frontend/app/api/check/route.ts` y el artifact live (título "without verifying the proof").
+`scripts/verify.ts` añade FactorX a los targets de `--reclone`.
+
+Verificado: `npm run judge:verify` → "3 repos, 3 distinct classes: VaultBridge, Sovereign Attest
+Agent, FactorX", 9/9 passed. `--reclone` → 12/12, "Re-clone: FactorX cloned public source, analyzer
+reproduced records an attestation without verifying the proof (1 signals)". Números actualizados a
+"tres" en README, video-script y confirmed-defects.json. Disclosure responsable: nombrado solo en el
+sustento privado, anónimo en materiales públicos hasta que se acuse recibo.
