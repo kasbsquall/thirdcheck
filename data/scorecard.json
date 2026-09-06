@@ -1,0 +1,1093 @@
+{
+  "generatedAt": "2026-09-06T08:24:42.557Z",
+  "method": "ThirdCheck read every public BUIDL CTC submission, cross-checked the repositories, and ran its static analyzer. Rows are anonymised; each is what a submission evidences of the third check, not a security audit. Confirmed defects are disclosed privately to the affected teams and to team@creditcoin.org before any naming.",
+  "total": 53,
+  "consumersEvaluated": 47,
+  "withRedFlags": 5,
+  "checkLegend": [
+    {
+      "id": "B-01",
+      "label": "receipt status read"
+    },
+    {
+      "id": "B-02",
+      "label": "emitting contract pinned"
+    },
+    {
+      "id": "B-03",
+      "label": "event signature checked"
+    },
+    {
+      "id": "B-04",
+      "label": "replay guard on the proof"
+    },
+    {
+      "id": "B-05",
+      "label": "chain identity checked"
+    },
+    {
+      "id": "B-06",
+      "label": "bound to the business object"
+    },
+    {
+      "id": "B-07",
+      "label": "payer/recipient/amount bound"
+    },
+    {
+      "id": "B-08",
+      "label": "block window constrained"
+    },
+    {
+      "id": "B-09",
+      "label": "correct log selected"
+    }
+  ],
+  "distribution": [
+    {
+      "id": "B-01",
+      "label": "receipt status read",
+      "applicable": 47,
+      "yes": 28,
+      "partial": 13,
+      "flagged": 0
+    },
+    {
+      "id": "B-02",
+      "label": "emitting contract pinned",
+      "applicable": 49,
+      "yes": 23,
+      "partial": 18,
+      "flagged": 1
+    },
+    {
+      "id": "B-03",
+      "label": "event signature checked",
+      "applicable": 50,
+      "yes": 34,
+      "partial": 11,
+      "flagged": 0
+    },
+    {
+      "id": "B-04",
+      "label": "replay guard on the proof",
+      "applicable": 48,
+      "yes": 34,
+      "partial": 12,
+      "flagged": 0
+    },
+    {
+      "id": "B-05",
+      "label": "chain identity checked",
+      "applicable": 49,
+      "yes": 14,
+      "partial": 28,
+      "flagged": 0
+    },
+    {
+      "id": "B-06",
+      "label": "bound to the business object",
+      "applicable": 24,
+      "yes": 14,
+      "partial": 8,
+      "flagged": 0
+    },
+    {
+      "id": "B-07",
+      "label": "payer/recipient/amount bound",
+      "applicable": 41,
+      "yes": 19,
+      "partial": 18,
+      "flagged": 0
+    },
+    {
+      "id": "B-08",
+      "label": "block window constrained",
+      "applicable": 18,
+      "yes": 5,
+      "partial": 9,
+      "flagged": 0
+    },
+    {
+      "id": "B-09",
+      "label": "correct log selected",
+      "applicable": 37,
+      "yes": 8,
+      "partial": 27,
+      "flagged": 0
+    }
+  ],
+  "depthCounts": [
+    {
+      "depth": "deep",
+      "count": 19
+    },
+    {
+      "depth": "solid",
+      "count": 14
+    },
+    {
+      "depth": "light",
+      "count": 11
+    },
+    {
+      "depth": "absent",
+      "count": 9
+    }
+  ],
+  "rows": [
+    {
+      "code": "RWA-01",
+      "track": "RWA",
+      "depth": "deep",
+      "score": 100,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "y",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-01",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 100,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "na",
+        "fields": "y",
+        "window": "na",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-02",
+      "track": "RWA",
+      "depth": "deep",
+      "score": 96,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "y",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-02",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 96,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "p",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-03",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 95,
+      "checks": {
+        "receipt": "p",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "na",
+        "fields": "y",
+        "window": "na",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-01",
+      "track": "AI",
+      "depth": "deep",
+      "score": 93,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "y",
+        "fields": "y",
+        "window": "y",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-04",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 93,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEPI-01",
+      "track": "DePIN",
+      "depth": "deep",
+      "score": 93,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEPI-02",
+      "track": "DePIN",
+      "depth": "deep",
+      "score": 93,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-03",
+      "track": "RWA",
+      "depth": "deep",
+      "score": 93,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-05",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 92,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "y",
+        "fields": "y",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-06",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 91,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-07",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 91,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "y",
+        "window": "na",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-08",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 89,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "y",
+        "fields": "y",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-09",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 89,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "p",
+        "replay": "y",
+        "chain": "p",
+        "order": "y",
+        "fields": "y",
+        "window": "y",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEPI-03",
+      "track": "DePIN",
+      "depth": "deep",
+      "score": 89,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "y",
+        "fields": "y",
+        "window": "n",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-10",
+      "track": "DeFi",
+      "depth": "deep",
+      "score": 89,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "y",
+        "fields": "y",
+        "window": "n",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-04",
+      "track": "RWA",
+      "depth": "deep",
+      "score": 88,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "na",
+        "fields": "p",
+        "window": "n",
+        "logsel": "y"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "GAMI-01",
+      "track": "Gaming",
+      "depth": "solid",
+      "score": 83,
+      "checks": {
+        "receipt": "na",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "y",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEPI-04",
+      "track": "DePIN",
+      "depth": "deep",
+      "score": 82,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "p",
+        "fields": "p",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-05",
+      "track": "RWA",
+      "depth": "solid",
+      "score": 81,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "y",
+        "fields": "y",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-06",
+      "track": "RWA",
+      "depth": "solid",
+      "score": 80,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "y",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-02",
+      "track": "AI",
+      "depth": "solid",
+      "score": 73,
+      "checks": {
+        "receipt": "p",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-03",
+      "track": "AI",
+      "depth": "solid",
+      "score": 73,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "p",
+        "fields": "y",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-04",
+      "track": "AI",
+      "depth": "solid",
+      "score": 71,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-07",
+      "track": "RWA",
+      "depth": "solid",
+      "score": 71,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "p",
+        "fields": "p",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEPI-05",
+      "track": "DePIN",
+      "depth": "solid",
+      "score": 69,
+      "checks": {
+        "receipt": "y",
+        "emitter": "y",
+        "event": "y",
+        "replay": "p",
+        "chain": "p",
+        "order": "p",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-05",
+      "track": "AI",
+      "depth": "solid",
+      "score": 69,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "p",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-06",
+      "track": "AI",
+      "depth": "solid",
+      "score": 69,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "p",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-07",
+      "track": "AI",
+      "depth": "solid",
+      "score": 69,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "p",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-11",
+      "track": "DeFi",
+      "depth": "solid",
+      "score": 66,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-12",
+      "track": "DeFi",
+      "depth": "solid",
+      "score": 62,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "y",
+        "replay": "p",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-08",
+      "track": "RWA",
+      "depth": "solid",
+      "score": 62,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "y",
+        "replay": "p",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-08",
+      "track": "AI",
+      "depth": "light",
+      "score": 56,
+      "checks": {
+        "receipt": "y",
+        "emitter": "p",
+        "event": "y",
+        "replay": "p",
+        "chain": "p",
+        "order": "p",
+        "fields": "p",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-09",
+      "track": "AI",
+      "depth": "light",
+      "score": 53,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "p",
+        "replay": "y",
+        "chain": "p",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-09",
+      "track": "RWA",
+      "depth": "light",
+      "score": 49,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "y",
+        "replay": "y",
+        "chain": "na",
+        "order": "p",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 1
+    },
+    {
+      "code": "AI-10",
+      "track": "AI",
+      "depth": "light",
+      "score": 47,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "p",
+        "replay": "p",
+        "chain": "p",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-11",
+      "track": "AI",
+      "depth": "light",
+      "score": 47,
+      "checks": {
+        "receipt": "na",
+        "emitter": "na",
+        "event": "p",
+        "replay": "na",
+        "chain": "p",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-13",
+      "track": "DeFi",
+      "depth": "light",
+      "score": 47,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "p",
+        "replay": "p",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-14",
+      "track": "DeFi",
+      "depth": "light",
+      "score": 47,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "p",
+        "replay": "p",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "RWA-10",
+      "track": "RWA",
+      "depth": "light",
+      "score": 47,
+      "checks": {
+        "receipt": "p",
+        "emitter": "p",
+        "event": "p",
+        "replay": "p",
+        "chain": "p",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "p"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-15",
+      "track": "DeFi",
+      "depth": "light",
+      "score": 38,
+      "checks": {
+        "receipt": "p",
+        "emitter": "n",
+        "event": "n",
+        "replay": "y",
+        "chain": "p",
+        "order": "n",
+        "fields": "n",
+        "window": "y",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "AI-12",
+      "track": "AI",
+      "depth": "absent",
+      "score": 36,
+      "checks": {
+        "receipt": "p",
+        "emitter": "n",
+        "event": "p",
+        "replay": "y",
+        "chain": "y",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 1
+    },
+    {
+      "code": "DEFI-16",
+      "track": "DeFi",
+      "depth": "light",
+      "score": 29,
+      "checks": {
+        "receipt": "n",
+        "emitter": "p",
+        "event": "p",
+        "replay": "p",
+        "chain": "n",
+        "order": "na",
+        "fields": "p",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 1
+    },
+    {
+      "code": "DEFI-17",
+      "track": "DeFi",
+      "depth": "light",
+      "score": 21,
+      "checks": {
+        "receipt": "n",
+        "emitter": "n",
+        "event": "n",
+        "replay": "p",
+        "chain": "n",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEPI-06",
+      "track": "DePIN",
+      "depth": "absent",
+      "score": 14,
+      "checks": {
+        "receipt": "na",
+        "emitter": "n",
+        "event": "p",
+        "replay": "na",
+        "chain": "n",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-18",
+      "track": "DeFi",
+      "depth": "absent",
+      "score": 10,
+      "checks": {
+        "receipt": "n",
+        "emitter": "n",
+        "event": "n",
+        "replay": "p",
+        "chain": "n",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "GAMI-02",
+      "track": "Gaming",
+      "depth": "absent",
+      "score": 3,
+      "checks": {
+        "receipt": "na",
+        "emitter": "na",
+        "event": "na",
+        "replay": "na",
+        "chain": "na",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-19",
+      "track": "DeFi",
+      "depth": "absent",
+      "score": 3,
+      "checks": {
+        "receipt": "na",
+        "emitter": "na",
+        "event": "na",
+        "replay": "na",
+        "chain": "na",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "GAMI-03",
+      "track": "Gaming",
+      "depth": "absent",
+      "score": 3,
+      "checks": {
+        "receipt": "na",
+        "emitter": "na",
+        "event": "na",
+        "replay": "na",
+        "chain": "na",
+        "order": "na",
+        "fields": "na",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "INFR-01",
+      "track": "Infra",
+      "depth": "absent",
+      "score": 3,
+      "checks": {
+        "receipt": "n",
+        "emitter": "n",
+        "event": "n",
+        "replay": "n",
+        "chain": "n",
+        "order": "na",
+        "fields": "n",
+        "window": "na",
+        "logsel": "n"
+      },
+      "redFlagCount": 0
+    },
+    {
+      "code": "DEFI-20",
+      "track": "DeFi",
+      "depth": "absent",
+      "score": 2,
+      "checks": {
+        "receipt": "n",
+        "emitter": "n",
+        "event": "p",
+        "replay": "n",
+        "chain": "n",
+        "order": "na",
+        "fields": "n",
+        "window": "na",
+        "logsel": "na"
+      },
+      "redFlagCount": 1
+    },
+    {
+      "code": "RWA-11",
+      "track": "RWA",
+      "depth": "absent",
+      "score": 0,
+      "checks": {
+        "receipt": "n",
+        "emitter": "flag",
+        "event": "n",
+        "replay": "p",
+        "chain": "n",
+        "order": "n",
+        "fields": "n",
+        "window": "n",
+        "logsel": "n"
+      },
+      "redFlagCount": 4
+    }
+  ]
+}

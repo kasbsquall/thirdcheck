@@ -1,0 +1,17 @@
+{
+  "orderId": "0xf109727a92ea0c3d377a1ec804546d1a633a6969be1fe1ee01fa701c272fec1f",
+  "chainKey": 1,
+  "sourceTx": "0xc37263cfcf50ea861448e5cb2f1afa2731d2e6ee5465d13dd13b9d6028984b28",
+  "sourceBlock": 11645236,
+  "generatedAt": "2026-09-06T05:38:38.642Z",
+  "vulnerable": {
+    "status": "accepted",
+    "detail": "escrow released against the proof",
+    "tx": "0x1db253991e8d5316c8aa24b29529d17044c15ce511e52beae4d47c2e271f41e8"
+  },
+  "hardened": {
+    "status": "rejected",
+    "detail": "reverted: custom error 0x3e70e82c"
+  },
+  "clean": true
+}

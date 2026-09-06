@@ -1,0 +1,24 @@
+node_modules/
+dist/
+cache/
+artifacts/
+typechain-types/
+
+.env
+.env.*
+!.env.example
+
+# Playwright MCP scratch output from the research phase
+.playwright-mcp/
+
+.DS_Store
+*.log
+
+frontend/node_modules/
+frontend/.next/
+
+# Local machine settings, not shared
+.claude/settings.local.json
+
+# Named ecosystem ranking: private basis for responsible disclosure, never publish
+data/scorecard-private.json

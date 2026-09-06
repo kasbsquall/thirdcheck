@@ -1,0 +1,51 @@
+{
+  "target": "hardened",
+  "escrow": "0xeC82270dc356948FC2e5E969a887ce6bE27e375A",
+  "chainKey": 1,
+  "generatedAt": "2026-09-06T01:22:39.035Z",
+  "findings": [
+    {
+      "id": "B-01",
+      "title": "Receipt status not read; a reverted payment releases funds",
+      "status": "rejected",
+      "detail": "reverted: SourceTxReverted (source receipt status was not success)",
+      "sourceTx": "0x6bcb7009256051c81888faf923806a693379a7c051f210c8ff1cd8a0e7e5e9fc"
+    },
+    {
+      "id": "B-02",
+      "title": "Emitting contract not pinned; a look-alike forges the event",
+      "status": "rejected",
+      "detail": "reverted: NoMatchingPayment (emitting contract is not the pinned source)",
+      "sourceTx": "0x5936e75e86a07aa459f2c16ecbdbf3311807f4f708f77846ffb73564e92c946f"
+    },
+    {
+      "id": "B-04",
+      "title": "No replay guard on the proof; one payment releases many orders",
+      "status": "rejected",
+      "detail": "first release accepted; second reverted: ProofAlreadyUsed (position consumed once)",
+      "sourceTx": "0xfe6378ec82f6ff1e127c13c985e3b4ffa38bed21373fd64ff9e629371b2c0590"
+    },
+    {
+      "id": "B-06",
+      "title": "Proven payment not bound to the order it releases",
+      "status": "rejected",
+      "detail": "reverted: NoMatchingPayment (the logged order does not match this one)",
+      "sourceTx": "0x52c4d931751bc07fd29286debd0f65156296594a47d82f4fde3d95fb69e17476"
+    },
+    {
+      "id": "B-09",
+      "title": "Only the first log read; a decoy log wins",
+      "status": "rejected",
+      "detail": "reverted: NoMatchingPayment (no log binds order, recipient and amount)",
+      "sourceTx": "0xc37263cfcf50ea861448e5cb2f1afa2731d2e6ee5465d13dd13b9d6028984b28"
+    },
+    {
+      "id": "POS",
+      "title": "A correct payment must still release",
+      "status": "accepted",
+      "detail": "escrow released against the proof",
+      "evidenceTx": "0x3596ae0ad6306ccdc321110094aed505e021ffaae0a962ae157431f8628bdb55",
+      "sourceTx": "0x951f06de83db4af85b81637b3f27762516c45753beadeefdd61d585f1a9fb503"
+    }
+  ]
+}

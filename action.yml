@@ -1,0 +1,28 @@
+name: "ThirdCheck"
+description: "Fail CI if an Attestcoin consumer skips the third check (verification that cannot reach the precompile, a swappable proof verifier, or a proof replaced by a signature)."
+branding:
+  icon: "shield"
+  color: "orange"
+inputs:
+  path:
+    description: "Directory to scan, relative to the checked-out repo."
+    required: false
+    default: "."
+  fail-on:
+    description: "'confirmed' fails only on defect-class findings; 'any' also fails on review-class findings."
+    required: false
+    default: "confirmed"
+runs:
+  using: "composite"
+  steps:
+    - name: Install ThirdCheck deps
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --silent || npm install --silent
+    - name: Run the third-check gate
+      shell: bash
+      run: >-
+        node -r ts-node/register/transpile-only
+        "${{ github.action_path }}/scripts/gate.ts"
+        "${{ github.workspace }}/${{ inputs.path }}"
+        "${{ inputs.fail-on }}"

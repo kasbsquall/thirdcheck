@@ -1,0 +1,24 @@
+name: ThirdCheck
+
+# Dogfood: ThirdCheck runs its own gate on every push and PR. It also shows an
+# Attestcoin integrator exactly how to wire the third-check gate into their CI.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  third-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # Local action reference (./). Consumers use: uses: kasbsquall/thirdcheck@v1
+      - name: Third-check gate
+        uses: ./
+        with:
+          path: contracts
+          fail-on: confirmed

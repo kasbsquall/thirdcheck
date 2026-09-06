@@ -1,0 +1,31 @@
+{
+  "name": "thirdcheck",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Adversarial test bench for Attestcoin Smart Contracts. The precompile proves inclusion and continuity; everything else is the third check.",
+  "license": "MIT",
+  "scripts": {
+    "check-setup": "ts-node scripts/check-setup.ts",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "typecheck": "tsc --noEmit",
+    "scorecard": "ts-node scripts/build-scorecard.ts",
+    "triage": "ts-node scripts/triage-findings.ts",
+    "conformance": "ts-node scripts/conformance.ts",
+    "gate": "ts-node scripts/gate.ts",
+    "judge:verify": "ts-node scripts/verify.ts"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@types/node": "^22.10.0",
+    "hardhat": "^2.26.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@gluwa/usc-contracts": "^0.2.0",
+    "@gluwa/usc-sdk": "^0.18.0",
+    "dotenv": "^16.4.7",
+    "ethers": "^6.13.0"
+  }
+}

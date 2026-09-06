@@ -1,0 +1,19 @@
+{
+  "name": "attestcoin-consumer-template",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Starter for an Attestcoin cross-chain consumer that passes the ThirdCheck gate on day one.",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "hardhat": "^2.26.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "@gluwa/usc-contracts": "^0.2.0"
+  }
+}

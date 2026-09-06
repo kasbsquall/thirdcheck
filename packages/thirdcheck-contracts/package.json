@@ -1,0 +1,19 @@
+{
+  "name": "thirdcheck-contracts",
+  "version": "0.1.0",
+  "description": "The third check as a Solidity library: an Attestcoin consumer gets every binding guarantee the precompile leaves to the developer in two calls.",
+  "license": "MIT",
+  "author": "Kevin Soto",
+  "files": [
+    "contracts",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kasbsquall/thirdcheck"
+  },
+  "peerDependencies": {
+    "@gluwa/usc-contracts": "^0.2.0"
+  }
+}
