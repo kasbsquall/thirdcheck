@@ -33,8 +33,10 @@ It reads the committed evidence and confirms it independently against the public
 - **protocol (live)** — a keyless `eth_call` to `0x0FD2` shows the precompile replies
   `Unknown selector` to `verifySingle` (the selector the VaultBridge finding rests on) while it
   dispatches the real `verify`. The finding is an on-chain fact, not just a static claim.
-- **findings** — the ecosystem triage stands behind exactly one source-confirmed defect
-  (VaultBridge), with no open review items across the other 22 flagged repos.
+- **findings** — the ecosystem review stands behind two source-confirmed defects of two distinct
+  classes (a verify path that cannot reach the precompile; a protocol proof replaced by a
+  centralized signature), each re-derivable from the public source with `--reclone`, and no open
+  review items across the other flagged repos.
 - **scorecard** — the field scorecard's own invariants hold (48 submissions, distributions sound).
 - **protocol surface** — the conformance run exercised 15 of the 16 precompile entry points (the
   only gap is the batch `verifyAndEmit`, which needs a funded run), against a typical consumer's one.

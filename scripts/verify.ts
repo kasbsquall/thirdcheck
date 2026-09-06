@@ -131,8 +131,21 @@ async function checkSelectorLive() {
   }
 }
 
-// C — the triage stands behind exactly one source-confirmed defect: VaultBridge.
+// C — the curated list of source-confirmed defects, each anchored to file:line evidence.
 function checkFindings() {
+  // The authoritative confirmed set (source-read, distinct defect classes).
+  if (existsSync(join(DATA, "confirmed-defects.json"))) {
+    const cd = readJson<{ confirmed: { repo: string; class: string; evidence: string[] }[] }>("confirmed-defects.json");
+    const repos = [...new Set(cd.confirmed.map((c) => c.repo))];
+    const classes = [...new Set(cd.confirmed.map((c) => c.class))];
+    const allAnchored = cd.confirmed.every((c) => c.evidence.length > 0 && c.evidence.every((e) => /:\d+|no .*reference/i.test(e)));
+    if (repos.length >= 2 && classes.length >= 2 && allAnchored) {
+      pass("Confirmed defects", `${repos.length} repos, ${classes.length} distinct classes: ${repos.join(", ")}`);
+    } else {
+      fail("Confirmed defects", `${repos.length} repos / ${classes.length} classes; all anchored: ${allAnchored}`);
+    }
+  }
+
   if (!existsSync(join(DATA, "findings-report.json"))) { fail("Findings report", "data/findings-report.json missing; run npm run triage"); return; }
   const rep = readJson<{
     counts: { confirmed: number; review: number; noise: number };
@@ -140,13 +153,6 @@ function checkFindings() {
     reposWithConfirmed: number;
     repos: { repo: string; confirmed: number; findings: { verdict: string }[] }[];
   }>("findings-report.json");
-
-  const confirmedRepos = rep.repos.filter((r) => r.confirmed > 0).map((r) => r.repo);
-  if (rep.reposWithConfirmed === 1 && confirmedRepos.length === 1 && confirmedRepos[0] === "VaultBridge") {
-    pass("Confirmed defect", `1 repo: VaultBridge, ${rep.counts.confirmed} signals, ${rep.sourceConfirmed} source-read`);
-  } else {
-    fail("Confirmed defect", `expected VaultBridge only, got [${confirmedRepos.join(", ")}]`);
-  }
 
   // Honest accounting: no OTHER repo carries unresolved review items; the confirmed repo
   // (VaultBridge) does carry corroborating review signals, and we say so rather than hide them.
@@ -201,27 +207,42 @@ function checkConformance() {
   }
 }
 
-// E — optional: re-fetch VaultBridge's public source and re-derive the finding.
+// E — optional: re-fetch each confirmed repo's public source and re-derive the finding.
 function checkReclone() {
-  const url = "https://github.com/Bobo2005/VaultBridge.git";
-  let dir = "";
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const { analyzeTree } = require("../src/static") as { analyzeTree: (p: string) => { id: string; file: string; evidence: string }[] };
-    dir = mkdtempSync(join(tmpdir(), "tc-vb-"));
-    execFileSync("git", ["clone", "--depth", "1", "--no-tags", "-q", url, dir], { stdio: "ignore" });
-    const findings = analyzeTree(dir);
-    const selector = findings.some((f) => /IUSCVerifier\.sol/.test(f.file) && /verifysingle|verifybatch/i.test(f.evidence));
-    const mockInSrc = findings.some((f) => /src\/.*Mock/i.test(f.file) && /contract mock/i.test(f.evidence));
-    if (selector && mockInSrc) {
-      pass("Re-clone re-derivation", `cloned public VaultBridge, analyzer reproduced fake selector + mock-in-src (${findings.length} raw signals)`);
-    } else {
-      fail("Re-clone re-derivation", `selector:${selector} mockInSrc:${mockInSrc} over ${findings.length} signals`);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { analyzeTree } = require("../src/static") as { analyzeTree: (p: string) => { id: string; title: string; file: string; evidence: string }[] };
+  const targets = [
+    {
+      repo: "VaultBridge",
+      url: "https://github.com/Bobo2005/VaultBridge.git",
+      derived: (f: { title: string; file: string; evidence: string }[]) =>
+        f.some((x) => /IUSCVerifier\.sol/.test(x.file) && /verifysingle|verifybatch/i.test(x.evidence)) &&
+        f.some((x) => /src\/.*Mock/i.test(x.file) && /contract mock/i.test(x.evidence)),
+      label: "fake selector + mock-in-src",
+    },
+    {
+      repo: "Sovereign",
+      url: "https://github.com/SDRmsung/Sovereign-AttestAgent-Creditcoin",
+      derived: (f: { title: string }[]) => f.some((x) => /signature, not the precompile/i.test(x.title)),
+      label: "attestation-by-signature (no precompile)",
+    },
+  ];
+  for (const t of targets) {
+    let dir = "";
+    try {
+      dir = mkdtempSync(join(tmpdir(), "tc-"));
+      execFileSync("git", ["clone", "--depth", "1", "--no-tags", "-q", t.url, dir], { stdio: "ignore" });
+      const findings = analyzeTree(dir);
+      if (t.derived(findings as never)) {
+        pass(`Re-clone: ${t.repo}`, `cloned public source, analyzer reproduced ${t.label} (${findings.length} signals)`);
+      } else {
+        fail(`Re-clone: ${t.repo}`, `analyzer did not reproduce ${t.label} over ${findings.length} signals`);
+      }
+    } catch (e) {
+      info(`Re-clone: ${t.repo}`, `skipped (${errMsg(e)})`);
+    } finally {
+      if (dir) try { rmSync(dir, { recursive: true, force: true }); } catch { /* best effort */ }
     }
-  } catch (e) {
-    info("Re-clone re-derivation", `skipped (${errMsg(e)})`);
-  } finally {
-    if (dir) try { rmSync(dir, { recursive: true, force: true }); } catch { /* best effort */ }
   }
 }
 

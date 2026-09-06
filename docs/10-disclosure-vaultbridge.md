@@ -78,6 +78,37 @@ days from today to give you room to fix it. Thanks for building on Attestcoin, a
 Best,
 Kevin — ThirdCheck
 
+## Segundo hallazgo: Sovereign Attest Agent (borrador aparte)
+
+Divulgar por el mismo protocolo: aviso de seguridad privado en el repo del equipo
+(github.com/SDRmsung/Sovereign-AttestAgent-Creditcoin) + copia a team@creditcoin.org, sin nombre
+público hasta respuesta.
+
+**Asunto:** Coordinated security disclosure — attested credit relies on a single signer, not the precompile
+
+Hi,
+
+I'm Kevin, working on ThirdCheck (BUIDL CTC 2026 Fall). Following coordinated disclosure, sharing an
+issue privately first. cc team@creditcoin.org since it concerns the Attestcoin integration.
+
+`SovereignAttestLending.sol` is documented as consuming Attestcoin Protocol proofs, but
+`executeAttestedCredit` verifies the attestation with an off-chain ECDSA signature
+(`ecrecover`, line 100) against `attestcoinValidator`, a single address set by the owner
+(`setValidator`, onlyOwner, line 48). The BlockProver precompile at 0x0FD2 is never called anywhere in
+the repository. The credit limit is set on that signature alone (line 82), and `borrow()` draws
+against it. The effect: the entire "attested credit" trust reduces to one key. A compromised or
+malicious validator key, or the owner rotating the validator, can mint arbitrary credit. The nonce
+and validUntil checks are good hygiene but do not change the root of trust.
+
+Suggested fix: verify the source-chain event through the precompile (`verify` / `verifyAndEmit` via
+@gluwa/usc-contracts) and derive the credit input from the proven transaction, instead of trusting a
+signer. If an off-chain signer is intentional for now, document it plainly as a centralized oracle
+rather than as an Attestcoin proof.
+
+Happy to help. I'll hold any public mention for 14 days.
+
+Best, Kevin — ThirdCheck
+
 ## Notas internas (no enviar)
 
 - Sustituir `<thirdcheck-repo>` por la URL real del repo de ThirdCheck antes de enviar.

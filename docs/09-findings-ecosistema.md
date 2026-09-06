@@ -23,7 +23,24 @@ proyectos, pero ThirdCheck **sostiene exactamente un hallazgo, contra un solo pr
 confirmó leyendo el código. De los 23 repos marcados, 22 quedan limpios tras revisión manual. Una
 herramienta de seguridad que acusa en falso no vale; esta corrige sus propios sobre-marcados.
 
-## Confirmado: VaultBridge
+## Confirmados (2 repos, 2 clases)
+
+La lista curada y autoritativa está en `data/confirmed-defects.json`; `judge:verify` la lee y ambos
+casos se re-derivan de la fuente pública con `--reclone`. Dos clases distintas de defecto:
+
+1. **VaultBridge** — la verificación no puede alcanzar el precompilo (selector inexistente + verifier
+   intercambiable + mock en `src/`). Detalle abajo.
+2. **Sovereign Attest Agent** — la prueba del protocolo sustituida por una firma centralizada.
+   `src/contracts/SovereignAttestLending.sol` dice "Consumes Attestcoin Protocol proofs" (línea 9)
+   pero `executeAttestedCredit` (línea 60) verifica la "atestiguación" con `ecrecover` (línea 100)
+   contra `attestcoinValidator`, una sola llave ECDSA puesta por el owner (`setValidator`, onlyOwner,
+   línea 48). El precompilo no se llama en ningún archivo del repo. El límite de crédito se fija solo
+   con esa firma (línea 82); `borrow()` gira contra él. Una llave de validador comprometida, o el
+   owner cambiándola, acuña crédito arbitrario. El buen manejo de nonce/expiry no importa: la raíz de
+   confianza es una llave, no el precompilo. El analizador v2 lo marca solo
+   ("Attestation verified by signature, not the precompile", `data/static-Sovereign.json`).
+
+## Confirmado #1: VaultBridge
 
 Un cúmulo de defectos que se refuerzan, todos en código de producción:
 

@@ -1,0 +1,14 @@
+{
+  "target": "C:\\Users\\User\\AppData\\Local\\Temp\\claude\\C--Users-User-Downloads-proyectos2026-defi\\abb0168a-eade-4021-9936-5a0115b3434f\\scratchpad\\ref3\\Sovereign",
+  "generatedAt": "2026-09-06T08:08:48.239Z",
+  "findings": [
+    {
+      "id": "B-11",
+      "title": "Attestation verified by signature, not the precompile",
+      "file": "src/contracts/SovereignAttestLending.sol",
+      "line": 100,
+      "evidence": "ecrecover(...) with no precompile call in the file",
+      "note": "The contract presents itself as an Attestcoin consumer but verifies its attestation with an off-chain ECDSA signature (ecrecover) and never calls the precompile at 0x0FD2. The inclusion+continuity proof is replaced by a single owner-set signer; a compromised or malicious validator key mints arbitrary attestations."
+    }
+  ]
+}

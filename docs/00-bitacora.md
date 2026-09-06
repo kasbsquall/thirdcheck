@@ -396,3 +396,24 @@ frase estático-vs-vivo). judge:verify 10/10 con --reclone (ahora "9 señales" v
 prover para volverlas "live" (receta lista, requiere PROOF_BUILDER_URL); `verifyAndEmit` batch con
 fondos para 16/16 sin asterisco. Se dejan fuera de esta tanda por el riesgo de cuelgue del prover y
 por necesitar clave; el valor marginal es bajo frente a lo ya cerrado.
+
+**D-30. Segundo defecto confirmado cazado para blindar el #1: Sovereign Attest Agent.** Re-cloné 12
+candidatos (débiles/red-flag del scorecard + señal de producción) y corrí el analizador v2. Los 2
+candidatos B-12 (AEOS, AttestDesk) resultaron falsos positivos al leerlos (filtrado correcto de logs
+/ decoder que devuelve null ante bytes inválidos), no se inflan. El hallazgo sólido: **Sovereign**
+(`src/contracts/SovereignAttestLending.sol`) dice consumir pruebas Attestcoin pero verifica con
+`ecrecover` (línea 100) contra `attestcoinValidator`, una llave ECDSA del owner (`setValidator`), y
+**nunca llama al precompilo** en todo el repo. El crédito se fija con esa firma; validador
+comprometido = crédito arbitrario. Clase distinta a VaultBridge (sustitución del modelo de confianza
+por una llave, no selector inexistente).
+
+**Mejora del motor:** nueva regla `checkSignatureInsteadOfPrecompile` en `src/static.ts` que marca un
+consumidor que dice "Attestcoin", usa `ecrecover` y no referencia el precompilo. Probada sobre los 18
+repos clonados: dispara **solo en Sovereign**, cero falsos positivos, VaultBridge intacto.
+
+**Integración:** `data/static-Sovereign.json` generado; `data/confirmed-defects.json` como lista curada
+autoritativa (2 repos, 2 clases, cada uno con evidencia file:line). `judge:verify` ahora lee esa lista
+("Confirmed defects: 2 repos, 2 distinct classes") y `--reclone` re-deriva AMBOS desde la fuente
+pública. 11/11. README/docs/09/10/12 actualizados a "dos defectos confirmados". Borrador de divulgación
+de Sovereign añadido a docs/10 (mismo protocolo: privado + team@creditcoin.org, sin nombre público 14
+días). Postura mantenida: solo se reportan defectos reales; los 2 B-12 dudosos se dejaron fuera.

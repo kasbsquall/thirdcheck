@@ -145,6 +145,29 @@ function checkVerifierMock(file: string, rel: string, content: string): StaticFi
 }
 
 /**
+ * B-11d. A contract that presents itself as an Attestcoin consumer but verifies its "attestation"
+ * with an off-chain signature (ecrecover) and never calls the precompile. The protocol's
+ * inclusion+continuity proof is replaced by a single trusted signer, so the whole guarantee reduces
+ * to one key the owner controls. Flagged only when the precompile is genuinely absent from the file.
+ */
+function checkSignatureInsteadOfPrecompile(file: string, rel: string, content: string): StaticFinding[] {
+  if (extname(file) !== ".sol" || isTestPath(rel)) return [];
+  const usesEcrecover = /\becrecover\s*\(/.test(content);
+  const claimsAttestation = /attest(ation|coin)?/i.test(content);
+  const callsPrecompile = /verifyAndEmit|calculateTxIndex|BlockProver|0x0*0?FD2|\.verify\s*\(/i.test(content);
+  if (!usesEcrecover || !claimsAttestation || callsPrecompile) return [];
+  const m = /\becrecover\s*\(/.exec(content);
+  return [{
+    id: "B-11",
+    title: "Attestation verified by signature, not the precompile",
+    file: rel,
+    line: m ? lineOf(content, m.index) : 1,
+    evidence: "ecrecover(...) with no precompile call in the file",
+    note: "The contract presents itself as an Attestcoin consumer but verifies its attestation with an off-chain ECDSA signature (ecrecover) and never calls the precompile at 0x0FD2. The inclusion+continuity proof is replaced by a single owner-set signer; a compromised or malicious validator key mints arbitrary attestations.",
+  }];
+}
+
+/**
  * B-12. An off-chain generator whose catch block returns a value that upstream reads as a negative
  * observation, or that returns success while zeroing the proof. A failure to look is being reported
  * as having looked and found nothing.
@@ -197,6 +220,7 @@ export function analyzeTree(root: string): StaticFinding[] {
     findings.push(...checkFakeSelectors(file, rel, content));
     findings.push(...checkSwappableVerifier(file, rel, content));
     findings.push(...checkVerifierMock(file, rel, content));
+    findings.push(...checkSignatureInsteadOfPrecompile(file, rel, content));
     findings.push(...checkCatchAsEvidence(file, rel, content));
   }
   return findings;
