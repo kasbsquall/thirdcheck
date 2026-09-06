@@ -404,7 +404,7 @@ const styles: Record<string, React.CSSProperties> = {
   shell: { maxWidth: 1080, margin: "0 auto" },
 
   masthead: { marginBottom: "3rem" },
-  brandRow: { display: "flex", alignItems: "center", gap: "0.6rem", marginBottom: "1.75rem" },
+  brandRow: { display: "flex", alignItems: "center", gap: "0.3rem", marginBottom: "1.75rem" },
   brand: { fontSize: 18, letterSpacing: "-0.015em", fontWeight: 600 },
   brandAccent: { color: "var(--vuln)" },
   tag: {
