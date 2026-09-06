@@ -28,8 +28,10 @@ function env(name: string): string {
 }
 
 async function main() {
+  // Hardhat 2.x swallows extra CLI args, so the target comes from an env var (with an argv
+  // fallback for direct ts-node use): BENCH_TARGET=hardened npx hardhat run ...
   const idx = process.argv.indexOf("--target");
-  const target = idx >= 0 ? process.argv[idx + 1] : "vulnerable";
+  const target = process.env.BENCH_TARGET ?? (idx >= 0 ? process.argv[idx + 1] : "vulnerable");
   const hardened = target === "hardened";
   const escrowEnv = hardened ? "HARDENED_ESCROW_ADDRESS" : "VULNERABLE_ESCROW_ADDRESS";
 
