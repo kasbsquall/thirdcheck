@@ -15,4 +15,9 @@ export {
   FileMagnifyingGlass,
   Circle,
   CircleNotch,
+  Stack,
+  ChartBarHorizontal,
+  Flag,
+  Minus,
+  Scales,
 } from "@phosphor-icons/react/dist/ssr";

@@ -17,6 +17,45 @@ counted it. That gap is where cross-chain consumers fail, and they fail the same
 ThirdCheck is a test bench that produces *legitimate* Attestcoin proofs of the wrong thing and
 shows which consumers release funds against them, plus a hardened reference that rejects every one.
 
+## Verify it yourself
+
+One command, no private key, no funded account, no waiting for attestation:
+
+```bash
+npm run judge:verify
+```
+
+It reads the committed evidence and confirms it independently against the public CC3 testnet:
+
+- **on-chain** — every release the vulnerable escrow made is a real, mined CC3 transaction sent to
+  the audited escrow (fetched by receipt, read-only), and the B-09 contrast is a clean pair: same
+  proof, vulnerable releases, hardened reverts.
+- **protocol** — the selector the VaultBridge finding rests on (`verifySingle`) is genuinely not a
+  precompile method; the real surface is `verify`, `verifyAndEmit`, `calculateTxIndex`.
+- **findings** — the ecosystem triage stands behind exactly one source-confirmed defect
+  (VaultBridge), with no open review items across the other 22 flagged repos.
+- **scorecard** — the field scorecard's own invariants hold (48 submissions, distributions sound).
+- **protocol surface** — the conformance run exercised 15 of the 16 precompile entry points (the
+  only gap is the batch `verifyAndEmit`, which needs a funded run), against a typical consumer's one.
+
+The protocol-surface map is its own command, read-only, no key:
+
+```bash
+npm run conformance
+```
+
+It enumerates every BlockProver and ChainInfo entry point from the SDK's ABIs, calls all eleven
+ChainInfo views live with data chained from the current attestation frontier, probes the BlockProver
+views, and records how ThirdCheck reaches each. Auditing the third check requires the whole protocol,
+so ThirdCheck touches far more of it than a product does.
+
+Add `--reclone` to re-fetch VaultBridge's public source and re-derive the finding live with the
+analyzer, so nothing rests on a committed file:
+
+```bash
+npm run judge:verify -- --reclone
+```
+
 ## Why this, for this hackathon
 
 The precompile is powerful and new, and the reflex across the field is to treat a passing proof as

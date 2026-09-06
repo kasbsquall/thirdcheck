@@ -218,3 +218,129 @@ seguir si hay que endurecer `run-bench.ts` más adelante.
 
 **Contraste hardened ahora completo:** B-01, B-02, B-04, B-06, B-09 rechazados (cada uno con su error
 nombrado), POS libera. El boletín lee estos JSON y refleja el contraste limpio de las dos columnas.
+
+**D-22. Scorecard del ecosistema construido: la tercera comprobación aplicada a las 48 propuestas.**
+El diferenciador de ThirdCheck deja de ser solo el bench propio y pasa a ser un jurado agnóstico del
+campo entero. `scripts/build-scorecard.ts` lleva la lectura profunda de las 48 propuestas (cada pitch
++ escaneo estático de los repos clonados) a dos artefactos: `data/scorecard.json` (público,
+anonimizado por código de track, con distribuciones del campo) y `data/scorecard-private.json`
+(nombrado, ranking completo, base para la divulgación responsable). Cada propuesta se evalúa en las
+nueve comprobaciones de binding dinámicas (B-01, B-02, B-03, B-04, B-05, B-06, B-07, B-08, B-09) con
+marca `y/p/n/na/flag`, un tier de profundidad de integración (deep/solid/light/absent) y las banderas
+rojas confirmadas (B-11/B-12). El score mezcla cobertura sobre las comprobaciones aplicables (65%) con
+profundidad (35%), menos penalización por defectos.
+
+**El hallazgo que sostiene la tesis, en números del propio campo:** de las propuestas donde cada
+comprobación aplica, las que la hacen *completa* son minoría en los puntos frágiles: B-09 selección
+de log 6/33, B-05 identidad de cadena 12/44, B-08 ventana de bloque 4/14, B-01 estado de recibo 25/42.
+El boletín muestra el número pleno (teal) separado del parcial (ámbar), sin fundirlos, porque un
+"parcial" es justo donde la tercera comprobación es débil. Fundirlos daba un 37/42 engañoso; el honesto
+es 25/42 pleno + 12 parcial.
+
+**Postura mantenida:** en público, describir el anti-patrón, nunca nombrar al autor; los defectos
+confirmados sobre propuestas vivas van a divulgación privada al equipo y a team@creditcoin.org antes de
+nombrar. El análisis estático solo lee repos clonados, nunca `npm install` ni ejecuta su código.
+
+**Frontend:** `frontend/components/Scorecard.tsx` (componente de servidor, lee vía `lib/reports.ts`),
+sección "The field, checked" entre los hallazgos estáticos y la cobertura del catálogo. Barras de
+distribución con draw-on `scaleX` escalonado, tabla anonimizada rankeada por cobertura con grilla de
+9 marcas por fila. Verificado por DOM (anchos, colores, animación) porque el pane del navegador del
+usuario estaba oculto y no se podía capturar en vivo; una captura del encabezado confirmó que el
+lenguaje visual se pinta bien. Ranking privado (top): COVENANT 100, crosscredit 100, Credo 96,
+index41 95, loomcredit/Rivyn/Tutela/ChargeProof/VeriSettle 93.
+
+**D-23. P0-2: informe real de hallazgos del ecosistema, triado y de-duplicado.** La salida cruda del
+analizador (76 señales sobre 23 repos) es deliberadamente ruidosa: marca cada mock, cada selector
+falso, cada `catch return null` del árbol. Publicarla habría acusado en falso a equipos sólidos
+(loomcredit, ChargeProof, credo, index41 aparecen marcados solo por mocks en sus tests). El valor de
+ThirdCheck es precisamente no gritar lobo. `scripts/triage-findings.ts` clasifica cada señal por
+evidencia y ruta en confirmado / a revisar / ruido → `data/findings-report.json`, y el informe
+legible privado quedó en `docs/09-findings-ecosistema.md`.
+
+**Resultado del triaje:** 1 confirmado, 15 a revisar, 60 ruido. 16 de 23 repos marcados son solo
+ruido. Único **confirmado**: VaultBridge, `proof-pipeline/src/generateAbsenceProof.ts:125` vacía la
+prueba al fallar (`proof='0x'`) pero devuelve `success:true` — una ausencia manufacturada por un RPC
+caído se vuelve indistinguible de una real (B-12 en producción). VaultBridge es además el caso con
+más señales a revisar (selector inexistente en interfaz de producción, mock en `src/`, verificador
+intercambiable en dos contratos): el ejemplo trabajado.
+
+**A revisar (retenido hasta re-clonar y leer el sitio de llamada):** verificador en storage mutable
+en FactorX, ConvenantX, loomcredit, credo, ChargeProof, VaultBridge; mock en `src/` en spark y
+VaultBridge; selector inexistente en interfaz de producción en VaultBridge. El verificador
+intercambiable es patrón común y a menudo benigno (hatch tras owner/multisig); no se afirma sin leer
+el guardián del setter.
+
+**Bloqueo:** los repos clonados se limpiaron del scratchpad de sesión. Cerrar el bucket "a revisar"
+requiere re-clonar desde `github_url` (en `data/ctc-buidls-full.json`) y leer estáticamente, por
+señal, el guardián del setter y el sitio de llamada. Nunca `npm install` ni ejecutar el repo.
+
+**D-24. Bucket "a revisar" cerrado leyendo la fuente: el informe queda inatacable.** Re-cloné los 7
+repos señalados (solo lectura, `--depth 1`, sin install) y leí el setter y su consumidor de cada
+señal de producción. Resultado: los 8 flags de "verificador intercambiable" eran **falsos
+positivos** del heurístico `setVerifier`, que confundía un verificador de prueba con un rol de caller
+autorizado. loomcredit, credo, FactorX, ConvenantX, ChargeProof usan ese patrón como rol autorizado
+(varios de escritura única, con AccessControl/Ownable2Step); spark tiene su mock solo en tests. Las
+confirmaciones quedaron como tabla `CONFIRMATIONS` en `scripts/triage-findings.ts` para que la
+corrida sea reproducible.
+
+**Único defecto confirmado: VaultBridge**, y ahora con evidencia de código, no de resumen:
+`VaultLending._verifySingle` (línea 160) llama `IUSCVerifier(target).verifySingle` en 0x0FD2 en TODAS
+las rutas de registro; `verifySingle`/`verifyBatch` no son selectores del precompilo, así que la
+verificación real nunca se alcanza. Además `setVerifier` (línea 147) es onlyOwner sin write-once ni
+timelock y `MockStreakPrecompile` (que devuelve true) vive en `src/`: el dueño puede sellar cualquier
+prueba. Y la prueba de ausencia off-chain devuelve `success:true` al fallar.
+
+**Cifra final del triaje confirmado en fuente:** 76 crudas → 5 confirmadas (todas VaultBridge, 4
+leídas), 0 revisiones abiertas en otros repos, 68 ruido, 8 falsos positivos atrapados a mano. De 23
+repos marcados por el analizador, 22 quedan limpios tras revisión. Informe en
+`docs/09-findings-ecosistema.md`.
+
+**Lección para el propio ThirdCheck (mejora pendiente del analizador):** distinguir un `setVerifier`
+que reasigna el objetivo llamado para verificar la prueba, de uno que reasigna un msg.sender
+autorizado. Mientras tanto, regla operativa: el estático es triaje; ninguna afirmación se publica sin
+confirmación en fuente.
+
+**D-25. `judge:verify`: un comando que el jurado corre y reproduce las afirmaciones madre, sin
+clave.** `scripts/verify.ts` (npm run judge:verify) hace verificación read-only con el RPC público de
+CC3 por defecto, así corre sin `.env` del jurado. Cuatro secciones, todas PASS: (A) on-chain — los 6
+releases del escrow vulnerable son tx reales minadas contra el escrow auditado (por recibo), y el
+contraste B-09 es limpio (misma prueba, vulnerable libera, hardened revierte 0x3e70e82c); (B)
+protocolo — `verifySingle`/`verifyBatch` no están en la superficie real del precompilo {verify,
+verifyAndEmit, calculateTxIndex}, que es el núcleo del hallazgo de VaultBridge; (C) findings — el
+triaje sostiene exactamente 1 defecto confirmado en fuente (VaultBridge), 0 revisiones abiertas; (D)
+scorecard — invariantes del scorecard (48 filas, distribuciones sanas). Modo opcional `--reclone`:
+re-descarga el código público de VaultBridge y re-deriva el hallazgo con el analizador en vivo (13
+señales, reproduce selector falso + mock en src). 9/9 con --reclone.
+
+Se añadieron scripts npm: `scorecard`, `triage`, `judge:verify`. README con sección "Verify it
+yourself" al inicio, para que el jurado vea el comando único. Es la pieza que convierte "confía en
+mí" en "verifícalo tú".
+
+**D-26. P0-3: suite de conformidad del precompilo, superficie contada y verificable.** El argumento
+de profundidad frente al podio: auditar la tercera comprobación exige entender todo el precompilo,
+así que ThirdCheck toca mucha más superficie que un producto. `scripts/conformance.ts` (npm run
+conformance) enumera cada entrada de BlockProver y ChainInfo desde las ABIs del propio SDK (con
+`ethers.Interface`, firmas canónicas y selectores reales), llama las 11 vistas de ChainInfo en vivo
+con datos encadenados del frontier de atestiguación, sondea las vistas de BlockProver (verify
+single+batch, calculateTxIndex) con una prueba vacía bien formada, y clasifica cada entrada:
+live / onchain (evidenciada por el bench) / probed / enumerated.
+
+**Resultado: 15/16 entradas del precompilo ejercidas** (ChainInfo 11/11 live, calculateTxIndex live,
+verify single+batch probed, verifyAndEmit single onchain; la única sin ejercer es verifyAndEmit batch,
+que necesita corrida con fondos), más 16 funciones del decoder entendidas. Un consumidor típico toca
+1 (verifyAndEmit single). Read-only, sin clave: `data/conformance.json`.
+
+Integrado en `judge:verify` (línea "Protocol surface 15/16") y en el boletín como sección "Protocol
+surface exercised" (`frontend/components/Conformance.tsx`, loader en `lib/reports.ts`), con titular
+15/16 vs 1, la lista de entradas con selectores y su clase. Render verificado por DOM (6 secciones,
+sin overlay de error; un error `evidenced` en consola resultó ser buffer obsoleto, grep confirmó cero
+en build y fuente). Scripts npm añadidos: `conformance`. judge:verify ahora 9/9.
+
+**D-27. Borrador de divulgación responsable de VaultBridge listo.** `docs/10-disclosure-vaultbridge.md`
+tiene el correo listo para copiar (canal: aviso de seguridad privado en el repo del equipo + copia a
+team@creditcoin.org; plazo propuesto 14 días; sin nombre público hasta que respondan) y notas
+internas. El correo enumera los tres hallazgos con archivo:línea, propone los arreglos, e incluye la
+reproducción (`npm run judge:verify -- --reclone`). El envío lo hace Kevin; ThirdCheck no manda
+correos. Hasta respuesta o vencimiento del plazo, boletín y deck describen el anti-patrón anónimo.
+Regla mantenida: la afirmación fuerte es el hecho estático (verifySingle/verifyBatch no están en la
+ABI del precompilo), sin sobreafirmar una ejecución en vivo del selector falso.

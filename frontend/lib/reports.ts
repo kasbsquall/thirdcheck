@@ -59,6 +59,90 @@ export function loadStatic(name: string): StaticReport | null {
   return readJson<StaticReport>(`static-${name}.json`);
 }
 
+/** Ecosystem scorecard: ThirdCheck's own catalogue applied to every submission, anonymised. */
+export type ScoreMark = "y" | "p" | "n" | "na" | "flag";
+export type ScoreDepth = "deep" | "solid" | "light" | "absent";
+
+export interface ScorecardChecks {
+  receipt: ScoreMark;
+  emitter: ScoreMark;
+  event: ScoreMark;
+  replay: ScoreMark;
+  chain: ScoreMark;
+  order: ScoreMark;
+  fields: ScoreMark;
+  window: ScoreMark;
+  logsel: ScoreMark;
+}
+
+export interface ScorecardRow {
+  code: string;
+  track: string;
+  depth: ScoreDepth;
+  score: number;
+  checks: ScorecardChecks;
+  redFlagCount: number;
+}
+
+export interface ScorecardDistribution {
+  id: string;
+  label: string;
+  applicable: number;
+  yes: number;
+  partial: number;
+  flagged: number;
+}
+
+export interface Scorecard {
+  generatedAt: string;
+  method: string;
+  total: number;
+  consumersEvaluated: number;
+  withRedFlags: number;
+  checkLegend: { id: string; label: string }[];
+  distribution: ScorecardDistribution[];
+  depthCounts: { depth: ScoreDepth; count: number }[];
+  rows: ScorecardRow[];
+}
+
+export function loadScorecard(): Scorecard | null {
+  return readJson<Scorecard>("scorecard.json");
+}
+
+/** Precompile conformance: the full protocol surface ThirdCheck exercises. */
+export type ConformanceKind = "live" | "onchain" | "probed" | "enumerated";
+export interface ConformanceEntry {
+  precompile: string;
+  signature: string;
+  selector: string;
+  mutability: string;
+  kind: ConformanceKind;
+  detail: string;
+}
+export interface Conformance {
+  generatedAt: string;
+  precompiles: Record<string, { address: string; entryPoints: number }>;
+  surface: {
+    totalEntryPoints: number;
+    exercised: number;
+    live: number;
+    onchain: number;
+    probed: number;
+    enumerated: number;
+    typicalConsumerEntryPoints: number;
+  };
+  decoderSurface: string[];
+  entries: ConformanceEntry[];
+}
+
+export function loadConformance(): Conformance | null {
+  return readJson<Conformance>("conformance.json");
+}
+
+export const CHECK_ORDER: (keyof ScorecardChecks)[] = [
+  "receipt", "emitter", "event", "replay", "chain", "order", "fields", "window", "logsel",
+];
+
 /** Catalogue metadata, so the bulletin can show all twelve entries with coverage, not only the run ones. */
 export interface CatalogueEntry {
   id: string;

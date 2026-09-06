@@ -2,12 +2,16 @@ import {
   loadVulnerable,
   loadHardened,
   loadStatic,
+  loadScorecard,
+  loadConformance,
   CATALOGUE,
   CC3_EXPLORER,
   SEPOLIA_EXPLORER,
   type Finding,
   type BenchReport,
 } from "@/lib/reports";
+import { ScorecardSection } from "@/components/Scorecard";
+import { ConformanceSection } from "@/components/Conformance";
 import {
   ShieldWarning,
   ShieldCheck,
@@ -145,6 +149,8 @@ export default function Page() {
   const vulnerable = loadVulnerable();
   const hardened = loadHardened();
   const vaultbridge = loadStatic("VaultBridge");
+  const scorecard = loadScorecard();
+  const conformance = loadConformance();
 
   const dynamicIds = CATALOGUE.filter((c) => c.detection === "dynamic").map((c) => c.id);
   const vulnCount = dynamicIds.filter((id) => findingById(vulnerable, id)?.status === "accepted").length;
@@ -293,8 +299,14 @@ export default function Page() {
           </section>
         )}
 
+        {/* Ecosystem scorecard */}
+        {scorecard && <ScorecardSection data={scorecard} />}
+
+        {/* Protocol surface / conformance */}
+        {conformance && <ConformanceSection data={conformance} />}
+
         {/* Catalogue coverage */}
-        <section className="rise" style={{ animationDelay: "180ms" }}>
+        <section className="rise" style={{ animationDelay: "220ms" }}>
           <div style={styles.catHead}>catalogue coverage</div>
           <div style={styles.catGrid}>
             {CATALOGUE.map((c) => (

@@ -16,3 +16,9 @@ typechain-types/
 
 frontend/node_modules/
 frontend/.next/
+
+# Local machine settings, not shared
+.claude/settings.local.json
+
+# Named ecosystem ranking: private basis for responsible disclosure, never publish
+data/scorecard-private.json

@@ -8,7 +8,11 @@
     "check-setup": "ts-node scripts/check-setup.ts",
     "compile": "hardhat compile",
     "test": "hardhat test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "scorecard": "ts-node scripts/build-scorecard.ts",
+    "triage": "ts-node scripts/triage-findings.ts",
+    "conformance": "ts-node scripts/conformance.ts",
+    "judge:verify": "ts-node scripts/verify.ts"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",

@@ -1,0 +1,171 @@
+{
+  "generatedAt": "2026-09-06T07:03:49.145Z",
+  "rpc": "https://rpc.cc3-testnet.creditcoin.network",
+  "precompiles": {
+    "BlockProver": {
+      "address": "0x0000000000000000000000000000000000000FD2",
+      "entryPoints": 5
+    },
+    "ChainInfo": {
+      "address": "0x0000000000000000000000000000000000000fD3",
+      "entryPoints": 11
+    }
+  },
+  "surface": {
+    "totalEntryPoints": 16,
+    "exercised": 15,
+    "live": 12,
+    "onchain": 1,
+    "probed": 2,
+    "enumerated": 1,
+    "typicalConsumerEntryPoints": 1
+  },
+  "decoderSurface": [
+    "decodeCommonTxFields(bytes)",
+    "decodeReceiptFields(bytes)",
+    "decodeTransactionType0(bytes)",
+    "decodeTransactionType1(bytes)",
+    "decodeTransactionType2(bytes)",
+    "decodeTransactionType3(bytes)",
+    "decodeTransactionType4(bytes)",
+    "decodeTypeSpecificFieldsType0(bytes)",
+    "decodeTypeSpecificFieldsType1(bytes)",
+    "decodeTypeSpecificFieldsType2(bytes)",
+    "decodeTypeSpecificFieldsType3(bytes)",
+    "decodeTypeSpecificFieldsType4(bytes)",
+    "getLogsByEventSignature((address,bytes32[],bytes)[],bytes32)",
+    "getLogsByEventSignature((uint8,uint64,(address,bytes32[],bytes)[],bytes),bytes32)",
+    "getTransactionType(bytes)",
+    "isValidTransactionType(uint8)"
+  ],
+  "entries": [
+    {
+      "precompile": "ChainInfo",
+      "signature": "find_highest_attested_before(uint64,uint64)",
+      "selector": "0x981266c7",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[4 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "find_lowest_attested_after(uint64,uint64)",
+      "selector": "0x38bd95a7",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[4 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_attestation_bounds(uint64,uint64)",
+      "selector": "0x85600e2e",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[7 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_attestation_genesis_height(uint64)",
+      "selector": "0x0b0bbc8c",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "0"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_attestation_height_for_digest(uint64,bytes32)",
+      "selector": "0x6e7850bc",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[2 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_chain_by_key(uint64)",
+      "selector": "0x2d256bfa",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[2 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_checkpoint_for_height(uint64,uint64)",
+      "selector": "0x3c4a539e",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[2 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_latest_attestation_height_and_hash(uint64)",
+      "selector": "0x809112da",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[4 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_latest_checkpoint_height_and_hash(uint64)",
+      "selector": "0xd773a786",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[4 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "get_supported_chains()",
+      "selector": "0x69e18c3c",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "[2 items]"
+    },
+    {
+      "precompile": "ChainInfo",
+      "signature": "is_height_attested(uint64,uint64)",
+      "selector": "0x9c68eccf",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "true"
+    },
+    {
+      "precompile": "BlockProver",
+      "signature": "calculateTxIndex((bytes32,(bytes32,bool)[]))",
+      "selector": "0x44f85f1c",
+      "mutability": "view",
+      "kind": "live",
+      "detail": "returned 0 on an empty proof"
+    },
+    {
+      "precompile": "BlockProver",
+      "signature": "verify(uint64,uint64,bytes,(bytes32,(bytes32,bool)[]),(bytes32,bytes32[]))",
+      "selector": "0x7cc4e258",
+      "mutability": "view",
+      "kind": "probed",
+      "detail": "reached, rejected the empty proof (input-validated)"
+    },
+    {
+      "precompile": "BlockProver",
+      "signature": "verify(uint64,uint64[],bytes[],(bytes32,(bytes32,bool)[])[],(bytes32,bytes32[]))",
+      "selector": "0x1b5f6f88",
+      "mutability": "view",
+      "kind": "probed",
+      "detail": "reached, rejected the empty proof (input-validated)"
+    },
+    {
+      "precompile": "BlockProver",
+      "signature": "verifyAndEmit(uint64,uint64,bytes,(bytes32,(bytes32,bool)[]),(bytes32,bytes32[]))",
+      "selector": "0x02f4d167",
+      "mutability": "nonpayable",
+      "kind": "onchain",
+      "detail": "called in-contract by both escrows; evidenced by mined bench release txs"
+    },
+    {
+      "precompile": "BlockProver",
+      "signature": "verifyAndEmit(uint64,uint64[],bytes[],(bytes32,(bytes32,bool)[])[],(bytes32,bytes32[]))",
+      "selector": "0x4da3b895",
+      "mutability": "nonpayable",
+      "kind": "enumerated",
+      "detail": "batch variant; not exercised here (needs a funded batch run)"
+    }
+  ]
+}

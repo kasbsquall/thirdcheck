@@ -1,0 +1,1135 @@
+{
+  "generatedAt": "2026-09-06T06:46:38.453Z",
+  "method": "Triage of the ThirdCheck static analyzer output over the cloned submission repositories. Each raw signal is classified by evidence and file path. 'confirmed' = a production, source-visible binding defect. 'review' = a real production pattern whose severity needs the call site / access control read before any claim. 'noise' = test/mock code or off-chain catch-return-null no contract consumes. Named report; the private basis for responsible disclosure, not for publication.",
+  "rawSignals": 76,
+  "counts": {
+    "confirmed": 5,
+    "review": 3,
+    "noise": 68
+  },
+  "sourceConfirmed": 12,
+  "reposWithConfirmed": 1,
+  "reposWithReviewOnly": 0,
+  "reposNoiseOnly": 22,
+  "repos": [
+    {
+      "repo": "VaultBridge",
+      "topVerdict": "confirmed",
+      "confirmed": 5,
+      "review": 3,
+      "noise": 5,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "Verification via a selector the precompile does not implement",
+          "file": "contracts/src/creditcoin/interfaces/IUSCVerifier.sol",
+          "line": 7,
+          "evidence": "declares verifySingle(...)",
+          "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile.",
+          "repo": "VaultBridge",
+          "verdict": "confirmed",
+          "reason": "VaultLending._verifySingle calls IUSCVerifier(target).verifySingle at 0x0FD2 on every registration path; verifySingle is not a precompile selector, so real inclusion+continuity verification is never reached",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "Verification via a selector the precompile does not implement",
+          "file": "contracts/src/creditcoin/interfaces/IUSCVerifier.sol",
+          "line": 17,
+          "evidence": "declares verifyBatch(...)",
+          "note": "verifyBatch is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifyBatch at 0x0FD2 cannot reach the real precompile.",
+          "repo": "VaultBridge",
+          "verdict": "confirmed",
+          "reason": "verifyBatch is not a precompile selector; the batch registration path calls it at 0x0FD2 and cannot reach real verification",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "Verification via a selector the precompile does not implement",
+          "file": "contracts/src/creditcoin/MockStreakPrecompile.sol",
+          "line": 17,
+          "evidence": "declares verifySingle(...)",
+          "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile.",
+          "repo": "VaultBridge",
+          "verdict": "review",
+          "reason": "mock verifier shipped in the production src tree; confirm the deployed verifier never points here",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "Verification via a selector the precompile does not implement",
+          "file": "contracts/src/creditcoin/MockStreakPrecompile.sol",
+          "line": 27,
+          "evidence": "declares verifyBatch(...)",
+          "note": "verifyBatch is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifyBatch at 0x0FD2 cannot reach the real precompile.",
+          "repo": "VaultBridge",
+          "verdict": "review",
+          "reason": "mock verifier shipped in the production src tree; confirm the deployed verifier never points here",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/src/creditcoin/MockStreakPrecompile.sol",
+          "line": 10,
+          "evidence": "contract MockStreakPrecompile",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "VaultBridge",
+          "verdict": "confirmed",
+          "reason": "mock verifier shipped in src/ (not test/), combined with the unguarded swappable verifier, is the mechanism to bypass the precompile in a deployed instance",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "contracts/src/creditcoin/StreakVerifier.sol",
+          "line": 59,
+          "evidence": "setVerifier(...) assigns verifierAddress",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "VaultBridge",
+          "verdict": "review",
+          "reason": "verifier target in mutable storage; severity depends on access control (owner/timelock/multisig) — needs the setter's guard read",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "contracts/src/creditcoin/VaultLending.sol",
+          "line": 147,
+          "evidence": "setVerifier(...) assigns verifierAddress",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "VaultBridge",
+          "verdict": "confirmed",
+          "reason": "setVerifier is onlyOwner with no write-once/timelock guard; owner (EOA) can point verifierAddress at MockStreakPrecompile (shipped in src/, returns true), making verification decorative",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "Verification via a selector the precompile does not implement",
+          "file": "contracts/test/VaultLending.t.sol",
+          "line": 19,
+          "evidence": "declares verifySingle(...)",
+          "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile.",
+          "repo": "VaultBridge",
+          "verdict": "noise",
+          "reason": "SDK-only selector declared in test code",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "Verification via a selector the precompile does not implement",
+          "file": "contracts/test/VaultLending.t.sol",
+          "line": 585,
+          "evidence": "declares verifySingle(...)",
+          "note": "verifySingle is an SDK method name, not an on-chain selector. The precompile exposes only verify, verifyAndEmit, calculateTxIndex. A contract calling verifySingle at 0x0FD2 cannot reach the real precompile.",
+          "repo": "VaultBridge",
+          "verdict": "noise",
+          "reason": "SDK-only selector declared in test code",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/VaultLending.t.sol",
+          "line": 577,
+          "evidence": "contract MockBlockProverImpl",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "VaultBridge",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "frontend/lib/balanceCache.ts",
+          "line": 91,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "VaultBridge",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator zeroes the proof on failure but still reports success",
+          "file": "proof-pipeline/src/generateAbsenceProof.ts",
+          "line": 125,
+          "evidence": "catch { proof = '0x'; ... success: true }",
+          "note": "The proof generation failed, the proof was blanked, and the result still claims success. A consumer trusting that flag acts on an empty proof.",
+          "repo": "VaultBridge",
+          "verdict": "confirmed",
+          "reason": "generator zeroes the proof on failure but returns success; a consumer acts on an empty proof",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "proof-pipeline/src/generateAbsenceProof.ts",
+          "line": 179,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "VaultBridge",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "loomcredit",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 10,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "contracts/creditcoin/src/FacilityRegistry.sol",
+          "line": 87,
+          "evidence": "setEvidenceVerifier(...) assigns verifier",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "false positive: evidenceVerifier is the authorized-caller role for the registry; real proof verification is in a separate contract (TradeEvidenceUSC)",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/creditcoin/test/TradeEvidenceUSC.t.sol",
+          "line": 10,
+          "evidence": "contract MockNativeVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "web/lib/analytics-client.ts",
+          "line": 39,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "web/lib/auth.ts",
+          "line": 255,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "web/lib/live-evidence.ts",
+          "line": 31,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "worker/src/config.ts",
+          "line": 178,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "worker/src/submit.ts",
+          "line": 278,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "worker/src/submit.ts",
+          "line": 315,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "worker/src/watcher.ts",
+          "line": 61,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "worker/src/watcher.ts",
+          "line": 85,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "loomcredit",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "credo-settlement-rwa",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 6,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "contracts/src/SettleRWA.sol",
+          "line": 78,
+          "evidence": "setVerifier(...) assigns paymentVerifier",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "credo-settlement-rwa",
+          "verdict": "noise",
+          "reason": "false positive: `verifier` is an AccessControl-gated authorized-caller role; SettleRWA verifies the proof synchronously in-contract",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "scripts/resume-live-demo.ts",
+          "line": 23,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credo-settlement-rwa",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "scripts/setup-live-demo.ts",
+          "line": 70,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credo-settlement-rwa",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "scripts/verify-live-settlement.ts",
+          "line": 26,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credo-settlement-rwa",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "src/app/api/v1/playground/live-sale/route.ts",
+          "line": 159,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credo-settlement-rwa",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "src/app/api/v1/sales/index/route.ts",
+          "line": 48,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credo-settlement-rwa",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "AEOS",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 5,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "apps/api/src/balance-observer-engine.ts",
+          "line": 249,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "AEOS",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "apps/api/src/cockpit-projection-notification.service.ts",
+          "line": 18,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "AEOS",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "apps/api/src/evidence-anchor-engine.ts",
+          "line": 78,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "AEOS",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "apps/api/src/outbox-publisher.ts",
+          "line": 35,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "AEOS",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/EvidenceAnchorASC.t.sol",
+          "line": 6,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "AEOS",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "covenant",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 4,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/MockNativeQueryVerifier.sol",
+          "line": 13,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "covenant",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "web/lib/chain.ts",
+          "line": 30,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "covenant",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "web/lib/evidence.ts",
+          "line": 35,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "covenant",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "worker/src/attacks.ts",
+          "line": 555,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "covenant",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "FactorX",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 4,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "frontend/lib/chain.ts",
+          "line": 52,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "FactorX",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "frontend/lib/chain.ts",
+          "line": 207,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "FactorX",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "src/CommercialIntent.sol",
+          "line": 37,
+          "evidence": "setVerifier(...) assigns verifier",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "FactorX",
+          "verdict": "noise",
+          "reason": "false positive: `verifier` is an authorized-submitter role gating recordIntent (data write), not a proof verifier",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "src/ReceivableRegistry.sol",
+          "line": 66,
+          "evidence": "setVerifier(...) assigns verifier",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "FactorX",
+          "verdict": "noise",
+          "reason": "false positive: `verifier` is an authorized-caller role (onlyVerifier gates a data write), not a proof verifier",
+          "sourceConfirmed": true
+        }
+      ]
+    },
+    {
+      "repo": "ConvenantX",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 3,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "contracts/creditcoin/CovenantRegistry.sol",
+          "line": 79,
+          "evidence": "setCovenantVerifier(...) assigns _covenantVerifier",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "ConvenantX",
+          "verdict": "noise",
+          "reason": "false positive: covenantVerifier is a write-once authorized-caller role (reverts if already set); not swappable, not a proof verifier",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "contracts/creditcoin/CreditFacility.sol",
+          "line": 97,
+          "evidence": "setCovenantVerifier(...) assigns _covenantVerifier",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "ConvenantX",
+          "verdict": "noise",
+          "reason": "false positive: covenantVerifier is a write-once authorized-caller role; not swappable, not a proof verifier",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/mocks/MockNativeQueryVerifier.sol",
+          "line": 13,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "ConvenantX",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "Cr3dX",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 3,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "scripts/probe.ts",
+          "line": 225,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "Cr3dX",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "scripts/probe.ts",
+          "line": 231,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "Cr3dX",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "test/helpers/MockBlockProver.sol",
+          "line": 29,
+          "evidence": "contract MockBlockProver",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "Cr3dX",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "Emberline",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 3,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "app/app.js",
+          "line": 32,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "Emberline",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "test/AttestcoinReviewVerifier.t.sol",
+          "line": 9,
+          "evidence": "contract MockBlockProver",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "Emberline",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "test/EmberlineProject.t.sol",
+          "line": 7,
+          "evidence": "contract MockProofVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "Emberline",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "index41",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 3,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "app/_lib/repo.ts",
+          "line": 40,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "index41",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/mocks/MockVerifier.sol",
+          "line": 28,
+          "evidence": "contract MockVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "index41",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "scripts/spike.ts",
+          "line": 395,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "index41",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "spark",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 3,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "app/src/hooks/usePaymentActivity.ts",
+          "line": 68,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "spark",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "app/src/lib/flowState.ts",
+          "line": 37,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "spark",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/src/MockPaymentVerifier.sol",
+          "line": 12,
+          "evidence": "contract MockPaymentVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "spark",
+          "verdict": "noise",
+          "reason": "false positive: MockPaymentVerifier is referenced only by test/Spark.t.sol; production uses AttestcoinPaymentVerifier calling blockProver.verify/verifyAndEmit at 0x0FD2 (housekeeping: move it under test/)",
+          "sourceConfirmed": true
+        }
+      ]
+    },
+    {
+      "repo": "verisettle",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 3,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "client/src/hooks/useWalletAccess.ts",
+          "line": 80,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "verisettle",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "client/src/hooks/useWalletAccess.ts",
+          "line": 91,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "verisettle",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "server/_core/sdk.ts",
+          "line": 234,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "verisettle",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "attestdesk",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 2,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/mocks/MockBlockProver.sol",
+          "line": 10,
+          "evidence": "contract MockBlockProver",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "attestdesk",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "src/proof/decode-facts.ts",
+          "line": 10,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "attestdesk",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "ChargeProof",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 2,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "Verifier address is swappable after deployment",
+          "file": "packages/contracts-creditcoin/contracts/ChargeIntentEscrow.sol",
+          "line": 110,
+          "evidence": "setVerifier(...) assigns verifier_",
+          "note": "The verifier target lives in mutable storage. If the owner can point it at a mock, on-chain verification is decorative. Address the precompile as an immutable constant instead.",
+          "repo": "ChargeProof",
+          "verdict": "noise",
+          "reason": "false positive: write-once authorized-caller role (VerifierAlreadySet guard), Ownable2Step; the escrow binds and verifies in-contract",
+          "sourceConfirmed": true
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "packages/contracts-creditcoin/contracts/test/MockNativeQueryVerifier.sol",
+          "line": 6,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "ChargeProof",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "collateral-eligibility-ledger",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 2,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/Mocks.sol",
+          "line": 10,
+          "evidence": "contract MockVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "collateral-eligibility-ledger",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/MocksV2.sol",
+          "line": 10,
+          "evidence": "contract MockVerifier2",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "collateral-eligibility-ledger",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "credit-reputation-agent",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 2,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "agent/proveActivity.ts",
+          "line": 100,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credit-reputation-agent",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "agent/sources/sepoliaActivity.ts",
+          "line": 57,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "credit-reputation-agent",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "spacefi",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 2,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/contracts/mocks/MockNativeQueryVerifier.sol",
+          "line": 15,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "spacefi",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        },
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "contracts/scripts/e2e.ts",
+          "line": 71,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "spacefi",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "AttestGuard",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 1,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/mocks/MockNativeQueryVerifier.sol",
+          "line": 20,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "AttestGuard",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "crosscredit",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 1,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/mocks/MockNativeQueryVerifier.sol",
+          "line": 19,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "crosscredit",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "proofyield",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 1,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "packages/agent/src/config.ts",
+          "line": 49,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "proofyield",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "Rivyn",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 1,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "test/RivynEscrowASC.t.sol",
+          "line": 15,
+          "evidence": "contract MockVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "Rivyn",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "Tutela",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 1,
+      "findings": [
+        {
+          "id": "B-11",
+          "title": "A mock verifier is present in the source tree",
+          "file": "contracts/test/mocks/MockNativeQueryVerifier.sol",
+          "line": 6,
+          "evidence": "contract MockNativeQueryVerifier",
+          "note": "A mock is fine for tests. Combined with a swappable verifier address it is the mechanism by which a deployed demo can bypass the real precompile. Confirm production never points the verifier here.",
+          "repo": "Tutela",
+          "verdict": "noise",
+          "reason": "mock verifier in a test tree; correct practice for unit tests",
+          "sourceConfirmed": false
+        }
+      ]
+    },
+    {
+      "repo": "unbridged",
+      "topVerdict": "noise",
+      "confirmed": 0,
+      "review": 0,
+      "noise": 1,
+      "findings": [
+        {
+          "id": "B-12",
+          "title": "Generator returns null on failure, read upstream as absence",
+          "file": "web/src/hooks/useWallet.ts",
+          "line": 119,
+          "evidence": "catch { ... return null }",
+          "note": "A scan that throws and returns null cannot be distinguished from a scan that found nothing. If null means 'no payment' anywhere upstream, a dead RPC manufactures a negative result.",
+          "repo": "unbridged",
+          "verdict": "noise",
+          "reason": "catch-return-null in off-chain app code; not a contract treating absence as proven",
+          "sourceConfirmed": false
+        }
+      ]
+    }
+  ]
+}
