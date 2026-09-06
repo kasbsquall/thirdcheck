@@ -60,6 +60,29 @@ on a committed file:
 npm run judge:verify -- --reclone
 ```
 
+## Use it in CI (the third-check gate)
+
+ThirdCheck ships as a GitHub Action, so any Attestcoin integrator fails the build before mainnet if
+their consumer skips the third check — the exact bug class that drains cross-chain money. Add to a
+workflow:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: <owner>/thirdcheck@v1
+  with:
+    path: contracts      # directory to scan (default ".")
+    fail-on: confirmed   # or "any" to also fail on review-class findings
+```
+
+The gate scans the repo, posts inline PR annotations, and exits non-zero on a defect-class finding: a
+verify path that cannot reach the precompile (a selector like `verifySingle` that `0x0FD2` does not
+implement), a swappable proof verifier with no guard, a proof replaced by an `ecrecover` signature, or
+an off-chain generator that blanks a proof yet reports success. Authorized-caller roles, write-once
+setters, and test-tree mocks are not flagged — the analyzer distinguishes them, so the gate does not
+cry wolf. This repo runs the gate on itself (`.github/workflows/thirdcheck.yml`).
+
+Locally: `npm run gate -- contracts`.
+
 ## Why this, for this hackathon
 
 The precompile is powerful and new, and the reflex across the field is to treat a passing proof as

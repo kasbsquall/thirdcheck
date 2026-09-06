@@ -417,3 +417,18 @@ autoritativa (2 repos, 2 clases, cada uno con evidencia file:line). `judge:verif
 pública. 11/11. README/docs/09/10/12 actualizados a "dos defectos confirmados". Borrador de divulgación
 de Sovereign añadido a docs/10 (mismo protocolo: privado + team@creditcoin.org, sin nombre público 14
 días). Postura mantenida: solo se reportan defectos reales; los 2 B-12 dudosos se dejaron fuera.
+
+**D-31. GitHub Action: el gate de la tercera comprobación, instalable.** Última palanca de código para
+el eje de adopción (el juez que disentía). `scripts/gate.ts` corre el analizador sobre un repo, emite
+anotaciones inline de GitHub (`::error`/`::warning`), escribe el job summary y sale con código != 0 si
+hay un hallazgo de clase-defecto. Severidad: error para selector inexistente, verificador
+intercambiable, firma-en-vez-de-precompilo y proof-vacío-con-success; warning para mock-en-src y
+catch-null en ruta de prueba. `action.yml` (acción compuesta) instala deps y corre el gate con
+`ts-node/register/transpile-only` sobre el workspace del consumidor. Uso:
+`uses: <owner>/thirdcheck@v1` con inputs `path` y `fail-on`.
+
+Probado: Sovereign sale 1 (falla CI), nuestros contratos y un repo sano salen 0. `.github/workflows/
+thirdcheck.yml` corre el gate sobre nuestros propios `contracts/` (dogfooding + ejemplo vivo). README
+con sección "Use it in CI". Script npm `gate` añadido. Esto convierte "otros lo correrán" en "aquí
+está el gate que añades a tu repo": usuario durable (cualquier integrador) y comprador (el protocolo).
+Pendiente del lado usuario: acercamiento al sponsor para adoptarlo como check pre-integración.

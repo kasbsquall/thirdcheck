@@ -12,6 +12,7 @@
     "scorecard": "ts-node scripts/build-scorecard.ts",
     "triage": "ts-node scripts/triage-findings.ts",
     "conformance": "ts-node scripts/conformance.ts",
+    "gate": "ts-node scripts/gate.ts",
     "judge:verify": "ts-node scripts/verify.ts"
   },
   "devDependencies": {
