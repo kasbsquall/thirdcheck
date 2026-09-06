@@ -1,0 +1,26 @@
+# ThirdCheck gate for this consumer. Runs on every push and PR, and is meant to be a required
+# check: a fork stays green because the template consumer does the third check correctly.
+#
+# Replace <owner> with the GitHub org or user that hosts the published ThirdCheck action, pinned
+# to a release tag (@v1).
+
+name: ThirdCheck
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  third-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Third-check gate
+        uses: <owner>/thirdcheck@v1
+        with:
+          path: contracts
+          fail-on: confirmed

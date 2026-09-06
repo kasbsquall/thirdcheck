@@ -79,6 +79,43 @@ contract SafeEscrow {
 // vulnerable control (NaiveManager) the scan flags, and a hardened path it does not.
 const REAL_REPO = "https://github.com/Nuel-osas/deadswitch";
 
+// ThirdCheck's own shipped consumer: the complete third-check-complete escrow, built on
+// ThirdCheckLib in two calls. It passes the same gate every submission is measured against.
+const SHIPPED_CONSUMER = `// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+// SettlementConsumer: a complete Attestcoin consumer in two library calls.
+// The whole third check is a dependency here, not something reimplemented per team.
+contract SettlementConsumer {
+    mapping(bytes32 => Order) public orders;
+    mapping(bytes32 => bool) private consumedProof;
+
+    function release(
+        bytes32 orderId,
+        uint64 chainKey,
+        uint64 height,
+        bytes calldata encodedTransaction,
+        INativeQueryVerifier.MerkleProof calldata merkleProof,
+        INativeQueryVerifier.ContinuityProof calldata continuityProof
+    ) external {
+        Order storage order = orders[orderId];
+        require(order.amount > 0 && !order.released, "bad order");
+
+        // Chain, window, proof, replay, receipt status: one call.
+        EvmV1Decoder.ReceiptFields memory receipt = ThirdCheckLib.verifyReceipt(
+            consumedProof,
+            order.expectedChainKey, order.minHeight, order.maxHeight,
+            chainKey, height, encodedTransaction, merkleProof, continuityProof
+        );
+        // Emitter, event, order, recipient, amount, log selection: the second.
+        ThirdCheckLib.bindPayment(receipt, order.expectedSource, orderId, order.seller, order.amount);
+
+        order.released = true;
+        (bool ok, ) = payable(order.seller).call{ value: order.amount }("");
+        require(ok, "payout failed");
+    }
+}`;
+
 const VERDICT_STYLE = {
   pass: { color: "var(--safe)", bg: "var(--safe-bg)", Icon: CheckCircle, label: "passes the third check" },
   review: { color: "var(--vuln)", bg: "var(--vuln-bg)", Icon: Warning, label: "findings to review, none blocking" },
@@ -162,9 +199,10 @@ export function LiveCheckSection() {
           <span className="lc-live">live</span>
         </div>
         <p className="lc-note">
-          Paste an Attestcoin consumer, or give it any GitHub repo or <span className="mono">.sol</span> link
-          and it pulls and scans the live code. Same engine the CI gate runs, same verdict a pull request
-          would get. No key, nothing stored.
+          This is the instrument behind the scorecard below. Paste an Attestcoin consumer, or give it any
+          GitHub repo or <span className="mono">.sol</span> link and it pulls and scans the live code. Every
+          submission the scorecard summarizes is public, so run the gate on any of them yourself. Same engine
+          the CI gate runs, same verdict a pull request would get. No key, nothing stored.
         </p>
 
         {/* Mode switch: a real segmented control, distinct from the example row below. */}
@@ -241,6 +279,9 @@ export function LiveCheckSection() {
           </button>
           <button type="button" className="lc-chip" onClick={() => loadPaste(CLEAN_SAMPLE)}>
             one that does it right
+          </button>
+          <button type="button" className="lc-chip" onClick={() => loadPaste(SHIPPED_CONSUMER)}>
+            our shipped consumer
           </button>
           <button type="button" className="lc-chip" onClick={() => loadRepo(REAL_REPO)}>
             scan a real submission

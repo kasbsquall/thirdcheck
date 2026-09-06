@@ -64,11 +64,16 @@ npm run judge:verify -- --reclone
 ## Ship a correct consumer (the third check as a dependency)
 
 Finding the bug is half of it. The other half is making the right thing easy. The audited logic of the
-hardened escrow is packaged as a Solidity library, so a new Attestcoin consumer gets all twelve binding
-checks in two calls instead of reimplementing them and getting one wrong:
+hardened escrow is packaged as a Solidity library (`packages/thirdcheck-contracts/`, published as
+`thirdcheck-contracts`), so a new Attestcoin consumer gets all twelve binding checks in two calls
+instead of reimplementing them and getting one wrong:
+
+```bash
+npm install thirdcheck-contracts @gluwa/usc-contracts
+```
 
 ```solidity
-import { ThirdCheckLib } from "thirdcheck/ThirdCheckLib.sol";
+import { ThirdCheckLib } from "thirdcheck-contracts/contracts/ThirdCheckLib.sol";
 
 // chain identity, block window, inclusion+continuity, replay, receipt status:
 EvmV1Decoder.ReceiptFields memory receipt = ThirdCheckLib.verifyReceipt(
@@ -109,6 +114,29 @@ setters, and test-tree mocks are not flagged — the analyzer distinguishes them
 cry wolf. This repo runs the gate on itself (`.github/workflows/thirdcheck.yml`).
 
 Locally: `npm run gate -- contracts`.
+
+### Add it to your repo in one line
+
+ThirdCheck is a reusable GitHub Action. Any Attestcoin consumer wires the gate into CI with one
+`uses:` line inside `.github/workflows/thirdcheck.yml`:
+
+```yaml
+- uses: actions/checkout@v4
+- uses: <owner>/thirdcheck@v1
+  with:
+    path: contracts      # your Solidity directory (default ".")
+    fail-on: confirmed   # or "any" to also fail on review-class findings
+```
+
+`path` is the directory the analyzer scans, relative to your checked-out repo. `fail-on: confirmed`
+blocks the build only on defect-class findings; `any` also blocks on review-class warnings. The
+action installs its own dependencies in its action path (`npm ci`, falling back to `npm install`)
+and runs `scripts/gate.ts` through ts-node, so a consumer repo needs no ThirdCheck setup of its own
+beyond checkout and Node.
+
+A copy-paste workflow is at [`examples/consumer-workflow.yml`](examples/consumer-workflow.yml), and a
+full forkable consumer that passes this gate on day one is at
+[`examples/settlement-consumer-template/`](examples/settlement-consumer-template/).
 
 ## Why this, for this hackathon
 

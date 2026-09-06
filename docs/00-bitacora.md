@@ -593,3 +593,36 @@ Agent, FactorX", 9/9 passed. `--reclone` → 12/12, "Re-clone: FactorX cloned pu
 reproduced records an attestation without verifying the proof (1 signals)". Números actualizados a
 "tres" en README, video-script y confirmed-defects.json. Disclosure responsable: nombrado solo en el
 sustento privado, anónimo en materiales públicos hasta que se acuse recibo.
+
+---
+
+## 2026-09-06 · Sesión (cont.) — producto: instrumento, librería instalable, plantilla forkeable
+
+**D-39. Ideas 1 y 2 para levantar el eje producto (79) sin tocar el vídeo.** Bajo los mismos jurados
+agnósticos el único eje débil es producto; crosscredit va en 90 y pico. Se atacan con tres señales de
+producto concretas, en paralelo.
+
+- **Instrumento operable sobre el campo (idea 1a, frontend).** El checker en vivo se reencuadra como
+  el instrumento detrás del scorecard: los 53 son públicos, el juez corre el gate sobre cualquiera él
+  mismo. Nuevo ejemplo de un clic, "our shipped consumer", que pasa nuestro SettlementConsumer real
+  por el mismo gate. Verificado en vivo (DOM, la captura sale negra por el bug conocido del panel):
+  veredicto "passes the third check", 0 defect-class, 0 review. `frontend/components/LiveCheck.tsx`.
+  Frontend typecheck limpio.
+
+- **Librería instalable (idea 1b).** `packages/thirdcheck-contracts/`: package.json (name
+  `thirdcheck-contracts`, peer `@gluwa/usc-contracts`), copia byte-idéntica de la librería auditada,
+  README con install + snippet de dos llamadas, LICENSE. Enfoque de copia, no dogfood con `file:` dep,
+  para no arriesgar el build; sincronía garantizada por comentario de sync en ambos archivos (canónico
+  = `contracts/lib/ThirdCheckLib.sol`). Publicación (`npm publish`) la ejecuta el usuario.
+
+- **Action lista para marketplace + plantilla forkeable (idea 2).** README con sección "add it to your
+  repo in one line" (`uses: <owner>/thirdcheck@v1`), `examples/consumer-workflow.yml` copy-paste, y
+  `examples/settlement-consumer-template/`: proyecto Hardhat autocontenido con el consumer correcto +
+  librería vendorizada + workflow con la Action como check en verde + README "forkéalo y pasas el
+  tercer check desde el día uno". Todo contrato del template escanea `[]`. El usuario ejecuta los
+  pasos externos (npm publish, gh repo create, tag v1, listar en Marketplace); los placeholders
+  `<owner>` quedan por rellenar.
+
+Verificado tras ambos tracks: `npm run compile` ok, `npm run typecheck` solo con los errores
+preexistentes de `scripts/run-b09.ts`, `npm run judge:verify` 9/9. Falta: republicar el artifact para
+reflejar el nuevo ejemplo, idea 3 (disclosure) y la pasada nueva de jurado, en ese orden.
