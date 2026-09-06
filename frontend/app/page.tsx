@@ -13,6 +13,7 @@ import {
 import { ScorecardSection } from "@/components/Scorecard";
 import { ConformanceSection } from "@/components/Conformance";
 import { LiveCheckSection } from "@/components/LiveCheck";
+import { ProductSection } from "@/components/Product";
 import {
   ShieldWarning,
   ShieldCheck,
@@ -205,6 +206,13 @@ export default function Page() {
             tone="dim"
           />
         </section>
+
+        {/* The product: the hardened escrow, shipped and moving value */}
+        <ProductSection
+          hardened={hardened}
+          attacksRejected={hardSafeCount}
+          attacksTotal={dynamicIds.length}
+        />
 
         {/* The contrast table */}
         <section className="rise" style={{ animationDelay: "100ms" }}>

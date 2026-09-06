@@ -60,6 +60,28 @@ on a committed file:
 npm run judge:verify -- --reclone
 ```
 
+## Ship a correct consumer (the third check as a dependency)
+
+Finding the bug is half of it. The other half is making the right thing easy. The audited logic of the
+hardened escrow is packaged as a Solidity library, so a new Attestcoin consumer gets all twelve binding
+checks in two calls instead of reimplementing them and getting one wrong:
+
+```solidity
+import { ThirdCheckLib } from "thirdcheck/ThirdCheckLib.sol";
+
+// chain identity, block window, inclusion+continuity, replay, receipt status:
+EvmV1Decoder.ReceiptFields memory receipt = ThirdCheckLib.verifyReceipt(
+    consumedProof, order.expectedChainKey, order.minHeight, order.maxHeight,
+    chainKey, height, encodedTransaction, merkleProof, continuityProof
+);
+// emitter, event signature, correct-log selection, order, recipient, amount:
+ThirdCheckLib.bindPayment(receipt, order.expectedSource, orderId, order.seller, order.amount);
+```
+
+`contracts/cc3/SettlementConsumer.sol` is a full working escrow built this way; its release path is the
+two calls above. It enforces the same checks as `HardenedEscrow`, which the bench proves rejects every
+attack and releases the correct payment on CC3.
+
 ## Use it in CI (the third-check gate)
 
 ThirdCheck ships as a GitHub Action, so any Attestcoin integrator fails the build before mainnet if
@@ -130,7 +152,9 @@ the real precompile. That is catalogue entry B-11, and the static analyzer flags
 | Falsifier | `src/bench.ts` | Five dynamic attacks that submit legitimate proofs of the wrong thing, plus a positive path |
 | Static analyzer | `src/static.ts` | Catches source-visible defects (B-01, B-02, B-11, B-12) with file:line evidence. Strips comments first, so a guard *described* in a comment cannot stand in for one *missing* from the code |
 | Vulnerable escrow | `contracts/cc3/VulnerableEscrow.sol` | The target. Verifies against the real precompile, checks the event signature, and still releases against a forgery because it never binds the proof to the order |
-| Hardened escrow | `contracts/cc3/HardenedEscrow.sol` | The same product with the checks in a fixed order. Rejects every attack, releases the correct payment |
+| Hardened escrow | `contracts/cc3/HardenedEscrow.sol` | The shipped product. The same escrow with the checks in a fixed order. Rejects every attack, releases the correct payment, deployed on CC3 and moving real value against Sepolia proofs |
+| The third check, as a library | `contracts/lib/ThirdCheckLib.sol` | The hardened escrow's audited logic as a reusable Solidity library. `verifyReceipt` + `bindPayment` give a consumer all twelve binding checks in two calls |
+| Example consumer | `contracts/cc3/SettlementConsumer.sol` | A complete, third-check-complete cross-chain escrow in ~40 lines, built on the library. What a correct consumer looks like when the checks are a dependency |
 | Source fixtures | `contracts/source/*.sol` | The honest payment on Sepolia, a look-alike, and reverting/noisy variants |
 | Bulletin | `frontend/` | The audit report as a screen: each check, vulnerable vs hardened, with on-chain evidence links |
 

@@ -538,3 +538,27 @@ que las tablas de solo-lectura, y el toggle era el control más débil de la pá
 Frontend typecheck limpio; verificado por DOM extremo a extremo (paste review, fake-selector defect,
 mode switch limpia veredicto, input URL con dot). El error de consola "evidenced" sigue siendo el
 buffer stale de siempre (mismo digest), no vivo.
+
+**D-37. Producto (B) + librería (C): atacar el único eje débil, producto.** El jurado súper-agnóstico
+(4 jueces) puso a ThirdCheck 3º-4º en promedio (crosscredit 1º, index41 2º), 1º con el juez de
+seguridad, pero 6º (66) con el pragmático de producto. Decisión de Kevin: el video es relativo (todos
+entregan uno, se cancela), así que la palanca real es subir producto. B+C:
+
+- **C — ThirdCheckLib.sol**: la lógica auditada del HardenedEscrow extraída en librería reutilizable.
+  `verifyReceipt` (B-05/B-08/prueba/B-04/B-01) + `bindPayment` (B-02/B-03/B-06/B-07/B-09) dan las 12
+  comprobaciones en dos llamadas. `SettlementConsumer.sol`: escrow completo third-check-complete en
+  ~40 líneas sobre la librería. Compila (hardhat, 26 typings). Encuadre: encuentro el bug y vendo la
+  vacuna. HardenedEscrow queda intacto (desplegado + referenciado por el bench); la librería espeja su
+  lógica exacta, así que la corrección de C se apoya en la evidencia de bench ya existente del Hardened.
+- **B — sección Producto en el boletín** (Product.tsx, colocada tras las stats, antes de la tabla de
+  contraste). Reencuadra el HardenedEscrow como producto enviado: garantía 12/12 checks, 5/5 ataques
+  rechazados, pago correcto libera; **valor liquidado extremo a extremo con txs reales** (pago en
+  Sepolia sourceTx → liberación en CC3 evidenceTx, ambos con enlace a explorer verificable);
+  direcciones desplegadas; y "ship it" con el snippet de dos llamadas de la librería. README con fila
+  de librería/consumer + sección "Ship a correct consumer".
+
+Por qué esta jugada y no otra: de las tres opciones de producto, B+C es la única que levanta producto
+(mueve dinero real, usuario claro, usable ya) SIN perder la identidad de auditor, y con halo sobre
+generalista (mejor historia) y protocolo (consumidor real, no solo bench). Testnet a propósito: el
+proyecto es testnet-only por diseño; mover valor en mainnet es acción irreversible que no ejecutamos.
+Frontend typecheck limpio; 8 secciones; enlaces de dinero real verificados por DOM.
