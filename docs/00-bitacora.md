@@ -642,3 +642,42 @@ Si algún equipo acusa recibo antes del cierre, la narrativa pasa de "reportado"
 reconocido", que es la palanca de credibilidad que ningún rival puede fabricar. Pendiente del usuario:
 enviar. Opcional (versión barata de la contraparte externa): un tercero corre una liquidación real por
 el escrow en CC3 testnet, coste cero, para quitar el "self-dealing".
+
+---
+
+## 2026-09-06 · Sesión (cont.) — pasada nueva de jurado (4 ejes, adversarial)
+
+**D-41. Jurado agnóstico adversarial, un subagente por eje, instrucción explícita de no favorecer a
+ThirdCheck y castigar testnet/incompleto/no verificable.** Seis proyectos. Resultado:
+
+| eje | crosscredit | ThirdCheck | index41 | COVENANT | Deadswitch | CarryProof |
+|---|---|---|---|---|---|---|
+| producto | 84 | 72 | 66 | 58 | 52 | 47 |
+| protocolo | 88 | 78 | 85 | 60 | 30 | 35 |
+| seguridad | 72 | 80 | 77 | 66 | 48 | 35 |
+| generalista | 86 | 84 | 73 | 62 | 43 | 45 |
+| compuesto | 82.5 | 78.5 | 75.25 | 61.5 | 43.25 | 40.5 |
+
+Ranking compuesto: crosscredit 82.5, ThirdCheck 78.5, index41 75.25. Votos de primer lugar:
+crosscredit 3 (producto, protocolo, generalista), ThirdCheck 1 (seguridad). Borda (6..1): crosscredit
+22, ThirdCheck 20, index41 18.
+
+Veredicto: ThirdCheck es segundo claro, no voltea a crosscredit en esta pasada. Es más dura que la
+anterior (86.5, gap Borda 1, 2-2) por dos razones: la instrucción adversarial, y sobre todo que **3 de
+4 jueces no pudieron alcanzar el repo ni la página de DoraHacks de ThirdCheck**, así que puntuaron sus
+afirmaciones concretas como "auto-declaradas, no verificables" y las capearon a propósito. El único
+juez que abrió el repo local (generalista) lo puntuó 84 y casi primero. Cada juez nombró el mismo tope:
+
+- producto: "adopción externa no probada, no verifiqué contra el repo".
+- protocolo: "nada verificable externamente, no hallé repo ni traza".
+- seguridad: "capeado por debajo de inflar porque el repo no era alcanzable; cada defecto confirmado y
+  cada disclosure es auto-declarado, no lo pude re-derivar".
+
+Hallazgo dominante y accionable: la ventaja entera de ThirdCheck es la reproducibilidad, y es invisible
+si el repo y el boletín no son públicos y localizables desde la entrada del hackathon. Publicar no es
+cosmético; es lo que convierte "afirmaciones" en la evidencia que es la tesis. Segundo lever: una sola
+señal externa real (un acuse de disclosure, o un tercero forkeando la plantilla / corriendo la Action)
+convierte "impacto asertado" en "impacto mostrado". Ambos atacan justo los topes que nombró el panel.
+Techo estructural honesto: aun verificado, crosscredit gana producto y generalista por narrativa y por
+tener app de usuario final; el objetivo realista pasa de "segundo claro" a "moneda al aire por el
+primero", y ahí el vídeo (que el usuario deja para el final) es donde se disputa la narrativa.
