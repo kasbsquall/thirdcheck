@@ -39,9 +39,9 @@
       "id": "B-09",
       "title": "Only the first log read; a decoy log wins",
       "status": "accepted",
-      "detail": "escrow released against the proof",
-      "sourceTx": "0x1dcbcf45e21d1f383fc5068a165a89b4e176fdd5ed74352dffeca8872b5f6cd9",
-      "evidenceTx": "0x12d3996b25fef7ba2e95a137f70ab8711e4d7061548265d7081a308d66c54a3b"
+      "detail": "escrow released reading receiptLogs[0], a decoy; the receipt contains no log that covers the order",
+      "evidenceTx": "0x1db253991e8d5316c8aa24b29529d17044c15ce511e52beae4d47c2e271f41e8",
+      "sourceTx": "0xc37263cfcf50ea861448e5cb2f1afa2731d2e6ee5465d13dd13b9d6028984b28"
     },
     {
       "id": "POS",

@@ -187,12 +187,18 @@ export async function prepareReceiptReverted(ctx: BenchContext, amount: bigint):
   };
 }
 
-/** B-09. Decoy PaymentSettled logs precede the real one. */
+/**
+ * B-09. Decoy PaymentSettled logs at the head of the receipt, and NO log that actually covers the
+ * order: value is zero, so the trailing "real" log carries amount 0, below what the order requires.
+ * A consumer that reads only receiptLogs[0] sees a PaymentSettled and releases; a consumer that
+ * scans every log finds none that binds order, recipient and amount, and rejects. This is the whole
+ * point of the defect, so the source transaction must not contain a genuine covering payment.
+ */
 export async function prepareNoisyLogs(ctx: BenchContext, amount: bigint): Promise<PreparedAttack> {
   const id = "B-09", title = "Only the first log read; a decoy log wins";
   const orderId = newOrderId("noisy");
   await fundOrder(ctx, orderId, amount);
-  const src = await (await ctx.source.settleNoisy(orderId, ctx.cc3Signer.address, 3, { value: amount })).wait();
+  const src = await (await ctx.source.settleNoisy(orderId, ctx.cc3Signer.address, 3, { value: 0n })).wait();
   return {
     id, title, maxHeight: src.blockNumber, sourceTx: src.hash,
     finalize: async () => {

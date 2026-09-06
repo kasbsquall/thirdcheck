@@ -192,3 +192,29 @@ rechaza con NoMatchingPayment. Toca cambiar `settleNoisy` (redeploy en Sepolia) 
 
 **Al retomar (espera ok):** decidir si rediseñar B-09 o recategorizarlo en el catálogo y el boletín
 como prueba de robustez ante señuelos (que el hardened pasa) en vez de ataque a rechazar.
+
+**D-21. B-09 cerrado con contraste limpio, y causa raíz de los cuelgues de nonce encontrada.** El
+ataque B-09 se rediseñó para ser genuinamente adversario: `settleNoisy` se llama con `value: 0`, así
+el recibo lleva señuelos y un log final con monto 0 que no cubre el pedido. El vulnerable libera
+leyendo `receiptLogs[0]` (un señuelo); el hardened escanea, no encuentra ningún log que ate pedido,
+receptor y monto, y revierte con `NoMatchingPayment` (0x3e70e82c). Mismo pedido, misma prueba,
+resultado opuesto. Validado en vivo con `scripts/run-b09.ts` (funde en ambos escrows, una sola tx
+origen `0xc37263cf…` bloque 11645236, una espera de atestiguación, dos releases). Resultado en
+`data/b09-contrast.json`: vulnerable release `0x1db25399…`, hardened rechazado. El campo B-09 de
+`data/bench-vulnerable.json` y `data/bench-hardened.json` se parcheó con estos hashes para que ambas
+columnas describan el mismo ataque, sin re-correr el bench completo.
+
+**Causa raíz de la hora y media perdida:** los `TaskStop` sobre los benches en Windows mataban el
+shell padre pero NO los hijos node de hardhat. Quedaban procesos zombi vivos tocando la misma cuenta
+y descuadrando el nonce de cada corrida nueva (NONCE_EXPIRED). Se identificaron 3 zombis de un
+run-bench de las 22:48 y se mataron por CommandLine. Regla para adelante: al detener un bench, matar
+explícitamente los node de hardhat (`Get-CimInstance ... Where CommandLine -match 'hardhat|run-bench'`),
+no confiar solo en TaskStop, y esperar a que el nonce quede estable (latest==pending sin cambios ~30s)
+antes de relanzar.
+
+`scripts/run-b09.ts` añadido: verificación mínima y a prueba de cuelgues, con timeout en cada llamada
+de CC3 y sondeo de recibo con deadline en vez de `tx.wait()` sin límite. Es también el patrón a
+seguir si hay que endurecer `run-bench.ts` más adelante.
+
+**Contraste hardened ahora completo:** B-01, B-02, B-04, B-06, B-09 rechazados (cada uno con su error
+nombrado), POS libera. El boletín lee estos JSON y refleja el contraste limpio de las dos columnas.
