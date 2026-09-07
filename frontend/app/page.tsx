@@ -5,6 +5,7 @@ import {
   loadScorecard,
   loadConformance,
   loadHubSettlement,
+  loadInflow,
   CATALOGUE,
   CHECK_ORDER,
   CC3_EXPLORER,
@@ -17,6 +18,7 @@ import { ConformanceSection } from "@/components/Conformance";
 import { LiveCheckSection } from "@/components/LiveCheck";
 import { ProductSection } from "@/components/Product";
 import { SettlementSection } from "@/components/Settlement";
+import { InflowSection } from "@/components/Inflow";
 import { Mark } from "@/components/Mark";
 import {
   ShieldWarning,
@@ -59,7 +61,7 @@ function ContrastRow({
   const hardSafe = hard?.status === "rejected";
 
   return (
-    <div className="row" style={{ ["--i" as string]: Math.min(index, 7) }}>
+    <div className="row contrast-row" style={{ ["--i" as string]: Math.min(index, 7) }}>
       <div style={styles.rowGrid}>
         <div style={styles.rowHead}>
           <span className="mono" style={styles.rowId}>
@@ -131,7 +133,7 @@ function Verdict({
           href={explorer + tx}
           target="_blank"
           rel="noreferrer"
-          className="mono"
+          className="mono tx-link"
           style={styles.txLink}
         >
           {shortHash(tx)}
@@ -157,6 +159,7 @@ export default function Page() {
   const scorecard = loadScorecard();
   const conformance = loadConformance();
   const settlement = loadHubSettlement();
+  const inflow = loadInflow();
 
   const dynamicIds = CATALOGUE.filter((c) => c.detection === "dynamic").map((c) => c.id);
   const vulnCount = dynamicIds.filter((id) => findingById(vulnerable, id)?.status === "accepted").length;
@@ -193,9 +196,12 @@ export default function Page() {
           </h1>
           <p style={styles.sub}>
             The precompile says nothing about the emitter, the event, the receipt status, the order, or
-            whether you already counted it. ThirdCheck builds real Attestcoin proofs, then uses them to
-            release the wrong order. Every proof below passes the precompile. What varies is whether the
-            consumer&rsquo;s third check catches the swap.
+            whether you already counted it. That gap is where cross-chain value leaks, and the value that
+            enters Creditcoin from other chains rides exactly these proofs. ThirdCheck builds real
+            Attestcoin proofs and uses them to release the wrong order, ships the correct checks as a
+            drop-in library, and verifies an inbound deposit before an app credits it, so value and users
+            cross in safely. Every proof below passes the precompile. What varies is whether the third
+            check catches the swap.
           </p>
         </header>
 
@@ -249,8 +255,11 @@ export default function Page() {
         {/* The rails proven: a real order settled end to end, with the fee taken */}
         <SettlementSection data={settlement} />
 
+        {/* Verified Inflows: a real inbound deposit proven and credited, the third check on value entering */}
+        <InflowSection data={inflow} />
+
         {/* The contrast table */}
-        <section className="rise" style={{ animationDelay: "100ms" }}>
+        <section className="rise" style={{ animationDelay: "100ms", marginTop: "clamp(2.5rem, 5vw, 4rem)" }}>
           <div style={styles.falsifierHead}>
             <Warning size={16} weight="light" style={{ color: "var(--vuln)" }} />
             <span style={styles.falsifierTitle}>
@@ -276,7 +285,7 @@ export default function Page() {
             </div>
           </div>
 
-          <div style={styles.table}>
+          <div className="grain" style={styles.table}>
             {CATALOGUE.filter((c) => c.detection === "dynamic").map((c, i) => (
               <ContrastRow
                 key={c.id}
@@ -289,7 +298,7 @@ export default function Page() {
             ))}
 
             {/* Positive path sits apart: the proof the honest flow depends on. */}
-            <div className="row" style={{ ["--i" as string]: 6, borderTop: "1px solid var(--line-strong)" }}>
+            <div className="row contrast-row" style={{ ["--i" as string]: 6, borderTop: "1px solid var(--line-strong)" }}>
               <div style={styles.rowGrid}>
                 <div style={styles.rowHead}>
                   <span className="mono" style={{ ...styles.rowId, color: "var(--safe)" }}>
@@ -485,8 +494,8 @@ const styles: Record<string, React.CSSProperties> = {
   falsifierTitle: { fontSize: 17, fontWeight: 600, letterSpacing: "-0.015em" },
   falsifierNote: { fontSize: 12.5, color: "var(--ink-dim)", lineHeight: 1.5, maxWidth: 62 + "ch" },
 
-  tableHead: { padding: "0 0 0.7rem" },
-  table: { border: "1px solid var(--line)", borderRadius: 3, overflow: "hidden", background: "var(--panel)" },
+  tableHead: { padding: "0 1.15rem 0.7rem" },
+  table: { position: "relative", border: "1px solid var(--line)", borderRadius: 3, overflow: "hidden", background: "linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0) 140px), var(--panel)" },
   rowGrid: { display: "grid", gridTemplateColumns: "minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr)", gap: "1rem", alignItems: "start" },
   colLabel: { display: "flex", alignItems: "center", gap: "0.4rem", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--ink-faint)" },
 

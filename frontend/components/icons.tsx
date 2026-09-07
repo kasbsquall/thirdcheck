@@ -8,6 +8,7 @@ export {
   CheckCircle,
   XCircle,
   ArrowSquareOut,
+  ArrowLeft,
   Cube,
   Function as FnIcon,
   ListChecks,

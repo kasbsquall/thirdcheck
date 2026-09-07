@@ -75,9 +75,10 @@ contract SafeEscrow {
     }
 }`;
 
-// A real third-party submission from the field. Its repo carries a self-declared
-// vulnerable control (NaiveManager) the scan flags, and a hardened path it does not.
-const REAL_REPO = "https://github.com/Nuel-osas/deadswitch";
+// ThirdCheck's own public repo. Scanning it live flags the deliberate vulnerable control
+// (VulnerableEscrow) and passes the hardened path, so a judge sees the gate work on real
+// GitHub source without the tool being pointed at anyone else's submission.
+const REAL_REPO = "https://github.com/kasbsquall/thirdcheck";
 
 // ThirdCheck's own shipped consumer: the complete third-check-complete escrow, built on
 // ThirdCheckLib in two calls. It passes the same gate every submission is measured against.
@@ -285,7 +286,7 @@ export function LiveCheckSection() {
             our shipped consumer
           </button>
           <button type="button" className="lc-chip" onClick={() => loadRepo(REAL_REPO)}>
-            scan a real submission
+            scan our repo on github
           </button>
         </div>
 

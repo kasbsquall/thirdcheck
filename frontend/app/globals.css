@@ -77,6 +77,35 @@ svg { flex-shrink: 0; }
   .pulse { animation: none; }
 }
 
+/* Contrast / list rows: inner padding, hairline dividers, and a quiet hover lift so
+   the read-only tables feel alive instead of static. Background transition only. */
+.contrast-row { padding: 0.95rem 1.15rem; transition: background 160ms ease; }
+.contrast-row + .contrast-row { border-top: 1px solid var(--line); }
+.contrast-row:hover { background: var(--panel-2); }
+
+/* Transaction links warm to full ink on hover. */
+.tx-link { transition: color 140ms ease; }
+.tx-link:hover { color: var(--ink); }
+
+/* Card/row hover lift. Neutral on the audit page; green on Verified Inflows so the
+   motion carries its own identity. Compositor-friendly properties only. */
+.lift { transition: background 160ms ease, border-color 160ms ease; }
+.lift:hover { background: var(--panel-2); border-color: var(--line-strong); }
+.lift-safe { transition: background 160ms ease, border-color 160ms ease; }
+.lift-safe:hover { background: var(--safe-bg); border-color: rgba(79, 174, 148, 0.28); }
+
+/* Faint film grain over panels so a large dark surface is not a flat black slab.
+   Sits above the panel fill, below content, and never intercepts clicks. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 ::selection { background: rgba(224, 145, 58, 0.25); }
 
 /* ─────────────────────────────────────────────────────────────────────────

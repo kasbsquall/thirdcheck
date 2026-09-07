@@ -189,5 +189,50 @@ export function loadHubSettlement(): HubSettlement | null {
     ?? readJson<HubSettlement>("hub-settlement.json");
 }
 
+/** A real inbound cross-chain deposit, verified and credited through the third check on CC3. */
+export interface Inflow {
+  consumer: string;
+  gateway: string;
+  depositId: string;
+  payer: string;
+  beneficiary: string;
+  amount: string;
+  chainKey: number;
+  credited: boolean;
+  creditedAmount: string | null;
+  beneficiaryDelta: string;
+  depositTx: { hash: string; block: number; url: string };
+  provisionTx: { hash: string; url: string };
+  creditTx: { hash: string; block: number; url: string };
+  generatedAt: string;
+}
+
+export function loadInflow(): Inflow | null {
+  return readJson<Inflow>("inflow.json");
+}
+
+/** A reference adopter (CreditLineApp) built on ThirdCheckLib: a cross-chain credit line opened and
+ *  drawn from a real inbound collateral deposit, proven by the third check. Same team, not a third party. */
+export interface Adopter {
+  app: string;
+  gateway: string;
+  depositId: string;
+  user: string;
+  chainKey: number;
+  ltvBps: number;
+  collateral: string;
+  creditLimit: string;
+  drawn: string;
+  available: string;
+  depositTx: { hash: string; block: number; url: string };
+  openLineTx: { hash: string; block: number; url: string };
+  drawTx: { hash: string; block: number; url: string };
+  generatedAt: string;
+}
+
+export function loadAdopter(): Adopter | null {
+  return readJson<Adopter>("adopter.json");
+}
+
 export const CC3_EXPLORER = "https://creditcoin-testnet.blockscout.com/tx/";
 export const SEPOLIA_EXPLORER = "https://sepolia.etherscan.io/tx/";
