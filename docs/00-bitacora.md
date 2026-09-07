@@ -933,3 +933,160 @@ por escena.
 
 SEGURIDAD: el usuario pegó su API key de ElevenLabs en el chat. Se usó solo efímera (env var, nunca
 escrita ni commiteada). Recomendado al usuario rotarla en su panel al cerrar. .env sigue gitignored.
+
+## D-50 · 2026-09-06 · Marca Triad, jurado agnóstico del guion, y build del video Remotion
+
+Logo: el usuario eligió el concepto A "Triad" (tres barras ascendentes, la tercera ámbar con el
+check). Aplicado en masthead (frontend/components/Mark.tsx + page.tsx, wordmark con "Check" ámbar),
+favicon (frontend/app/icon.svg) y README (assets/thirdcheck-logo.svg lockup + assets/thirdcheck-mark.svg).
+Espaciado isotipo-wordmark reducido 50% a pedido del usuario. Commits 524ae60, 4605d73. Nombre
+ThirdCheck se mantiene (es la tesis del producto). Repo local sin remoto; mirror público se sincroniza
+aparte con barrido de nombres.
+
+Jurado agnóstico sobre el guion v3 (5 subagentes a ciegas, campo sintético de 10 finalistas):
+ingeniero de protocolo 1º, sponsor/track-fit 1º, VC 2º, diseñador 2º, lay viewer 4º. Los 5
+reconstruyeron el producto en una frase. Convergencias accionadas en v4: (a) SC3 scorecard era el
+claim peor probado y de mayor riesgo → se define en pantalla qué es una flag y "flagged privately,
+never named"; (b) SC1/SC9 el fallo se ubica en el integrador, no en el precompile (micro-rótulo
+"the proof did its job, the code didn't"); (c) bajón de energía SC5/SC6 → SC5 acortada, SC6 un solo
+momento "by construction"; (d) leg cross-chain Sepolia→CC3 explícito con ambos exploradores; (e)
+palabras llanas para las tres verificaciones en SC2; (f) cuña de negocio "free to audit, priced to
+settle".
+
+Números que cambian: por decisión del usuario, SC3 NO lleva cifra fija (el campo sigue creciendo).
+Esto además eliminó la inconsistencia 58-vs-53 del scorecard.json (total 53 / 47 consumidores / 5 con
+red flags, generado hoy pero sobre el campo previo). El guion dice "across the field, every project
+that consumes an inclusion proof", sin denominador.
+
+Video: música de Suno "Perimeter Watch.wav" entregada por el usuario (114.8s, cubre la película;
+primera versión de 70s se rechazó por corta y otra por ruido de público → prompt ajustado a mezcla de
+estudio seca). VO remedida con la letra v4: película 1:45 (105.3s), Suno pedido 1:50. Pipeline:
+video/scripts/build_audio.py reusa las voces medidas y mezcla con MUSIC_FILE (ducking por defecto
+MUSIC_GAIN=0.042). Remotion en video/remotion (template del skill hackathon-video), rethematizado a
+ThirdCheck (near-black + ámbar), 9 escenas en src/scenes/, datos reales en src/data/facts.ts, QRs en
+public/qr. Bug corregido: timing.ts adelantaba los visuales 1.6s respecto a la voz (la primera escena
+descontaba el lead-in en vez de absorberlo); fix startF_0=0 y cues del cold open +48. Render 1080p con
+audio en curso (out/thirdcheck.mp4).
+
+Pendiente: revisar el render final, SFX de micro-interacción (CC0), y sincronía fina al beat map.
+
+## D-51 · 2026-09-06 · Video v2: rework por feedback + máster (SFX, audio, marca)
+
+Primer corte revisado por el usuario. Feedback aplicado, flujo cambiado a aprobación escena por
+escena vía artifact online (celular): reel.html embebe el film 720p con capítulos tocables
+(claude.ai/code/artifact/f2120071). Cold open aprobado como referencia de dinamismo; luego el resto.
+
+Arreglos v2: (a) QR salían cuadros blancos porque Remotion no pinta el path SVG sin fill -> se
+regeneraron como PNG (qrcode+PIL) y el kit usa Img .png; (b) audio se cortaba 3-4s antes del final ->
+scripts/remix_audio.py: sidechain con apad hasta film_end para que la música suene bajo el cierre y se
+apague con el último frame (final_audio.wav 108.27s, TAIL subido a 3.0); (c) cold open sin 0.000
+colgado ni tembleque global, impacto local + flash; (d) Rails: aro ámbar reencuadra el nodo y las 3
+flechas conectan al hub (geometría fija) + punto viajero; (e) Library: crossfade de las 12 cajas
+convergiendo al panel de código, sin salto; (f) Close: limpio, momento de marca (isotipo Triad se
+construye barra por barra, check se dibuja, wordmark + sheen, QR repo), sin el texto "proof is real"
+en pantalla (va en la voz); (g) Settlement/Falsifier más vida (Float, dot viajero) + QR reales.
+
+Máster: SFX CC0 (Kenney interface+impact, sfx_lib.py) instalados en public/sfx como
+impact/stamp/confirm/click/whoosh/pop.mp3, colocados en los golpes de cada escena (Sfx component).
+Ajuste al beat: los SFX/golpes van atados a los eventos visuales (sync más fuerte que cuadrar al
+tempo). Render final 1080p en curso (out/thirdcheck_master.mp4).
+
+Bug de sincronía de D-50 (visuales 1.6s adelantados) ya estaba corregido antes de este corte.
+
+## D-52 · 2026-09-06 · Video v5: feedback del jurado agnóstico aplicado + re-jury
+
+Segunda pasada del jurado (5 lentes: VC, ingeniero de protocolo, diseñador de motion, sponsor/CEIP,
+espectador lego), a ciegas y asumiendo que TODA la competencia tiene video pulido. Round 1 dio 2/2/3/2/4.
+Se aplicó todo el feedback convergente y se re-renderizó (out/thirdcheck_master.mp4 = v5, 1:54, 113.63s).
+
+Cambios (motivo entre paréntesis):
+- SCORECARD reescrito (seguridad/disclosure, lo pedía el usuario y 4 de 5 jueces): deja de leerse como
+  "auditamos el campo / every project". Ahora "we pressure-tested the integration patterns", un patrón
+  héroe ("status-blind escrow · pays out on a proof of the wrong thing · RELEASED") + grilla fantasma de
+  fondo, chip "patterns, not projects · we name no one". Sin conteos, sin matriz de proyectos ajenos.
+  Narración v5 acorde. Anonimización total: no se menciona ni implica el repo de nadie.
+- COLD OPEN: narración cuenta primero la historia de la víctima ("a seller shipped, the proof checked
+  out, and it released a payment that never happened"), una sola marca de cadena en la boca (Creditcoin),
+  etiqueta "0x0FD2 · live precompile", sublabel "seller shipped · escrow released"; el golpe se retimó
+  para caer sobre la palabra "released" (~frame 206). (lego: orientar + víctima en los primeros 10s).
+- RAILS: caption "one neutral rail · settlement a project can't run for itself" + VO "one neutral hub
+  they could not run alone" (VC: responde por qué pagar el hub si la librería es gratis). Narración trim.
+- SETTLEMENT: se quitó un QR (quedó 1), línea llana "the seller was paid, the protocol kept its fee,
+  three different wallets", pago con más aire (diseñador: menos elementos compitiendo; sponsor: quién
+  cobró qué).
+- VERIFY: ahora corre DOS veces. Primero "judge:verify --proof=tampered": un check ("replay guarded") se
+  pone en ROJO y FALLA ("proof rejected · nothing settles"); luego la corrida real 11/11 verde que se
+  sostiene ~1.4s (ingeniero: matar el "solo brilla en verde"; el fallo en vivo es el frame más valioso).
+
+Audio: narración v5 re-sintetizada solo en las 4 escenas cambiadas (cold_open/scorecard/rails/verify),
+voz FSZ4QLofSALZxepAyq63, key ElevenLabs usada de forma efímera (nunca a archivo; sigue pendiente que el
+usuario la rote). VO subió a 110.63s; se recortó narración para entrar en la música (114.8s) con cola de
+3s sin silencio (remix_audio.py, film_end 113.63s). timing.ts TAIL=3.0 sin cambios.
+
+Resultado round 2 (rank / score 0-100):
+- VC: 2.º, 84. Modelo de negocio ya cubierto por Rails. Bloqueo a 1.º: evidencia de demanda (un consumidor real integrando).
+- Ingeniero: 2.º, 84. El tampered-run resuelve la objeción. Bloqueo: el falsifier es self-authored; solo 1 de 9 checks se muestra fallando; falta el revert del techo de fee en vivo.
+- Diseñador: 1.º-2.º, 88. Scorecard legible, settlement más calmo. Bloqueo: firma visual poco distintiva (paleta ámbar/negro es el default de la categoría).
+- Sponsor/CEIP: 1.º-2.º, 94. Riesgo de disclosure removido. "Nada técnico lo bloquea". Bloqueo menor: el tono de "a pattern most teams ship" aún roza acusatorio.
+- Lego: 3.º-4.º, 78. El arranque orienta + engancha, el rojo/verde del FAIL aterriza. Bloqueo: el medio siente dos productos (checker + rail) pegados.
+
+Promedio rank ~2.6 -> ~2.0; dos lentes ahora en 1.º-2.º. Score medio ~86 (78-94). Para un 1.º unánime
+quedan 3 bloqueos, ninguno arreglable con edición honesta dentro del alcance testnet/hackathon: demanda
+real (un integrador externo), un caso de fallo no self-graded (prueba mala de un tercero o fuzzer), y
+firma visual más propia. Único ajuste barato pendiente: suavizar "a pattern most teams ship" (tono sponsor).
+
+Pendiente del usuario: rotar la key de ElevenLabs; subir el máster + repo/deck a DoraHacks (name-sweep
+antes de linkear el repo público).
+
+Addendum D-52: el "ajuste barato de tono" se aplicó (no quedó pendiente). Scorecard: pantalla
+"a pattern most teams ship" -> "a common integration pattern"; VO "The ones most teams ship" ->
+"The common ones". Re-render final: out/thirdcheck_master.mp4 (1:53, 113.22s, 13.9MB) = video que se
+sube. README actualizado (sección demo con VIDEO_URL placeholder + se quitó el número fijo "53
+submissions" del scorecard). Copys de YouTube en docs/15-youtube-copy.md, andamiaje DoraHacks en
+docs/16-dorahacks-submit.md. Name-sweep: nombres marcados aún presentes en data/*.json, scripts/*.ts,
+frontend/app/page.tsx -> BLOQUEO a resolver antes de linkear el repo público en DoraHacks.
+
+## D-53 · 2026-09-06 · Anonimización del repo para el mirror público (seguridad)
+
+Name-sweep encontró nombres de proyectos ajenos, handles de autores y URLs de repos en archivos que
+irían al público: data/*.json nombrados, scripts/verify.ts, scripts/build-scorecard.ts,
+scripts/triage-findings.ts, frontend/app/page.tsx. Estrategia aplicada (sin romper judge:verify, 9/9
+verde antes y después):
+- Artefactos nombrados -> copias privadas gitignored (.private.json): confirmed-defects, findings-report,
+  static-a/b/c (ex VaultBridge/Sovereign/FactorX), + scorecard-private/day7/digest/ctc-buidls ya fuera.
+- Stand-ins anonimizados públicos: data/confirmed-defects.json (consumer-A/B/C, rutas genéricas),
+  data/static-confirmed.json (rutas de contrato genéricas). scorecard.json ya era anónimo por diseño.
+- verify.ts scrubbeado (sin nombres/URLs); el reclone con URLs+handles+nombres reales -> módulo privado
+  scripts/reclone.private.ts que se carga solo si existe, si no se salta. findings-report ausente ->
+  degrada a INFO en vez de FAIL. static block lee static-confirmed.json con regex genéricas.
+- frontend page.tsx: loadStatic("confirmed").
+- build-scorecard.ts y triage-findings.ts (dev, cargados de nombres) -> gitignored.
+- .gitignore ampliado; sin líneas que nombren proyectos. docs/ privado.
+Resultado: name-sweep sobre archivos públicos = CERO coincidencias (nombres, handles, contratos).
+judge:verify 9/9 imprimiendo consumer-A/B/C. Manifiesto en docs/17-public-mirror-manifest.md, con la
+advertencia clave: .gitignore no destrackea lo ya commiteado; usar git rm --cached antes del push
+público, y si algo ya se publicó con nombres, reescribir historia.
+Pendiente usuario: rotar key ElevenLabs; subir video (VIDEO_URL); pasar estructura del submit DoraHacks.
+
+---
+
+## 2026-09-06 · D-54. Dos correcciones de escena + miniaturas, video final re-renderizado
+
+**Contexto.** Antes de subir, el usuario marcó dos defectos concretos: la escena de apertura
+(ColdOpen) tenía un zoom que temblaba, y en Settlement los nodos flotaban incoherentemente.
+El resto del film ya estaba aprobado.
+
+**D-54a. Ambos defectos venían del componente `Float` (lib/Motion), que traslada por ruido
+Perlin cada frame.** Se quitó el wrapper `<Float>` de ColdOpen (recibo, ahora estático y
+centrado) y los tres `<Float>` de Settlement (nodos, ahora fijos sobre la línea, conservando
+solo el spring de entrada). Verificado por stills extraídos del render: ColdOpen recibo
+intacto; Settlement nodos alineados sin deriva. Re-render `out/thirdcheck_master.mp4` (1:53,
+11.6 MB). Fuente: `video/remotion/src/scenes/ColdOpen.tsx`, `Settlement.tsx`.
+
+**D-54b. Miniaturas generadas** vía HTML + Playwright a tamaño exacto: `assets/thirdcheck-buidl-logo.png`
+(480x480, 1:1, marca Triad + wordmark + slogan) para el campo BUIDL logo, y
+`assets/thirdcheck-youtube-thumb.png` (1280x720, 16:9) para portada de YouTube.
+
+**Pendiente del usuario antes del commit final.** El commit final espera el link de YouTube
+(instrucción explícita). Además: al menos un social link para DoraHacks, y rotar la API key
+de ElevenLabs expuesta en el transcript. `docs/16` actualizado.

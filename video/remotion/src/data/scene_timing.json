@@ -1,0 +1,68 @@
+{
+  "vo": 110.158,
+  "scenes": [
+    {
+      "id": "cold_open",
+      "start": 1.6,
+      "end": 8.784,
+      "dur": 7.184,
+      "words": 22
+    },
+    {
+      "id": "problem",
+      "start": 9.064,
+      "end": 25.547,
+      "dur": 16.483,
+      "words": 48
+    },
+    {
+      "id": "scorecard",
+      "start": 25.827,
+      "end": 39.228,
+      "dur": 13.401,
+      "words": 37
+    },
+    {
+      "id": "falsifier",
+      "start": 39.508,
+      "end": 57.297,
+      "dur": 17.789,
+      "words": 44
+    },
+    {
+      "id": "library",
+      "start": 57.577,
+      "end": 66.354,
+      "dur": 8.777,
+      "words": 25
+    },
+    {
+      "id": "rails",
+      "start": 66.634,
+      "end": 80.375,
+      "dur": 13.74,
+      "words": 38
+    },
+    {
+      "id": "settlement",
+      "start": 80.655,
+      "end": 95.727,
+      "dur": 15.073,
+      "words": 35
+    },
+    {
+      "id": "verify",
+      "start": 96.007,
+      "end": 105.803,
+      "dur": 9.796,
+      "words": 33
+    },
+    {
+      "id": "close",
+      "start": 106.083,
+      "end": 110.158,
+      "dur": 4.075,
+      "words": 12
+    }
+  ]
+}

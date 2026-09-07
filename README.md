@@ -19,6 +19,14 @@ BUIDL CTC 2026 Fall · Creditcoin & Credit Labs · DeFi track
 
 ---
 
+## Watch the demo
+
+**[Watch the 1:53 demo](https://youtu.be/kQkfFFNlvFA)** — the sticky line is the whole thesis: *the proof is real, the payment is wrong.*
+
+A real proof that released a payment that never happened, the falsifier (a naive escrow releases, the hardened one rejects), the twelve checks collapsed to two calls, the settlement rail, and a tampered proof failing a check on camera before the real one passes 11/11. Everything on screen is real and on-chain, on public testnets; every claim is reproducible with `npm run judge:verify`.
+
+---
+
 ## The gap, in one picture
 
 The BlockProver precompile at `0x0FD2` answers two questions and stops. Everything below the line is left to the developer, and a proof that passes the precompile says nothing about any of it.
@@ -54,7 +62,7 @@ It checks, independently:
 - **on-chain** the vulnerable escrow's releases are real mined CC3 transactions, and the B-09 contrast is a clean pair on the same proof: vulnerable releases, hardened reverts.
 - **protocol, live** a keyless `eth_call` to `0x0FD2` shows the precompile replies `Unknown selector` to `verifySingle` (an SDK helper name, not an on-chain selector) while it dispatches the real `verify`.
 - **findings** three source-confirmed defects of three distinct classes across the public field, each re-derivable from source. Names are withheld here pending coordinated disclosure.
-- **scorecard** the field scorecard's own invariants hold: 53 submissions, distributions sound.
+- **scorecard** the field scorecard's own invariants hold: the submission set reconciles and the distributions are sound.
 - **protocol surface** the conformance run exercised 15 of the 16 precompile entry points, against a typical consumer's one.
 
 The protocol-surface map is its own read-only command:

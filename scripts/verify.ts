@@ -2,15 +2,15 @@
  * judge:verify — one command a judge runs to reproduce ThirdCheck's headline claims.
  *
  *   npm run judge:verify              offline integrity + on-chain evidence (public CC3 RPC)
- *   npm run judge:verify -- --reclone re-fetch VaultBridge's public source and re-derive the finding
+ *   npm run judge:verify -- --reclone re-fetch each confirmed consumer's public source and re-derive it
  *
  * No private key, no funded account, no waiting for attestation. It reads the committed evidence and
  * confirms it independently:
  *   A. on-chain    the vulnerable escrow's releases are real, mined CC3 transactions
- *   B. protocol    the selector the VaultBridge finding rests on is genuinely not a precompile method
- *   C. findings    the triage stands behind exactly one source-confirmed defect, VaultBridge
+ *   B. protocol    the selector the confirmed finding rests on is genuinely not a precompile method
+ *   C. findings    the triage stands behind source-confirmed defects of distinct classes
  *   D. scorecard   the ecosystem scorecard's own invariants hold
- *   E. reclone     (optional) clone VaultBridge and re-run the analyzer to reproduce the finding
+ *   E. reclone     (optional) clone each confirmed consumer and re-run the analyzer to reproduce it
  *
  * Exit code is non-zero if any check fails.
  */
@@ -27,7 +27,7 @@ const DATA = resolve(__dirname, "..", "data");
 const CC3_RPC = process.env.CREDITCOIN_RPC_URL?.trim() || "https://rpc.cc3-testnet.creditcoin.network";
 const CC3_CHAIN_ID = 102031;
 const BLOCK_PROVER = "0x0000000000000000000000000000000000000FD2";
-// The precompile's real surface. The VaultBridge finding rests on verifySingle/verifyBatch NOT
+// The precompile's real surface. The confirmed finding rests on verifySingle/verifyBatch NOT
 // being here. See @gluwa/usc-sdk and docs.
 const REAL_SELECTORS = ["verify", "verifyAndEmit", "calculateTxIndex"] as const;
 
@@ -99,7 +99,7 @@ async function checkOnChain() {
   }
 }
 
-// B — the precompile itself rejects the selector the VaultBridge finding rests on.
+// B — the precompile itself rejects the selector the confirmed finding rests on.
 // A live, keyless probe: 0x0FD2 replies "Unknown selector" to verifySingle, but dispatches verify.
 // This turns the finding from a static claim into an on-chain fact.
 async function checkSelectorLive() {
@@ -125,7 +125,7 @@ async function checkSelectorLive() {
   const fakeUnknown = /unknown selector/i.test(fakeReason);
   const realDispatched = !/unknown selector/i.test(realReason);
   if (fakeUnknown && realDispatched) {
-    pass("Precompile rejects fake selector (live)", `0x0FD2 replies "${fakeReason}" to verifySingle but dispatches verify ("${realReason}"); VaultBridge's verify path cannot reach the precompile`);
+    pass("Precompile rejects fake selector (live)", `0x0FD2 replies "${fakeReason}" to verifySingle but dispatches verify ("${realReason}"); the confirmed consumer's verify path cannot reach the precompile`);
   } else {
     fail("Precompile rejects fake selector (live)", `verifySingle -> "${fakeReason}", verify -> "${realReason}"`);
   }
@@ -146,7 +146,7 @@ function checkFindings() {
     }
   }
 
-  if (!existsSync(join(DATA, "findings-report.json"))) { fail("Findings report", "data/findings-report.json missing; run npm run triage"); return; }
+  if (!existsSync(join(DATA, "findings-report.json"))) { info("Findings report", "named triage report is private (not in this mirror); confirmed-defects.json carries the anonymized summary"); return; }
   const rep = readJson<{
     counts: { confirmed: number; review: number; noise: number };
     sourceConfirmed: number;
@@ -155,7 +155,7 @@ function checkFindings() {
   }>("findings-report.json");
 
   // Honest accounting: no OTHER repo carries unresolved review items; the confirmed repo
-  // (VaultBridge) does carry corroborating review signals, and we say so rather than hide them.
+  // does carry corroborating review signals, and we say so rather than hide them.
   const otherOpen = rep.repos.filter((r) => r.confirmed === 0 && r.findings.some((f) => f.verdict === "review")).map((r) => r.repo);
   const confirmedRepoReview = rep.repos
     .filter((r) => r.confirmed > 0)
@@ -166,13 +166,13 @@ function checkFindings() {
     fail("Open review items", `${otherOpen.length} other repos still unresolved: ${otherOpen.join(", ")}`);
   }
 
-  // The confirmed VaultBridge finding must be anchored to real file:line evidence.
-  if (existsSync(join(DATA, "static-VaultBridge.json"))) {
-    const vb = readJson<{ findings: { file: string; line: number; evidence: string }[] }>("static-VaultBridge.json");
-    const hasSelector = vb.findings.some((f) => /IUSCVerifier\.sol/.test(f.file) && /verifysingle|verifybatch/i.test(f.evidence));
-    const hasSetter = vb.findings.some((f) => /VaultLending\.sol/.test(f.file) && /setverifier|assigns/i.test(f.evidence));
-    if (hasSelector && hasSetter) pass("VaultBridge evidence", "fake selector + swappable verifier both anchored to file:line");
-    else fail("VaultBridge evidence", `selector:${hasSelector} setter:${hasSetter}`);
+  // The confirmed finding must be anchored to real file:line evidence.
+  if (existsSync(join(DATA, "static-confirmed.json"))) {
+    const vb = readJson<{ findings: { file: string; line: number; evidence: string }[] }>("static-confirmed.json");
+    const hasSelector = vb.findings.some((f) => /IVerifier\.sol/.test(f.file) && /verifysingle|verifybatch/i.test(f.evidence));
+    const hasSetter = vb.findings.some((f) => /Lending\.sol/.test(f.file) && /setverifier|assigns/i.test(f.evidence));
+    if (hasSelector && hasSetter) pass("Confirmed consumer evidence", "fake selector + swappable verifier both anchored to file:line");
+    else fail("Confirmed consumer evidence", `selector:${hasSelector} setter:${hasSetter}`);
   }
 }
 
@@ -207,50 +207,21 @@ function checkConformance() {
   }
 }
 
-// E — optional: re-fetch each confirmed repo's public source and re-derive the finding.
+// E — optional: re-fetch each confirmed consumer's public source and re-derive the finding.
+// The repository URLs and real file names live in a PRIVATE module (gitignored) so they never reach
+// the public mirror. If it is absent, this step reports it and skips.
 function checkReclone() {
+  if (!existsSync(resolve(__dirname, "reclone.private.ts"))) {
+    info("Re-clone", "private reclone module not present in this mirror; skipped");
+    return;
+  }
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { analyzeTree } = require("../src/static") as { analyzeTree: (p: string) => { id: string; title: string; file: string; evidence: string }[] };
-  const targets = [
-    {
-      repo: "VaultBridge",
-      url: "https://github.com/Bobo2005/VaultBridge.git",
-      derived: (f: { title: string; file: string; evidence: string }[]) =>
-        f.some((x) => /IUSCVerifier\.sol/.test(x.file) && /verifysingle|verifybatch/i.test(x.evidence)) &&
-        f.some((x) => /src\/.*Mock/i.test(x.file) && /contract mock/i.test(x.evidence)),
-      label: "fake selector + mock-in-src",
-    },
-    {
-      repo: "Sovereign",
-      url: "https://github.com/SDRmsung/Sovereign-AttestAgent-Creditcoin",
-      derived: (f: { title: string }[]) => f.some((x) => /signature, not the precompile/i.test(x.title)),
-      label: "attestation-by-signature (no precompile)",
-    },
-    {
-      repo: "FactorX",
-      url: "https://github.com/Ebubechukwucyber/FactorX.git",
-      derived: (f: { title: string; file: string }[]) =>
-        f.some((x) => /without verifying the proof/i.test(x.title) && /AttestcoinVerifier\.sol/.test(x.file)),
-      label: "records an attestation without verifying the proof",
-    },
-  ];
-  for (const t of targets) {
-    let dir = "";
-    try {
-      dir = mkdtempSync(join(tmpdir(), "tc-"));
-      execFileSync("git", ["clone", "--depth", "1", "--no-tags", "-q", t.url, dir], { stdio: "ignore" });
-      const findings = analyzeTree(dir);
-      if (t.derived(findings as never)) {
-        pass(`Re-clone: ${t.repo}`, `cloned public source, analyzer reproduced ${t.label} (${findings.length} signals)`);
-      } else {
-        fail(`Re-clone: ${t.repo}`, `analyzer did not reproduce ${t.label} over ${findings.length} signals`);
-      }
-    } catch (e) {
-      info(`Re-clone: ${t.repo}`, `skipped (${errMsg(e)})`);
-    } finally {
-      if (dir) try { rmSync(dir, { recursive: true, force: true }); } catch { /* best effort */ }
-    }
-  }
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { recloneChecks } = require("./reclone.private") as {
+    recloneChecks: (ctx: { analyzeTree: typeof analyzeTree; pass: typeof pass; fail: typeof fail; info: typeof info }) => void;
+  };
+  recloneChecks({ analyzeTree, pass, fail, info });
 }
 
 // F — the protocol layer (rails + trust registry) is deployed and the economic link is live: a
@@ -333,7 +304,7 @@ async function main() {
   }
   const failed = results.filter((r) => r.status === "FAIL");
   const passed = results.filter((r) => r.status === "PASS").length;
-  console.log(`\n  ${passed} passed, ${failed.length} failed${reclone ? "" : "  (add --reclone to re-derive the VaultBridge finding from source)"}\n`);
+  console.log(`\n  ${passed} passed, ${failed.length} failed${reclone ? "" : "  (add --reclone to re-derive the confirmed findings from source)"}\n`);
   if (failed.length > 0) process.exitCode = 1;
 }
 

@@ -22,3 +22,25 @@ frontend/.next/
 
 # Named ecosystem ranking: private basis for responsible disclosure, never publish
 data/scorecard-private.json
+
+# --- Private responsible-disclosure material — NEVER publish to the public mirror ---
+# Named per-project analyzer output, triage, and raw field data. The public repo carries only
+# anonymized stand-ins (data/confirmed-defects.json, data/static-confirmed.json, data/scorecard.json).
+data/*.private.json
+data/day7-findings.json
+data/digest.md
+data/ctc-buidls-full.json
+# Dev tooling that embeds real project names (regenerates the anonymized artifacts locally)
+scripts/build-scorecard.ts
+scripts/triage-findings.ts
+scripts/reclone.private.ts
+# Internal working docs (bitácora, disclosure records, submit drafts) — private
+docs/
+
+# --- Video build outputs and heavy/licensed media ---
+# Source (remotion/src, scripts, package.json, public/qr) stays; the final render lives on YouTube.
+video/remotion/out/
+video/audio_out/
+video/remotion/public/final_audio.wav
+# Licensed music track — not redistributed in the repo
+assets/*.wav

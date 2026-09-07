@@ -152,7 +152,7 @@ function Pending() {
 export default function Page() {
   const vulnerable = loadVulnerable();
   const hardened = loadHardened();
-  const vaultbridge = loadStatic("VaultBridge");
+  const confirmed = loadStatic("confirmed");
   const scorecard = loadScorecard();
   const conformance = loadConformance();
   const settlement = loadHubSettlement();
@@ -287,7 +287,7 @@ export default function Page() {
         </section>
 
         {/* Static findings */}
-        {vaultbridge && (
+        {confirmed && (
           <section className="rise" style={{ ...styles.staticSection, animationDelay: "140ms" }}>
             <div style={styles.staticHead}>
               <FnIcon size={16} weight="light" style={{ color: "var(--vuln)" }} />
@@ -298,7 +298,7 @@ export default function Page() {
               </span>
             </div>
             <div style={styles.staticList}>
-              {dedupeStatic(vaultbridge.findings).map((f, i) => (
+              {dedupeStatic(confirmed.findings).map((f, i) => (
                 <div className="row" key={`${f.file}:${f.line}:${f.evidence}`} style={{ ["--i" as string]: Math.min(i, 7), ...styles.staticRow }}>
                   <div style={styles.staticRowTop}>
                     <span className="mono" style={styles.rowId}>

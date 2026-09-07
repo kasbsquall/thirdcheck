@@ -1,51 +1,49 @@
 {
   "generatedAt": "2026-09-06",
-  "method": "Source-confirmed binding defects in public BUIDL CTC submissions, each read in the re-cloned repository and, where possible, corroborated by a live keyless probe or the ThirdCheck analyzer. Named; the private basis for responsible disclosure. Public materials describe the anti-pattern without the author until disclosure is acknowledged.",
+  "method": "Source-confirmed binding defects in public BUIDL CTC submissions, each read in the re-cloned repository and, where possible, corroborated by a live keyless probe or the ThirdCheck analyzer. Public artifact: the anti-pattern is described without the author. The named basis is held privately for coordinated disclosure and is available to the sponsor on request.",
   "confirmed": [
     {
-      "repo": "VaultBridge",
+      "repo": "consumer-A",
       "class": "verification cannot reach the precompile",
       "catalogue": "B-11",
-      "summary": "Every registration path verifies through IUSCVerifier.verifySingle / verifyBatch at 0x0FD2, selectors the precompile does not implement, and the verifier is an unguarded swappable address with a mock shipped in src/.",
+      "summary": "Every registration path verifies through a verifier interface's verifySingle / verifyBatch at 0x0FD2, selectors the precompile does not implement, and the verifier is an unguarded swappable address with a mock shipped in the production source tree.",
       "evidence": [
-        "contracts/src/creditcoin/VaultLending.sol:160 calls IUSCVerifier(target).verifySingle on every registration path",
-        "contracts/src/creditcoin/interfaces/IUSCVerifier.sol:7,17 declare verifySingle/verifyBatch (not precompile selectors)",
-        "contracts/src/creditcoin/VaultLending.sol:147 setVerifier onlyOwner, no write-once/timelock",
-        "contracts/src/creditcoin/MockStreakPrecompile.sol:10 mock returning true shipped in src/",
-        "proof-pipeline/src/generateAbsenceProof.ts:125 blanks the proof on failure but returns success:true"
+        "Lending.sol:160 calls IVerifier(target).verifySingle on every registration path",
+        "IVerifier.sol:7,17 declare verifySingle/verifyBatch (not precompile selectors)",
+        "Lending.sol:147 setVerifier onlyOwner, no write-once/timelock",
+        "MockPrecompile.sol:10 mock returning true shipped in the production src tree",
+        "the absence-proof generator blanks the proof on failure but returns success:true (generateAbsenceProof.ts:125)"
       ],
       "liveProof": "npm run judge:verify shows 0x0FD2 replies 'Unknown selector' to verifySingle while dispatching verify",
-      "reproduce": "npm run judge:verify -- --reclone"
+      "reproduce": "npm run judge:verify -- --reclone (requires the private reclone module)"
     },
     {
-      "repo": "Sovereign Attest Agent",
+      "repo": "consumer-B",
       "class": "protocol proof replaced by a centralized signature",
       "catalogue": "B-11",
       "summary": "Presents itself as an Attestcoin consumer but verifies its 'attestation' with an off-chain ECDSA signature (ecrecover) against an owner-set validator, and never calls the precompile anywhere in the repo. Credit limits are set on that signature; a compromised or malicious validator key mints arbitrary credit.",
       "evidence": [
-        "src/contracts/SovereignAttestLending.sol:78 require(recoveredSigner == attestcoinValidator)",
-        "src/contracts/SovereignAttestLending.sol:100 recoverSigner via ecrecover",
-        "src/contracts/SovereignAttestLending.sol:48 setValidator is onlyOwner",
-        "src/contracts/SovereignAttestLending.sol:60 executeAttestedCredit sets userCreditLimits on the signature alone",
+        "Lending.sol:78 require(recoveredSigner == validator)",
+        "Lending.sol:100 recoverSigner via ecrecover",
+        "Lending.sol:48 setValidator is onlyOwner",
         "no verify / verifyAndEmit / calculateTxIndex / 0x0FD2 reference anywhere in the repository"
       ],
       "liveProof": "n/a (source fact); the ThirdCheck analyzer flags it as 'Attestation verified by signature, not the precompile'",
-      "reproduce": "npm run conformance is unrelated; scan with the analyzer: analyzeTree over the cloned repo yields the B-11 signature-not-precompile finding"
+      "reproduce": "scan with the analyzer: analyzeTree over the cloned repo yields the B-11 signature-not-precompile finding"
     },
     {
-      "repo": "FactorX",
+      "repo": "consumer-C",
       "class": "on-chain recorder discards the proof and trusts unauthenticated caller data",
       "catalogue": "B-11",
-      "summary": "The on-chain 'verify' function takes a proof and discards it (a bare `proof;` no-op), performs no precompile call, and records a 'PaymentVerified' event, mints a credit passport, and writes to the registry entirely from caller-supplied values. It has no access control, so anyone can fabricate an invoice payment and mint themselves a credit passport for free. The project's own README states the on-chain verifyAndEmit selector did not match on this testnet, so verification was moved off-chain to the SDK verifySingle, leaving the on-chain record unauthenticated. This independently corroborates the VaultBridge selector finding and adds a distinct class: verification claimed off-chain, on-chain record forgeable.",
+      "summary": "The on-chain 'verify' function takes a proof and discards it (a bare no-op), performs no precompile call, and records a payment event, mints a credit passport, and writes to the registry entirely from caller-supplied values. It has no access control, so anyone can fabricate an invoice payment and mint themselves a credit passport for free. The project's own README states the on-chain verifyAndEmit selector did not match on this testnet, so verification was moved off-chain, leaving the on-chain record unauthenticated. This independently corroborates the selector finding of consumer-A and adds a distinct class: verification claimed off-chain, on-chain record forgeable.",
       "evidence": [
-        "src/AttestcoinVerifier.sol:62 verifyAndRecord is external with no access-control modifier",
-        "src/AttestcoinVerifier.sol:76 `proof;` — the proof parameter is discarded, never decoded or verified",
-        "src/AttestcoinVerifier.sol:89 emits PaymentVerified from caller-supplied payer/beneficiary/amount",
-        "no verifyAndEmit / calculateTxIndex / EvmV1Decoder / 0x0FD2 reference anywhere in the contract",
-        "README.md:127 and docs/ATTESTCOIN_INTEGRATION.md: on-chain verifyAndEmit selector did not match; verification moved off-chain to the SDK verifySingle"
+        "Verifier.sol:62 verifyAndRecord is external with no access-control modifier",
+        "Verifier.sol:76 the proof parameter is discarded, never decoded or verified",
+        "Verifier.sol:89 emits a payment event from caller-supplied payer/beneficiary/amount",
+        "no verifyAndEmit / calculateTxIndex / EvmV1Decoder / 0x0FD2 reference anywhere in the contract"
       ],
       "liveProof": "n/a (source fact); the ThirdCheck analyzer flags it as 'Records an attestation without verifying the proof'",
-      "reproduce": "analyzeTree over the cloned repo yields the B-11 discarded-proof finding on src/AttestcoinVerifier.sol:62"
+      "reproduce": "analyzeTree over the cloned repo yields the B-11 discarded-proof finding"
     }
   ]
 }
