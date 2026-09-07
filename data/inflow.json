@@ -1,0 +1,29 @@
+{
+  "network": "cc3-testnet",
+  "consumer": "0x037D8E868Ced6F3612EfEd070aBB316eF8fB82c0",
+  "gateway": "0x879628662310232F9c287eF45d14d89B7cD5886E",
+  "depositId": "0x9ed8cca5fabb5b779501819fffa2683697ac2ff564283467da1e2a0c015d0de0",
+  "payer": "0x1Af601B44F42C02DB40F1532D5b6a13992Ed4155",
+  "beneficiary": "0x5AEFDb7Ae40F625079E021D50373321080c59BE9",
+  "amount": "0.001",
+  "chainKey": 1,
+  "credited": true,
+  "creditedAmount": "0.001",
+  "beneficiaryDelta": "0.001",
+  "depositTx": {
+    "hash": "0x549f4aab849b8a15423aa7da9dd7095290fba86a6b7ef60b8c5c527c004100bf",
+    "block": 11652344,
+    "url": "https://sepolia.etherscan.io/tx/0x549f4aab849b8a15423aa7da9dd7095290fba86a6b7ef60b8c5c527c004100bf"
+  },
+  "provisionTx": {
+    "hash": "0xe6306e5c218e33924e37d403b2ee0b6d1eb149ff7b5c81f344432f87226e4db5",
+    "url": "https://creditcoin-testnet.blockscout.com/tx/0xe6306e5c218e33924e37d403b2ee0b6d1eb149ff7b5c81f344432f87226e4db5"
+  },
+  "creditTx": {
+    "hash": "0xda7ae863cd0c57dfeb60ec6021ac44a6463dc7818ff13b6529bfe757a9dfa17b",
+    "block": 5444801,
+    "url": "https://creditcoin-testnet.blockscout.com/tx/0xda7ae863cd0c57dfeb60ec6021ac44a6463dc7818ff13b6529bfe757a9dfa17b"
+  },
+  "proofHeight": 11652344,
+  "generatedAt": "2026-09-07T06:19:39.597Z"
+}

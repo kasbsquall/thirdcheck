@@ -68,6 +68,25 @@ decoded receipt. `bindPayment` selects the correct `PaymentSettled` log among ma
 emitter, event signature, order, recipient and amount. A non-payment consumer can reuse
 `verifyReceipt` and scan the returned receipt with its own predicate.
 
+## Second predicate: inbound deposits
+
+The same verified receipt drives a second predicate for value entering the chain. `bindDeposit`
+binds the gateway that emitted the deposit, the `Deposited` signature, correct-log selection and the
+`depositId`, and returns the beneficiary and amount. This is how an app credits an inbound
+cross-chain deposit without trusting any bridge: the deposit is proven on its own.
+
+```solidity
+EvmV1Decoder.ReceiptFields memory receipt = ThirdCheckLib.verifyReceipt(/* ... */);
+(address beneficiary, uint256 amount) =
+    ThirdCheckLib.bindDeposit(receipt, expectedGateway, depositId);
+// ... credit `beneficiary` with `amount`, keyed on the two calls above.
+```
+
+A complete, copy-ready inbound consumer is in [`example/InflowConsumer.example.sol`](example/InflowConsumer.example.sol):
+point `expectedChainKey` and `expectedGateway` at your source deployment and you have a
+bridge-independent inbound credit. It is the exact shape ThirdCheck's own `InflowConsumer` uses,
+verified end to end on testnet.
+
 ## Where this comes from
 
 ThirdCheck is a security bench for Attestcoin consumers. It produces legitimate proofs of the wrong

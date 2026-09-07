@@ -13,7 +13,12 @@
     "triage": "ts-node scripts/triage-findings.ts",
     "conformance": "ts-node scripts/conformance.ts",
     "gate": "ts-node scripts/gate.ts",
-    "judge:verify": "ts-node scripts/verify.ts"
+    "judge:verify": "ts-node scripts/verify.ts",
+    "deploy:inflow:source": "hardhat run scripts/deploy-inflow-source.ts --network sepolia",
+    "deploy:inflow": "hardhat run scripts/deploy-inflow.ts --network cc3",
+    "demo:inflow": "hardhat run scripts/verify-inflow.ts --network cc3",
+    "deploy:adopter": "hardhat run scripts/deploy-adopter.ts --network cc3",
+    "demo:adopter": "hardhat run scripts/verify-adopter.ts --network cc3"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^5.0.0",
