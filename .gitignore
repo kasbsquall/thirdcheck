@@ -44,3 +44,5 @@ video/audio_out/
 video/remotion/public/final_audio.wav
 # Licensed music track — not redistributed in the repo
 assets/*.wav
+
+.vercel
