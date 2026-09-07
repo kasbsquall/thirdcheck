@@ -171,6 +171,7 @@ export interface HubSettlement {
   orderId: string;
   operator: string;
   seller: string;
+  treasury: string;
   amount: string;
   chainKey: number;
   payout: string | null;
