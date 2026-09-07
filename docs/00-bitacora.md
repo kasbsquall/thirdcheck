@@ -1133,3 +1133,291 @@ index41 grita profundidad con número.
 Mismos cambios propagados a `README.md` ("By the numbers"), `docs/16` (submission fields) y el
 deck PDF (`frontend/public/thirdcheck-deck.pdf`, portada con 15/16 · 51/53 · 11/11, callout
 "2 of 53"). Redeploy Vercel + push al mirror para que todo lo desplegado quede consecuente.
+
+---
+
+## 2026-09-07 · D-57. Verified Inflows: arista de expansión de usuarios (pilar 1)
+
+**Contexto.** Deadline extendido al 13. Revisado el AMA de kickoff (`mattagia/hackavid/transcripciones.txt`):
+Sung (Credit Labs, CIP) dijo que los cinco pilares del CIP son también los criterios del hackathon.
+El pilar 1 (user-based expansion) es el punto débil estructural de una herramienta de infra/seguridad.
+Se decidió añadir una arista que ataque ese hueco sin diluir el core que ya posiciona.
+
+**Investigación que la fundamenta (dos pases en paralelo, 2026-09-07):**
+- Campo real: 48 proyectos (no 58). La posición "estándar de verificación / bench + librería +
+  registro de apps" de ThirdCheck está sin disputa. Zonas saturadas: reputación de personas (15-17),
+  escrow/settlement (5-8), pagos/remesas (3). Espacio en blanco user-facing: "verificar el valor que
+  ENTRA antes de acreditarlo" (bridge safety) lo toca 1 de 48; directorio de apps verificadas, 0-1.
+- Docs oficiales (`docs.attestcoin.org`): el precompile 0x0FD2 verifica inclusión + continuidad y
+  "no valida si una transacción fue exitosa". EvmV1Decoder expone status, logs, topics, data, emitter.
+  Los rieles de entrada de valor de Creditcoin viajan por bridges (Wormhole NTT para CTC y USDT.C).
+  Pérdidas por hacks de bridges ~2 mil millones solo en 2022 (Ronin 624M, Wormhole 326M, Nomad 190M).
+  Writability confirmada como roadmap ("undergoing 3rd party testing and audits"), sin fecha.
+
+**Decisión.** Ganador único: **Verified Inflows**, el tercer check aplicado al valor que entra a la
+cadena. Un depósito inbound se prueba de forma independiente (precompile + tercer check) antes de que
+una app acredite al usuario. Mecanismo de pilar 1: entrada segura = usuarios y dinero cruzan a
+Creditcoin. Se monta sobre el core (refactor mínimo), no lo reemplaza. Fuente del veredicto:
+transcripción AMA + dos pases de investigación de esta sesión.
+
+**Aplicado (contratos compilan, frontend tipa en verde):**
+1. `contracts/lib/ThirdCheckLib.sol` (+ copia sincronizada del paquete): segundo predicado `bindDeposit`
+   sobre el mismo `verifyReceipt`, probando que la librería generaliza más allá de pagos. Firma
+   `Deposited(bytes32,address,address,uint256)`, error `NoMatchingDeposit`.
+2. `contracts/source/SourceGateway.sol`: gateway de depósito en Sepolia (emite Deposited, bloquea valor).
+3. `contracts/cc3/InflowConsumer.sol`: inbox en CC3, gateway y chainKey fijados en el constructor,
+   `credit()` permissionless que paga solo al beneficiario nombrado en origen, una vez por depósito.
+4. Scripts: `deploy-inflow-source.ts` (Sepolia, solo gateway para no tocar direcciones existentes),
+   `deploy-inflow.ts` (CC3, registra el consumidor como app verificada), `verify-inflow.ts` (demo e2e
+   que escribe `data/inflow.json`). npm: `deploy:inflow:source`, `deploy:inflow`, `demo:inflow`.
+5. Frontend: `loadInflow()` + tipo `Inflow` en `lib/reports.ts`, `components/Inflow.tsx` (sección
+   hermana de Settlement, acento verde, guardada por `data.credited`), cableada en `app/page.tsx`.
+
+**Desplegado (testnet).** SourceGateway Sepolia `0x879628662310232F9c287eF45d14d89B7cD5886E`;
+InflowConsumer CC3 `0x037D8E868Ced6F3612EfEd070aBB316eF8fB82c0` (registrado verified, score 10000).
+
+**Guardarraíles de honestidad.** Se verifica un depósito real en Sepolia que controlamos, enmarcado
+como "el mismo check aplica a un depósito de Wormhole/USDT.C"; no se afirma integración viva con
+Wormhole ni PenguinBridge (atribución no confirmada); Truge no se menciona (sin fuente); writability
+como roadmap parafraseado. Todo testnet, burner key local.
+
+**Pendiente.** Demo e2e corriendo (espera frontera de atestación, escribe `data/inflow.json`). Luego:
+reencuadre de narrativa a los cinco pilares (hero, deck, README, docs/16), señal de transparencia del
+historial, `next build` en verde, redeploy Vercel y push al mirror. Re-correr jurado agnóstico final.
+
+**D-57b (cierre, 2026-09-07).** Demo e2e cerrada: `data/inflow.json` con depósito Sepolia
+`0x549f4aab…4100bf` (bloque 11652344) y crédito CC3 `0xda7ae863…a9dfa17b` (bloque 5444801);
+beneficiario fresco `0x5AEF…9BE9` de 0 a 0.001, `credited=true`. Reencuadre aplicado a hero
+(`page.tsx`), README (tagline, bullet, sección Verified Inflows, tabla de contratos), `docs/16`
+(tagline, intro, solución de cuatro lados, sección "Los cinco pilares", evidencia, tabla) y deck
+(6 slides, nueva slide 04 de inflows, PDF 1.24 MB). `next build` en verde, redeploy Vercel a
+producción (alias thirdcheck.vercel.app, deck y sitio 200), verificado en vivo el render de la
+sección (título, tile, tx reales, address row). Mirror público actualizado con commit incremental
+`8c4856b` (barrido de nombres limpio en lo agregado). Pendiente de decisión del usuario: la
+referencia preexistente en `frontend/components/LiveCheck.tsx` a `Nuel-osas/deadswitch` como
+REAL_REPO del checker en vivo (competidor, repo público), ya viva desde antes; evaluar si se cambia
+a un objetivo neutro. Video sin tocar. Falta re-correr jurado agnóstico final.
+
+## 2026-09-07 · D-58. Sub-identidad de Verified Inflows, página propia y dos jurados
+
+**Decisión de identidad.** El usuario preguntó si darle isotipo propio. Recomendación aplicada:
+sub-identidad derivada del sistema, no marca rival. `InflowMark` en `Mark.tsx` (misma geometría
+Triad, tercera barra en verde `--safe`, flecha de entrada en vez del check). Página dedicada
+`frontend/app/inflows/page.tsx` (acento verde, masthead "Verified Inflows · part of ThirdCheck" con
+link a la bench, hero "the check on money coming in", tile de evidencia real, los 8 checks del inbox,
+bloque de growth edge/pilar 1, tabla de contratos). `ArrowLeft` agregado a `icons.tsx`. Link desde la
+sección del boletín a `/inflows`. `next build` en verde (ruta /inflows estática), deploy a prod,
+verificado en vivo (200 + captura del hero con la sub-marca + curl de secciones). Mirror actualizado
+`bd0346a`.
+
+**Jurado con personas reales (Dave/Sung/Diaz, del AMA).** Panel: Grand o 2do, más probable 2do con
+camino al 1ro. Dave 9.5 (profundidad, falsificador, historial incremental). Sung compuesto ~6.5:
+técnico 10, visión 8, mercado 8, pero pilar 1 (usuarios) 4 y pilar 4 (equipo) 4. Diaz 6 (Verified
+Inflows lo salva de ser pura infra; quiere verlo dentro de una app real). Verified Inflows cambió la
+lectura decisivamente para Sung y Diaz. Palanca convergente: un adoptante/usuario visible + un segundo
+integrante nombrado.
+
+**Jurado agnóstico vs campo (48).** Sube a Project X a Grand Prize; index41 2do, VeriSettle 3ro.
+Freno único: expansión de usuarios (infra sin usuario visible). Amenazas: index41 (novedad/profundidad),
+VeriSettle (evidencia pulida). Corrección importante: **Deadswitch NO está en `ctc-buidls-full.json`**;
+la referencia previa como competidor top era errónea, y el REAL_REPO de LiveCheck (`Nuel-osas/deadswitch`)
+ni siquiera es competidor del hackathon. Palanca: mostrar un adoptante real.
+
+**Convergencia de ambos jurados:** el único gap para el 1ro indiscutible es un adoptante/usuario visible
+(y para Sung, un segundo integrante). Pendiente de decisión del usuario: cambiar el REAL_REPO de
+LiveCheck a objetivo neutro; resubmit de `docs/16` en DoraHacks; rotar API key ElevenLabs; y si se
+monta una demo de adopción (una app del campo o propia usando la librería/rail).
+
+## 2026-09-07 · D-59. Adoptante de referencia, LiveCheck neutro, jurado agnóstico #3
+
+**Puntos 1 y 4 ejecutados.**
+- Punto 4: `LiveCheck.tsx` REAL_REPO ahora es `kasbsquall/thirdcheck` (chip "scan our repo on github");
+  se quitó la referencia a `Nuel-osas/deadswitch`. Barrido de nombres en el mirror ahora 100% limpio.
+- Punto 1: `CreditLineApp.sol` (línea de crédito cross-chain sobre `ThirdCheckLib`, LTV 50%), deploy
+  `0xE6049333594A454E5A73C38a8a3DaAC8D90191f7` en CC3, registrado verified. Scripts `deploy-adopter.ts`
+  y `verify-adopter.ts`. Demo e2e real: colateral 0.001 (Sepolia `0x3457…0a7c`) → openLine 0.0005
+  (CC3 `0x2748…01ecb`) → draw 0.0003 (CC3 `0x4f4a…60b3`), 0.0002 disponible, usuario fresco `0x387f…a03a`.
+  `data/adopter.json`. Sección en `/inflows` con encuadre honesto "reference integration, same team, not
+  third-party". Propagado a README, `docs/16` y deck (PDF 1.24 MB). Build verde, deploy prod, mirror
+  `923513d`.
+
+**Jurado agnóstico #3 (con adoptante, honestamente descrito).** Coloca a Project X **1ro / Grand Prize
+hoy**, index41 2do, VaultBridge 3ro (VeriSettle pisándole). Punto honesto clave: el adoptante del mismo
+equipo NO cierra el gap de user-expansion (un jurado disciplinado lo descuenta); sí cierra la duda de
+product-vision/execution ("¿esto lo usa algo además del bench?"). Project X gana por dominar los dos ejes
+más pesados (profundidad + uso core) con evidencia on-chain, no por el adoptante. Amenaza: index41 por
+pureza/novedad keyless. **Palanca única restante (ambos jurados convergen): UN adoptante externo real**
+(otro equipo metiendo `ThirdCheckLib` en su repo con su propia tx), que además ThirdCheck puede canalizar
+porque scoreó el campo y sabe quién falló el tercer check. Eso, más un segundo integrante, es mundo real
+del usuario. El build ya está al máximo de lo que el código puede aportar; el video puede ir sobre este
+estado.
+
+## 2026-09-07 · D-60. Guion de video v2 y paquete instalable
+
+**Contexto de decisión del usuario.** El adoptante externo lo da por poco probable de conseguir. Se
+decide no fingirlo (se huele en Q&A) y avanzar con lo que sí es honesto y está en nuestra mano: (a)
+dejar `ThirdCheckLib` como paquete instalable y demostrable, para que "cualquier equipo lo adopta sin
+fricción" sea verificable aunque no haya adoptante con nombre; (b) el segundo integrante queda como
+tarea del usuario (único criterio que Sung nombró explícito, hoy cero visible); (c) el encuadre de
+alcance del video se apoya en "ThirdCheck leyó el código de 53 equipos", que es alcance real de
+ecosistema, no adopción fingida.
+
+**Duración del video.** Ninguna regla del hackathon fija tope (confirmado por el usuario). Criterio:
+no aburrir a un jurado que ve ~40 entradas. Objetivo firme 1:45-1:55 de voz, tope 2:00. El v1 publicado
+(youtu.be/kQkfFFNlvFA) son 9 escenas, ~110s VO (cold_open, problem, scorecard, falsifier, library,
+rails, settlement, verify, close) y NO menciona Verified Inflows, ni el adoptante, ni los cinco pilares.
+
+**Guion v2 escrito en `docs/18-video-script-v2.md`** (reemplaza a `docs/12` para la regrabación). Mismo
+eje ganador; se mantienen intactos cold open del defecto real, tesis del tercer check, medición de 53
+entradas y la línea de honestidad. Entra un beat propio de Verified Inflows (0:52-1:09) con identidad
+verde y una sola frase honesta del adoptante (mismo equipo). Rails+settlement se comprimen en un beat.
+Cierre con URL + QR ~4s. Pendiente: pasar el jurado agnóstico AL GUION antes de producir un solo frame.
+No se ha producido nada todavía.
+
+**Paquete instalable.** `packages/thirdcheck-contracts` subido a v0.2.0: se documenta el segundo
+predicado `bindDeposit` (entrada) en el README y se agrega `example/InflowConsumer.example.sol`, un
+consumer inbound copy-ready (misma forma que el InflowConsumer real, verificado on-chain). `npm pack
+--dry-run` empaqueta limpio: LICENSE, README, contracts/ThirdCheckLib.sol, example, package.json (5
+archivos, 5 kB). NO se publicó a npm (acción pública irreversible, requiere cuenta del usuario); queda
+el comando para que lo corra él.
+
+## 2026-09-07 · D-61. Isotipo de Verified Inflows (elegido)
+
+Se descartaron dos rondas previas: la ronda 1 (tres variantes de la Tríada con accesorio) por leerse
+todas iguales al padre, y la ronda 2 (frontera / sello con flecha / confluencia) por no gustar. El
+usuario eligió de la ronda 3 (lockups simples isotipo+texto) la **opción G: un sello redondeado en
+verde `--safe` con el check en color ground**, personalidad de estampa de aduana, sin geometría de
+barras. El vínculo con ThirdCheck es el verde y el check, no la forma. Montado en `InflowMark`
+(`frontend/components/Mark.tsx`, viewBox 48, path `M16 25 l5.5 5.5 l12 -13.5`) y como favicon de ruta
+en `frontend/app/inflows/icon.svg`. Verificado en local (SSR ok, icon.svg 200). Pendiente de subir a
+prod en el próximo lote.
+
+## 2026-09-07 · D-62. Jurado al guion v2, fix de la tabla del falsificador, deploy
+
+**Jurado agnóstico ciego al guion v2** (5 jueces: VC, ingeniero, diseñador, sponsor-pilares, lego).
+Veredicto: **producir con ediciones**, rank top 2-3 de 10, media ~7.4. La espina (cold open del
+defecto real, tesis del tercer check, barrido de 53, línea de honestidad) es ganadora y diferenciada.
+Ediciones NO opcionales antes de grabar: (1) **citar o quitar el "$2B"** de bridge losses; en un video
+cuya marca es la honestidad, una cifra sin fuente es el único hueco que contradice la premisa (las
+cifras reales Ronin 624M + Wormhole 326M + Nomad 190M sí son citables, así que se atribuye, no se
+inventa); (2) **descomprimir el beat 1:09-1:23** (librería+rail+operador+fee amontonados justo tras el
+pico de Inflows, es el punto más flojo por pacing y modelo de negocio enterrado). Alta palanca: (3)
+pilar 1 sigue siendo el flanco débil, el adoptante propio ayuda pero no es adopción externa (ya está
+etiquetado honestamente como mismo equipo); (4) des-jergar el beat 0:08-0:22 con una analogía antes del
+vocabulario de protocolo (el lego se cae ahí); (5) añadir un frame de equipo/track-record (pilar 4 hoy
+ausente). La línea de honestidad ayuda y es el foso; Verified Inflows aterriza más de lo que se siente
+pegado, pero exige (1) y una reframe clara del adoptante. Transcript completo en el task del agente.
+
+**Fix de UI: la tabla del falsificador (home) causaba ruido**, todo pegado a los bordes sin padding ni
+separadores. Corregido con el sistema: filas con clase `.contrast-row` (padding 0.95/1.15rem, divisor
+hairline `.contrast-row + .contrast-row`, hover lift a `--panel-2`), cabecera con padding lateral,
+`marginTop` clamp antes de la sección, textura de grano sutil (`.grain::after`, opacity .03) y realce
+superior en el panel para que no sea negro plano; links de tx con hover (`.tx-link`). Misma vida a
+`/inflows`: hover verde de identidad (`.lift-safe`) en check-grid, flow-steps y filas desplegadas, y
+realce superior en los tiles. Todo en `globals.css` + `page.tsx` + `inflows/page.tsx`, verificado
+renderizado (Chrome headless contra dev server, no el pane).
+
+**Deploy a prod** (`dpl_2LNaBL...`, READY, alias `thirdcheck.vercel.app`): sello G, fixes de tabla y
+hover verificados live vía curl. Pendiente: empujar el mirror público con estos cambios de frontend +
+el paquete v0.2.0 + docs, en el próximo push.
+
+## 2026-09-07 · D-63. Video v3 producido
+
+**Guion v3 cerrado** (`docs/19`), proyecto en solitario, sin línea de equipo (se aclaró que el usuario
+está solo; el "segundo integrante" era una nota mal arrastrada de una sesión previa, no un requisito).
+Pilar 4 se sostiene con el beat de "construido en la ventana", ahora fundido en `verify`.
+
+**Voz regenerada con ElevenLabs** (voz Will, misma key del usuario; él decidió no rotarla, se le avisó
+del riesgo). Se creó `video/.secrets/eleven.key` gitignoreado y `assets/perimeter_loop.wav` (crossfade
+de la música original a 221s para que no quede cola muda). Tres iteraciones de recorte: el texto del v3
+locutado daba 3:07; se apretó a frases fluidas, se fundió el beat "built" en verify (8 escenas en vez de
+9) y se bajó a 323 palabras -> **vo 125.9s, película ~2:09**. Narración final en `video/scripts/build_audio.py`.
+
+**Remotion:** nueva escena `scenes/Inflows.tsx` con identidad verde (sello G dibujado, tarjeta de
+pérdidas citada Ronin 624M/Wormhole 326M/Nomad 190M en rojo, flujo depósito Sepolia -> crédito CC3,
+0.001 acreditado a dirección fresca, sello "no bridge trusted"). Datos en `facts.ts` (INFLOW,
+BRIDGE_LOSSES). Cableada en `Video.tsx` (id `inflows`); el timing sale de `scene_timing.json` v3. Las
+escenas rails/settlement salen del timeline (no están en SCENES) y el rail queda descrito en el VO del
+cierre. Render `out/thirdcheck_v3.mp4`, 3868 frames, 13.2 MB. Verificado por frames: Inflows y cierre
+(QR al repo) correctos, sin placeholders. Enviado al usuario.
+
+**Pendiente/opcional:** el cierre muestra la end card de marca, no el rail settleando (el VO sí lo
+nombra); si el usuario lo pide, enriquecer `Close.tsx` con el flujo del hub. Subir el video final a
+YouTube y actualizar `docs/15`/`docs/16`/README con el link nuevo es tarea del usuario.
+
+## 2026-09-07 · D-64. Video v4: capturas reales, reveal de Inflows, música nueva
+
+**Feedback del usuario + jurado agnóstico #4** (ambos convergen): escenas "que dibujan datos" se ven
+de maqueta; faltaba (a) una entrada de marca de Verified Inflows con logo, y (b) metraje real del
+frontend. Sin tope de duración; permiso de ir hasta ~3 min. El jurado marcó como las más flojas
+scorecard y la tarjeta de inflows, y dijo que una captura real del producto prueba lo que un
+motion-graphic no puede (que está shipped, no descrito).
+
+**Cambios v4:**
+- **Música:** el usuario pasó su render nuevo de Suno `Perimeter Watch.mp3` (125.7s). Se usa como
+  música (la voz sigue ElevenLabs Will). Extendida con crossfade a `assets/perimeter_v2_loop.wav`.
+- **"hackathon":** se mantiene en cold_open y en el barrido (es load-bearing para las 53 entradas), se
+  suavizó en verify ("inside the window"). No se nombra el evento en la voz.
+- **Nueva escena `reveal`** (`scenes/Reveal.tsx`): entrada de marca de Verified Inflows, sello G grande
+  dibujando el check + wordmark + tagline "the third check, aimed at the money coming in". VO propio de
+  ~6s. La reordenó el pipeline entre scorecard e inflows.
+- **`scorecard` e `inflows` ahora usan `ScrollShot3D`** con capturas reales de prod (home_full 2560x8400
+  y inflows_full 2560x4226, recortadas a contenido, en `public/stills_v6/`): el boletín y /inflows
+  scrolleando en ventana 3D, con overlay de texto/cifras a la izquierda. Es el fix de "metraje real".
+- Voz regenerada (solo reveal nuevo + verify): vo 131.9s. Render `out/thirdcheck_v4.mp4`, 4048 frames,
+  ~2:15, 30.2 MB. Verificado por stills (reveal, scorecard, inflows correctos). Enviado.
+
+**Opcional siguiente:** beat de "explorer abriendo" con captura real de blockscout/etherscan de la tx
+(se dejaron capturando en background); enriquecer close con el rail real; convertir problem al masthead
+real si se quiere. El usuario decide si vale otra pasada de jurado o si esto ya es el final.
+
+## 2026-09-07 · D-65. Jurado de premios, arreglos de subtítulos, música exacta (v5)
+
+**Jurado de premios vs top tier** (leyó `docs/01`, `docs/16`, `docs/19`, README). Veredicto:
+**ThirdCheck #2, podio, overall 8.2/10**. Leaderboard: 1 index41 (prueba orden intra-bloque en una tx,
+novedad probable más profunda), 2 ThirdCheck, 3 crosscredit, 4 Collateral Eligibility Ledger, 5
+Unbridged, 6 Spark, 7 Oracle-Free Council; VaultBridge fuera del podio (código se cae). Pierde el 1
+contra index41 en pilar 2 (profundidad como resultado único vs superficie amplia) y de frente en pilar
+1 (adoptante propio). Pilares: expansión 5, profundidad 9, visión 9, ejecución 9, relevancia 9.
+**Movimiento decisivo para el 1: UN adoptante externo real** registrado on-chain en VerifiedRegistry;
+el jurado lo ve alcanzable en los 6 días vía el canal de las divulgaciones. No inventar uno.
+
+**ElevenLabs sin créditos.** Un bug (importar `build_audio` corría su `main()` con argv equivocado,
+escribió a `./pregen/`) disparó una regeneración que consumió los últimos créditos (quota 0). Corregido:
+`build_audio.py` ahora envuelve `main()` en `if __name__ == "__main__"`. La voz recién generada se
+recuperó de `pregen/scenes` (9 wavs) y se movió a `audio_out/scenes`; no se puede regenerar más voz
+hasta recargar la cuenta.
+
+**Arreglos de subtítulos (sin gastar créditos).** `video/scripts/align_captions.py` reescrito con
+**faster-whisper** (instalado local): transcribe cada escena con word-timestamps y alinea contra el
+texto del guion (difflib), así las líricas quedan pegadas a la voz real, no por aproximación. Además
+convierte números hablados a dígitos en la lírica (`fifty-three`->53, `twelve`->12) para lectura rápida.
+Verificado en frame (t=49.4s: "the whole hackathon, 53 submissions").
+
+**Música exacta del usuario.** Nuevo render de `Perimeter Watch.mp3` (134.6s, 2:14) en
+`assets/Perimeter Watch v3.mp3`, usado tal cual (cubre el VO de 128.3s sin loop). Render
+`out/thirdcheck_v5.mp4`, 3939 frames, ~2:11, 30.9 MB. Enviado.
+
+**v6: cierre rehecho.** El usuario notó que el cierre se quedaba estático ~15s (armaba la placa en ~3s
+y sostenía). Sin poder tocar la voz (créditos 0), se rediseñó `Close.tsx` en dos fases sobre el mismo
+VO: fase A (rail real settleando, pago Sepolia -> settled CC3 con fee verificado 0.10% vs 0.25%,
+`SETTLEMENT`+`FEE` de facts) durante la línea hablada del producto, crossfade a fase B (placa de marca
++ QR) sostenida ~9s al final. Verificado por stills. Render `out/thirdcheck_v6.mp4`, 3939 frames, ~2:11,
+31 MB. Enviado.
+
+**Final: corte de audio en 2:05 arreglado.** Causa real: el `sidechaincompress` de `audio_gen` recorta
+la música al largo de la voz, así que el `final_audio.wav` terminaba en ~125.7s (2:05) aunque la pista
+del usuario dura 134.6s; el video (131.3s) se quedaba sin audio de 2:05 a 2:11. No era falta de música.
+Fix: re-mezcla propia con ffmpeg reusando `vo.wav` + la pista de 2:14 del usuario, con `apad`/`atrim` a
+131.3s y `afade out` 127.3->131.3, misma cadena de duck+loudnorm. `final_audio.wav` ahora 131.3s exactos;
+verificado que 125-131s tiene señal (mean -28dB). Render final `out/thirdcheck_final.mp4`, 131.35s, 31 MB.
+Enviado. Este es el video final salvo que el usuario pida más. Pendiente del usuario: subir a YouTube y
+pasar el link para actualizar README/`docs/16`.
+
+**Cierre con eslogan de salida.** El usuario sintió el final "meh": pedía un texto de cierre
+con la marca y un eslogan. Se añadió una tercera fase a `Close.tsx` (`SloganPhase`, in a frame
+local 438) tras el fade-out del brand card (`BRAND_OUT=430`): "The proof is real. The payment is
+wrong." con "wrong." en ámbar, y debajo la firma `ThirdCheck · thirdcheck.vercel.app`. Cabe en el
+largo existente de la escena close (sequence llega hasta el tail de 3s), así que no toca voz ni
+timing. Verificado por still (frame 3915). Render `out/thirdcheck_final.mp4` re-renderizado, 131.35s,
+video+aac, 31 MB. Enviado. Sigue siendo el video final salvo nuevo pedido.

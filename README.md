@@ -6,7 +6,7 @@
 
 **A valid Attestcoin proof tells you a transaction happened. It never tells you it is the transaction your contract meant to act on. That gap is the third check, and it is where cross-chain money leaks.**
 
-ThirdCheck is the security and settlement layer for that gap: a falsifier bench, a drop-in library, a settlement rail, and a CI gate.
+ThirdCheck is the security layer for value crossing into Creditcoin: a falsifier bench, a drop-in library, a settlement rail with Verified Inflows, and a CI gate.
 
 ![License](https://img.shields.io/badge/license-MIT-1c1e22)
 ![Solidity](https://img.shields.io/badge/solidity-0.8.28-4fae94)
@@ -24,13 +24,15 @@ BUIDL CTC 2026 Fall · Creditcoin & Credit Labs · DeFi track
 - **15 of 16** protocol entry points exercised across BlockProver (`0x0FD2`) and ChainInfo (`0x0FD3`), plus the full 16-method `EvmV1Decoder` surface. A typical consumer touches one. Depth of protocol use is the stated core criterion.
 - **5 of 53** submissions clear every applicable binding check. ThirdCheck scored the whole field against the twelve checks; 91% ship at least one gap. Rows are anonymised, confirmed defects disclosed privately first.
 - **11/11** claims reproduce off the public chain, no key and no clone: run `npm run judge:verify`, or verify any claim on the [live bulletin](https://thirdcheck.vercel.app).
+- **Inbound value, checked before it lands.** A real cross-chain deposit was locked on Sepolia and credited to a fresh Creditcoin beneficiary only after the third check proved it, with no bridge trusted. Bridge failures have cost roughly $2B; this is the inbox check that stops them. Both public: [deposit](https://sepolia.etherscan.io/tx/0x549f4aab849b8a15423aa7da9dd7095290fba86a6b7ef60b8c5c527c004100bf) then [credit](https://creditcoin-testnet.blockscout.com/tx/0xda7ae863cd0c57dfeb60ec6021ac44a6463dc7818ff13b6529bfe757a9dfa17b).
+- **A second app already builds on it.** A reference credit-line app (CreditLineApp) consumes the library end to end: a user's 0.001 of verified cross-chain collateral opened a 0.0005 credit line (50% LTV) on Creditcoin, and the user drew against it, on testnet. Proof the third check is a dependency products build on, not just our own contracts.
 - **The model:** apps route orders through SettlementHub and settle safe by construction; the fee on safe settlement is the revenue, a verified operator settles at a lower rate, and audit-grade review is the service.
 
 ---
 
 ## Watch the demo
 
-**[Watch the 1:53 demo](https://youtu.be/kQkfFFNlvFA)** — the sticky line is the whole thesis: *the proof is real, the payment is wrong.*
+**[Watch the demo](https://youtu.be/cxvldd97nns)** — the sticky line is the whole thesis: *the proof is real, the payment is wrong.*
 
 A real proof that released a payment that never happened, the falsifier (a naive escrow releases, the hardened one rejects), the twelve checks collapsed to two calls, the settlement rail, and a tampered proof failing a check on camera before the real one passes 11/11. Everything on screen is real and on-chain, on public testnets; every claim is reproducible with `npm run judge:verify`.
 
@@ -173,7 +175,7 @@ One correction was needed to build this: the precompile's real surface is `verif
 
 ## Why this is a Creditcoin ecosystem bet
 
-Track: DeFi. ThirdCheck is the safety layer for cross-chain DeFi settlement on Attestcoin, and it ships a working settlement primitive, `SettlementConsumer`, that any lending, trading, or RWA app can build on.
+Track: DeFi. ThirdCheck is the safety layer for cross-chain value on Attestcoin, both the settlement that moves it out and the inbound deposits that bring it in, and it ships working primitives, `SettlementConsumer` and `InflowConsumer`, that any lending, trading, RWA or payments app can build on.
 
 The precompile is what makes cross-chain value flow possible on Creditcoin. Every unit of value that moves through it depends on a consumer getting the third check right, and the field review shows most do not. That unaddressed risk is the ceiling on how much value the ecosystem can safely carry. ThirdCheck removes it from three sides: the analyzer and CI gate stop the bug before mainnet, the library ships the correct implementation as a two-call dependency, and the bench proves the difference with real on-chain transactions.
 
@@ -197,16 +199,44 @@ The rails are not only deployed, they have settled a real order end to end, betw
 
 Operator, seller and treasury are three distinct addresses. The settlement paid 0.0009975 to the seller and captured 0.0000025 as the protocol fee, the 0.25% quoted for an unverified operator, and both deltas landed on-chain. These are testnet transactions with self-custodied demo keys. `judge:verify` reads the mined `settle` transaction off the public RPC and confirms the order is released, the three parties are distinct, and the fee was taken.
 
+### Verified Inflows: the check on value entering the chain
+
+The same third check aimed at the highest-stakes cross-chain flow, the one that credits an inbound deposit. Roughly two billion dollars in bridge losses came from crediting a transfer without independently confirming it. `InflowConsumer` credits a beneficiary only after `ThirdCheckLib` proves, through the precompile, that the deposit is real, from the expected gateway, to that beneficiary for that amount, on the right chain, and never credited before. It is the same two-call path as the escrow and the hub: `bindDeposit` is a second predicate over the same verified receipt, so the library generalises past payments without loosening a single check.
+
+It is deployed and it has run end to end. A real deposit was locked on Sepolia through `SourceGateway`, naming a fresh CC3 beneficiary, and once the block crossed the attestation frontier `credit` ran the third check and paid the beneficiary, whose balance went from zero to the deposited amount. Both transactions are public:
+
+| step | chain | transaction |
+|---|---|---|
+| inbound deposit | Ethereum Sepolia | [`0x549f4aab…4100bf`](https://sepolia.etherscan.io/tx/0x549f4aab849b8a15423aa7da9dd7095290fba86a6b7ef60b8c5c527c004100bf) |
+| verified credit | Creditcoin CC3 | [`0xda7ae863…a9dfa17b`](https://creditcoin-testnet.blockscout.com/tx/0xda7ae863cd0c57dfeb60ec6021ac44a6463dc7818ff13b6529bfe757a9dfa17b) |
+
+This is the user-expansion edge. Value and users cross into Creditcoin from larger chains only when the crossing is safe, and this is what makes it safe, independent of any bridge or relayer. The consumer is recorded as a verified app in the VerifiedRegistry. Everything is testnet, with self-custodied demo keys.
+
+### A reference adopter, so the library is not only ours
+
+To show the library is something products build on and not only the ThirdCheck contracts themselves, a distinct app builds on it: `CreditLineApp`, a cross-chain credit line. This is a reference integration by the same team, not a third-party adoption, and it is labelled as such. A fresh user locked collateral on Sepolia; once the third check proved the inbound deposit, the app opened a credit line and the user drew against it, all mined on CC3. Credit, Creditcoin's own thesis, made safe by construction on cross-chain collateral.
+
+| step | chain | transaction |
+|---|---|---|
+| collateral locked | Ethereum Sepolia | [`0x3457933e…83ef3c0a7c`](https://sepolia.etherscan.io/tx/0x3457933e5fb81e358dd11bec2456f7b2df797412052d791bcd47c383ef3c0a7c) |
+| credit line opened | Creditcoin CC3 | [`0x2748a2d4…8001f01ecb`](https://creditcoin-testnet.blockscout.com/tx/0x2748a2d432eb218da8bb187c52929c6f52d30646050f9325633f268001f01ecb) |
+| user drew on the line | Creditcoin CC3 | [`0x4f4af98e…3477f1ee60b3`](https://creditcoin-testnet.blockscout.com/tx/0x4f4af98ef91ec359beecbd48ee5da16683c30eb1538da83392e33477f1ee60b3) |
+
+0.001 of verified collateral opened a 0.0005 line (50% LTV); the user drew 0.0003, leaving 0.0002. The credit line and the draw depend on the same `verifyReceipt` + `bindDeposit`, with no check reimplemented.
+
 ## Deployed addresses (testnet)
 
 | contract | chain | address |
 |---|---|---|
 | SourceSettlement | Ethereum Sepolia | `0xD8504B263104aa915974eCCE1002d7F7587e88cD` |
 | ImpostorSettlement | Ethereum Sepolia | `0x327c38893Dd70ACCEC5Dc5F5CD5558f6ab33032a` |
+| SourceGateway | Ethereum Sepolia | `0x879628662310232F9c287eF45d14d89B7cD5886E` |
 | VulnerableEscrow | Creditcoin CC3 | `0xD8504B263104aa915974eCCE1002d7F7587e88cD` |
 | HardenedEscrow | Creditcoin CC3 | `0xeC82270dc356948FC2e5E969a887ce6bE27e375A` |
 | VerifiedRegistry | Creditcoin CC3 | `0xa2E744fEa8707aE124ee7d605D2fc1b58BF68752` |
 | SettlementHub | Creditcoin CC3 | `0x676a74fa6542BEd2dD4A16EF122f75968329B1B0` |
+| InflowConsumer | Creditcoin CC3 | `0x037D8E868Ced6F3612EfEd070aBB316eF8fB82c0` |
+| CreditLineApp | Creditcoin CC3 | `0xE6049333594A454E5A73C38a8a3DaAC8D90191f7` |
 
 SourceSettlement on Sepolia and VulnerableEscrow on CC3 share an address, deployed from the same account at the same nonce. That is B-05 made literal: the same address on two chains is two different contracts.
 
