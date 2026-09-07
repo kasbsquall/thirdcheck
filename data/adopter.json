@@ -1,0 +1,29 @@
+{
+  "network": "cc3-testnet",
+  "app": "0xE6049333594A454E5A73C38a8a3DaAC8D90191f7",
+  "gateway": "0x879628662310232F9c287eF45d14d89B7cD5886E",
+  "depositId": "0x567a95765d951a2999c330b474812cf4c449a6cbf8a7bfab582cd09ff893d0b7",
+  "user": "0x387f7810D1C3fcc013f831BDcA4D0f29e7A6a03a",
+  "chainKey": 1,
+  "ltvBps": 5000,
+  "collateral": "0.001",
+  "creditLimit": "0.0005",
+  "drawn": "0.0003",
+  "available": "0.0002",
+  "depositTx": {
+    "hash": "0x3457933e5fb81e358dd11bec2456f7b2df797412052d791bcd47c383ef3c0a7c",
+    "block": 11652849,
+    "url": "https://sepolia.etherscan.io/tx/0x3457933e5fb81e358dd11bec2456f7b2df797412052d791bcd47c383ef3c0a7c"
+  },
+  "openLineTx": {
+    "hash": "0x2748a2d432eb218da8bb187c52929c6f52d30646050f9325633f268001f01ecb",
+    "block": 5445219,
+    "url": "https://creditcoin-testnet.blockscout.com/tx/0x2748a2d432eb218da8bb187c52929c6f52d30646050f9325633f268001f01ecb"
+  },
+  "drawTx": {
+    "hash": "0x4f4af98ef91ec359beecbd48ee5da16683c30eb1538da83392e33477f1ee60b3",
+    "block": 5445220,
+    "url": "https://creditcoin-testnet.blockscout.com/tx/0x4f4af98ef91ec359beecbd48ee5da16683c30eb1538da83392e33477f1ee60b3"
+  },
+  "generatedAt": "2026-09-07T08:05:01.569Z"
+}
