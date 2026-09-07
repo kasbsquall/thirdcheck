@@ -1,68 +1,68 @@
 {
-  "vo": 110.158,
+  "vo": 128.287,
   "scenes": [
     {
       "id": "cold_open",
       "start": 1.6,
-      "end": 8.784,
-      "dur": 7.184,
-      "words": 22
+      "end": 16.411,
+      "dur": 14.811,
+      "words": 36
     },
     {
       "id": "problem",
-      "start": 9.064,
-      "end": 25.547,
-      "dur": 16.483,
-      "words": 48
-    },
-    {
-      "id": "scorecard",
-      "start": 25.827,
-      "end": 39.228,
-      "dur": 13.401,
-      "words": 37
+      "start": 16.691,
+      "end": 30.719,
+      "dur": 14.028,
+      "words": 46
     },
     {
       "id": "falsifier",
-      "start": 39.508,
-      "end": 57.297,
-      "dur": 17.789,
+      "start": 30.999,
+      "end": 46.464,
+      "dur": 15.464,
+      "words": 37
+    },
+    {
+      "id": "scorecard",
+      "start": 46.744,
+      "end": 62.051,
+      "dur": 15.308,
+      "words": 42
+    },
+    {
+      "id": "reveal",
+      "start": 62.331,
+      "end": 68.313,
+      "dur": 5.982,
+      "words": 16
+    },
+    {
+      "id": "inflows",
+      "start": 68.593,
+      "end": 85.207,
+      "dur": 16.614,
       "words": 44
     },
     {
       "id": "library",
-      "start": 57.577,
-      "end": 66.354,
-      "dur": 8.777,
-      "words": 25
-    },
-    {
-      "id": "rails",
-      "start": 66.634,
-      "end": 80.375,
-      "dur": 13.74,
-      "words": 38
-    },
-    {
-      "id": "settlement",
-      "start": 80.655,
-      "end": 95.727,
-      "dur": 15.073,
-      "words": 35
+      "start": 85.487,
+      "end": 97.556,
+      "dur": 12.069,
+      "words": 32
     },
     {
       "id": "verify",
-      "start": 96.007,
-      "end": 105.803,
-      "dur": 9.796,
-      "words": 33
+      "start": 97.836,
+      "end": 113.3,
+      "dur": 15.464,
+      "words": 48
     },
     {
       "id": "close",
-      "start": 106.083,
-      "end": 110.158,
-      "dur": 4.075,
-      "words": 12
+      "start": 113.58,
+      "end": 128.287,
+      "dur": 14.707,
+      "words": 37
     }
   ]
 }

@@ -46,3 +46,6 @@ video/remotion/public/final_audio.wav
 assets/*.wav
 
 .vercel
+
+# voice API key (local only, never committed)
+video/.secrets/

@@ -10,39 +10,49 @@ import sys
 sys.path.insert(0, r"C:\Users\User\.claude\skills\hackathon-video\scripts")
 import audio_gen  # noqa: E402
 
-# Final v4 narration. ids match the scene keys used in the Remotion Video.tsx.
+# v3 narration (docs/19-video-script-v3.md). ids match the scene keys in the Remotion Video.tsx.
+# Order and beats reflect the blind-jury edits: mail-room analogy before jargon, cited loss
+# figure, Verified Inflows as its own beat, library breathing alone, a built-in-window beat for
+# the execution pillar, and the settlement rail moved into the close.
+# Tightened to land near 2:00: flowing sentences (fewer stops = fewer pauses) and the
+# built-in-window evidence folded into `verify` so the execution pillar keeps its beat
+# without a ninth scene. Ronin/Wormhole/Nomad move to the on-screen figure card, not the VO.
 audio_gen.SCENES = [
     ("cold_open",
-     "This is a real proof on Creditcoin. A seller shipped, the proof checked out, and it released "
-     "a payment that never happened."),
+     "This is a real submission in this hackathon whose contract claims it verifies proofs through the "
+     "Attestcoin precompile. Watch the reply: unknown selector, so the verification never runs. I "
+     "confirmed it on-chain and disclosed it privately."),
     ("problem",
-     "Creditcoin's precompile proves a transaction was included in a block. It does not prove the "
-     "transaction succeeded, came from the contract you expect, or that you have not already counted "
-     "it. Everything past inclusion is the third check, and it is left to every developer to get right."),
-    ("scorecard",
-     "We rebuilt the integration patterns a consumer reaches for. The common ones release "
-     "money against a proof of the wrong thing. We name no one, we show the pattern. "
-     "The proof is real. The payment is wrong."),
+     "Think of the precompile as a mail room: it confirms a letter arrived in the real mail, not that "
+     "it is the check you were owed, for the right amount and sender, and not one already cashed. That "
+     "is the third check, left entirely to you."),
     ("falsifier",
-     "So we built the falsifier. Against a naive escrow, valid proofs release payments that never "
-     "happened. Against the hardened one, every one of those attacks is rejected, and only the correct "
-     "payment settles. Every transaction is mined on Creditcoin. You can open them yourself."),
+     "So ThirdCheck forges real proofs of the wrong payment, and every one passes the precompile. Same "
+     "proof, two contracts: the naive escrow pays out on real Creditcoin transactions, while the "
+     "hardened one rejects each attack by name."),
+    ("scorecard",
+     "Then I aimed it at the whole hackathon, fifty-three submissions against one catalogue, and the "
+     "gaps are not random: few check a proof's chain identity, and fewer pick the right log among "
+     "many. The precompile is only as safe as its consumers."),
+    ("reveal",
+     "So the third check became its own product, aimed at the money coming in. Verified Inflows."),
+    ("inflows",
+     "This is where cross-chain money leaks: bridge hacks top a billion dollars. So ThirdCheck aims "
+     "the third check at money coming in, crediting an inbound deposit only once it is proven on its "
+     "own, no bridge trusted. Here is a real one, on testnet."),
     ("library",
-     "The catalogue is twelve checks each team reimplements and gets wrong. We collapse it to two calls, "
-     "in a library any consumer can drop in."),
-    ("rails",
-     "Then we turned it into rails. Projects route a cross-chain payment through one neutral hub they "
-     "could not run alone. The third check runs by construction, a small capped fee is taken. "
-     "Operators that pass it pay less."),
-    ("settlement",
-     "Here is one order, settled end to end. Paid on Sepolia, proven to Creditcoin, released to a seller "
-     "by a separate operator, the fee captured by the protocol. Three distinct addresses. All mined on "
-     "testnet."),
+     "The fix ships as a drop-in library, twelve binding checks in two calls, installable today for "
+     "any Attestcoin consumer, with a cross-chain credit line my own team built running entirely on "
+     "it."),
     ("verify",
-     "You do not have to trust any of this. Feed it a tampered proof, the check fails on the spot. "
-     "Feed it the real one, every claim reproduces straight off the public chain."),
+     "One command reproduces all of it against the public chain, no key, and all of it was built "
+     "inside the window from a burner key. To be precise, I did not fire the fake proof at a live "
+     "deployment: you saw the precompile reject it, plus the source."),
     ("close",
-     "The proof is real. The payment is wrong. ThirdCheck is the difference."),
+     "That is the product: apps route orders and deposits through the hub, safe by construction, and a "
+     "verified operator pays less. ThirdCheck is the check every Attestcoin integrator runs before "
+     "mainnet, and how the ecosystem stays safe."),
 ]
 
-audio_gen.main()
+if __name__ == "__main__":
+    audio_gen.main()

@@ -17,6 +17,23 @@ export const SETTLEMENT = {
   settleBlock: 5442390,
 };
 
+// Verified Inflows: one real inbound deposit, proven then credited. From data/inflow.json.
+export const INFLOW = {
+  consumer: '0x037D8E868Ced6F3612EfEd070aBB316eF8fB82c0',
+  beneficiary: '0x5AEFDb7Ae40F625079E021D50373321080c59BE9',
+  amount: '0.001',
+  creditedAmount: '0.001',
+  depositTx: '0x549f4aab849b8a15423aa7da9dd7095290fba86a6b7ef60b8c5c527c004100bf',
+  creditTx: '0xda7ae863cd0c57dfeb60ec6021ac44a6463dc7818ff13b6529bfe757a9dfa17b',
+};
+
+// Public bridge-hack tallies, shown as a cited figure card (not spoken as a bare number).
+export const BRIDGE_LOSSES = [
+  {name: 'Ronin', usd: '$624M'},
+  {name: 'Wormhole', usd: '$326M'},
+  {name: 'Nomad', usd: '$190M'},
+];
+
 // SettlementHub fee schedule (deployed constants, basis points).
 export const FEE = {
   bps: 25,

@@ -6,6 +6,8 @@ import {ColdOpen} from './scenes/ColdOpen';
 import {Problem} from './scenes/Problem';
 import {Scorecard} from './scenes/Scorecard';
 import {Falsifier} from './scenes/Falsifier';
+import {Inflows} from './scenes/Inflows';
+import {Reveal} from './scenes/Reveal';
 import {Library} from './scenes/Library';
 import {Rails} from './scenes/Rails';
 import {Settlement} from './scenes/Settlement';
@@ -17,6 +19,8 @@ const MAP: Record<string, React.FC> = {
   problem: Problem,
   scorecard: Scorecard,
   falsifier: Falsifier,
+  reveal: Reveal,
+  inflows: Inflows,
   library: Library,
   rails: Rails,
   settlement: Settlement,
