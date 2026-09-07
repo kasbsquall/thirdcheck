@@ -22,7 +22,7 @@ BUIDL CTC 2026 Fall · Creditcoin & Credit Labs · DeFi track
 ## By the numbers
 
 - **15 of 16** protocol entry points exercised across BlockProver (`0x0FD2`) and ChainInfo (`0x0FD3`), plus the full 16-method `EvmV1Decoder` surface. A typical consumer touches one. Depth of protocol use is the stated core criterion.
-- **2 of 53** submissions clear every applicable binding check. ThirdCheck scored the whole field against the twelve checks; 96% ship at least one gap. Rows are anonymised, confirmed defects disclosed privately first.
+- **5 of 53** submissions clear every applicable binding check. ThirdCheck scored the whole field against the twelve checks; 91% ship at least one gap. Rows are anonymised, confirmed defects disclosed privately first.
 - **11/11** claims reproduce off the public chain, no key and no clone: run `npm run judge:verify`, or verify any claim on the [live bulletin](https://thirdcheck.vercel.app).
 - **The model:** apps route orders through SettlementHub and settle safe by construction; the fee on safe settlement is the revenue, a verified operator settles at a lower rate, and audit-grade review is the service.
 
