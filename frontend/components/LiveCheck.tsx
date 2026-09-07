@@ -200,9 +200,10 @@ export function LiveCheckSection() {
         </div>
         <p className="lc-note">
           This is the instrument behind the scorecard below. Paste an Attestcoin consumer, or give it any
-          GitHub repo or <span className="mono">.sol</span> link and it pulls and scans the live code. Every
-          submission the scorecard summarizes is public, so run the gate on any of them yourself. Same engine
-          the CI gate runs, same verdict a pull request would get. No key, nothing stored.
+          GitHub repo or <span className="mono">.sol</span> link and it pulls and scans the live code right
+          here. Every submission the scorecard summarizes is public, so run the gate on any of them yourself.
+          Same engine the CI gate runs, same verdict a pull request would get. No clone, no install, no key,
+          nothing stored — a judge verifies every claim from this page.
         </p>
 
         {/* Mode switch: a real segmented control, distinct from the example row below. */}

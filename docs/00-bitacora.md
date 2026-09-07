@@ -1090,3 +1090,46 @@ intacto; Settlement nodos alineados sin deriva. Re-render `out/thirdcheck_master
 **Pendiente del usuario antes del commit final.** El commit final espera el link de YouTube
 (instrucción explícita). Además: al menos un social link para DoraHacks, y rotar la API key
 de ElevenLabs expuesta en el transcript. `docs/16` actualizado.
+
+---
+
+## 2026-09-06 · D-55. Fuga en el repo público, mirror limpio, deck y hosting
+
+**Hallazgo de seguridad.** `github.com/kasbsquall/thirdcheck` ya existía público con 5 commits
+de ANTES de la anonimización (push de hoy ~20:21). O sea, los nombres marcados estuvieron vivos
+en GitHub cerca de una hora, incluido `docs/10-disclosure-vaultbridge.md` (nombre en la ruta).
+
+**Fix aplicado.** Se armó el mirror limpio en `C:\Users\User\Downloads\thirdcheck-mirror`
+(156 archivos, sin docs/ ni privados, name-sweep e historial en cero) y se hizo force-push a
+`main` (91512af -> 3c04fca, un solo commit). El árbol y la rama quedan limpios; las rutas con
+nombres dan 404. No se pudo borrar+recrear el repo porque el token gh no tiene scope
+`delete_repo`. Residual: los 5 commits viejos quedan como objetos colgados (accesibles por SHA
+hasta el GC de GitHub, no visibles ni clonables). Recomendación: `gh auth refresh -h github.com
+-s delete_repo` y borrar+recrear para eliminarlos del todo.
+
+**Deck y hosting.** Deck PDF de 5 slides (mismo sistema de marca) y logo 1:1 servidos por Vercel:
+`/thirdcheck-deck.pdf` y `/logo.png`. Redeploy a producción hecho.
+
+---
+
+## 2026-09-06 · D-56. Cinco cambios de posicionamiento para pelear por el 1ro
+
+**Contexto.** Pase de jurado agnóstico sobre los 58 reales: index41 (47994) es el favorito
+(novedad + profundidad Attestcoin + reproducible), Deadswitch (48255) es el gemelo conceptual
+de la tesis pero como producto. ThirdCheck quedaba peleando 3ro. Cinco cambios de texto/data,
+sin re-render de video, para atacar los tres "porqué no": tooling, tesis compartida, y que
+index41 grita profundidad con número.
+
+**Aplicado (data-driven, verificado con next build en verde):**
+1. Hero del boletín lidera con los dos diferenciadores: `${surface.exercised}/${totalEntryPoints}`
+   (15/16 entry points, typical consumer=1) y `${fieldMiss}/${total}` (51/53 se saltan un check).
+2. Scorecard reencuadrado: "The whole field, measured", stat líder "51 de 53 miss ≥1 check",
+   solo 2 lo cubren todo. Fuente: `data/scorecard.json` (computado de rows), `data/conformance.json`.
+3. Modelo de negocio explícito en Settlement (fee sobre settlement seguro + VerifiedRegistry
+   discount + audit-as-a-service).
+4. LiveCheck: "no clone, no install, no key" — iguala el 0-click de index41.
+5. Tabla de contraste reetiquetada como el falsificador antes/después sobre app real.
+
+Mismos cambios propagados a `README.md` ("By the numbers"), `docs/16` (submission fields) y el
+deck PDF (`frontend/public/thirdcheck-deck.pdf`, portada con 15/16 · 51/53 · 11/11, callout
+"2 of 53"). Redeploy Vercel + push al mirror para que todo lo desplegado quede consecuente.

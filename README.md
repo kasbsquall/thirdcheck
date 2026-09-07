@@ -6,7 +6,7 @@
 
 **A valid Attestcoin proof tells you a transaction happened. It never tells you it is the transaction your contract meant to act on. That gap is the third check, and it is where cross-chain money leaks.**
 
-ThirdCheck is a security bench, a static analyzer, and a CI gate for that gap.
+ThirdCheck is the security and settlement layer for that gap: a falsifier bench, a drop-in library, a settlement rail, and a CI gate.
 
 ![License](https://img.shields.io/badge/license-MIT-1c1e22)
 ![Solidity](https://img.shields.io/badge/solidity-0.8.28-4fae94)
@@ -16,6 +16,15 @@ ThirdCheck is a security bench, a static analyzer, and a CI gate for that gap.
 BUIDL CTC 2026 Fall · Creditcoin & Credit Labs · DeFi track
 
 </div>
+
+---
+
+## By the numbers
+
+- **15 of 16** protocol entry points exercised across BlockProver (`0x0FD2`) and ChainInfo (`0x0FD3`), plus the full 16-method `EvmV1Decoder` surface. A typical consumer touches one. Depth of protocol use is the stated core criterion.
+- **2 of 53** submissions clear every applicable binding check. ThirdCheck scored the whole field against the twelve checks; 96% ship at least one gap. Rows are anonymised, confirmed defects disclosed privately first.
+- **11/11** claims reproduce off the public chain, no key and no clone: run `npm run judge:verify`, or verify any claim on the [live bulletin](https://thirdcheck.vercel.app).
+- **The model:** apps route orders through SettlementHub and settle safe by construction; the fee on safe settlement is the revenue, a verified operator settles at a lower rate, and audit-grade review is the service.
 
 ---
 

@@ -55,6 +55,10 @@ export function SettlementSection({ data }: { data: HubSettlement | null }) {
               <span>operator, seller and treasury are three distinct addresses; the fee and the payout landed on-chain (testnet)</span>
             </div>
           )}
+          <div style={styles.subline}>
+            <ListChecks size={12} weight="light" style={{ color: "var(--vuln)" }} />
+            <span>the model: any lending, RWA or trading app routes orders through the hub and settles safe by construction; the fee on safe settlement is the revenue, and a verified operator (VerifiedRegistry) settles at a lower rate</span>
+          </div>
         </div>
 
         {/* The two-transaction flow */}

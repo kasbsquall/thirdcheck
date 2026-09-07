@@ -6,7 +6,7 @@ import {
   type ScorecardChecks,
   CHECK_ORDER,
 } from "@/lib/reports";
-import { Stack, ChartBarHorizontal, Flag, Scales, CheckCircle } from "@/components/icons";
+import { Stack, ChartBarHorizontal, Flag, Scales, CheckCircle, Warning } from "@/components/icons";
 
 const DEPTH_LABEL: Record<ScoreDepth, string> = {
   deep: "deep",
@@ -161,30 +161,40 @@ function ScoreRow({ row, rank, index }: { row: ScorecardRow; rank: number; index
 
 export function ScorecardSection({ data }: { data: Scorecard }) {
   const deep = data.depthCounts.find((d) => d.depth === "deep")?.count ?? 0;
+  // The headline finding: how many submissions clear every applicable check, and how many do not.
+  const fullPass = data.rows.filter((r) =>
+    CHECK_ORDER.every((k) => r.checks[k] === "na" || r.checks[k] === "y"),
+  ).length;
+  const miss = data.total - fullPass;
 
   return (
     <section className="rise" style={{ ...styles.section, animationDelay: "160ms" }}>
       <div style={styles.head}>
         <Scales size={16} weight="light" style={{ color: "var(--vuln)" }} />
-        <span style={styles.title}>The field, checked</span>
+        <span style={styles.title}>The whole field, measured against the third check</span>
         <span style={styles.note}>
-          ThirdCheck read every BUIDL CTC submission and applied its own catalogue. Rows are
-          anonymised; each mark is what a submission evidences of the third check, not a security
-          audit. Confirmed defects are disclosed privately to the affected teams first.
+          This is not an opinion. ThirdCheck read every BUIDL CTC submission and ran its own catalogue
+          against each. Only {fullPass} clear every applicable binding check. Rows are anonymised; each
+          mark is what a submission evidences of the third check, not a security audit. Confirmed defects
+          are disclosed privately to the affected teams and to team@creditcoin.org first.
         </span>
       </div>
 
       <div style={styles.subStats}>
-        <SubStat icon={<Stack size={15} weight="light" />} value={String(data.total)} label="submissions read" />
+        <SubStat
+          icon={<Warning size={15} weight="light" style={{ color: "var(--vuln)" }} />}
+          value={String(miss)}
+          label={`of ${data.total} submissions miss at least one binding check`}
+        />
         <SubStat
           icon={<CheckCircle size={15} weight="light" style={{ color: "var(--safe)" }} />}
           value={String(deep)}
-          label="with deep protocol integration"
+          label="go deep on the protocol; the rest are light or off-core"
         />
         <SubStat
           icon={<Flag size={15} weight="light" style={{ color: "var(--err)" }} />}
           value={String(data.withRedFlags)}
-          label="with a confirmed binding defect"
+          label="carry a confirmed binding defect (disclosed privately)"
         />
       </div>
 

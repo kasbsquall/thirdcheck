@@ -6,6 +6,7 @@ import {
   loadConformance,
   loadHubSettlement,
   CATALOGUE,
+  CHECK_ORDER,
   CC3_EXPLORER,
   SEPOLIA_EXPLORER,
   type Finding,
@@ -163,6 +164,16 @@ export default function Page() {
   const positiveVuln = findingById(vulnerable, "POS");
   const positiveHard = findingById(hardened, "POS");
 
+  // Field-wide gap: submissions that fully clear every applicable binding check, and the rest.
+  const fieldPass = scorecard
+    ? scorecard.rows.filter((r) =>
+        CHECK_ORDER.every((k) => r.checks[k] === "na" || r.checks[k] === "y"),
+      ).length
+    : 0;
+  const fieldMiss = scorecard ? scorecard.total - fieldPass : 0;
+  // Protocol depth: entry points ThirdCheck exercises vs what a typical consumer touches.
+  const surface = conformance?.surface;
+
   return (
     <main style={styles.main}>
       <div style={styles.shell}>
@@ -188,25 +199,43 @@ export default function Page() {
           </p>
         </header>
 
-        {/* Headline stats */}
+        {/* Headline stats: the two things that separate this from the field, then the on-chain proof. */}
         <section className="rise" style={{ ...styles.stats, animationDelay: "60ms" }}>
-          <Stat
-            icon={<ShieldWarning size={18} weight="light" style={{ color: "var(--vuln)" }} />}
-            value={`${vulnCount}/${dynamicIds.length}`}
-            label="attacks accepted by the vulnerable escrow"
-            tone="vuln"
-          />
+          {scorecard ? (
+            <Stat
+              icon={<ShieldWarning size={18} weight="light" style={{ color: "var(--vuln)" }} />}
+              value={`${fieldMiss}/${scorecard.total}`}
+              label="submissions miss at least one binding check — scored across the whole field"
+              tone="vuln"
+            />
+          ) : (
+            <Stat
+              icon={<ShieldWarning size={18} weight="light" style={{ color: "var(--vuln)" }} />}
+              value={`${vulnCount}/${dynamicIds.length}`}
+              label="attacks accepted by the vulnerable escrow"
+              tone="vuln"
+            />
+          )}
+          {surface ? (
+            <Stat
+              icon={<ListChecks size={18} weight="light" style={{ color: "var(--safe)" }} />}
+              value={`${surface.exercised}/${surface.totalEntryPoints}`}
+              label={`protocol entry points exercised — a typical consumer touches ${surface.typicalConsumerEntryPoints}`}
+              tone="safe"
+            />
+          ) : (
+            <Stat
+              icon={<Clock size={18} weight="light" style={{ color: "var(--ink-dim)" }} />}
+              value="~8 min"
+              label="attestation frontier lag, Sepolia to CC3, measured"
+              tone="dim"
+            />
+          )}
           <Stat
             icon={<ShieldCheck size={18} weight="light" style={{ color: "var(--safe)" }} />}
             value={hardened ? `${hardSafeCount}/${dynamicIds.length}` : "—"}
-            label="attacks rejected by the hardened escrow"
+            label="forged proofs the hardened escrow rejects on-chain"
             tone="safe"
-          />
-          <Stat
-            icon={<Clock size={18} weight="light" style={{ color: "var(--ink-dim)" }} />}
-            value="~8 min"
-            label="attestation frontier lag, Sepolia to CC3, measured"
-            tone="dim"
           />
         </section>
 
@@ -222,6 +251,17 @@ export default function Page() {
 
         {/* The contrast table */}
         <section className="rise" style={{ animationDelay: "100ms" }}>
+          <div style={styles.falsifierHead}>
+            <Warning size={16} weight="light" style={{ color: "var(--vuln)" }} />
+            <span style={styles.falsifierTitle}>
+              The falsifier: one forged proof, a real app, with and without the third check
+            </span>
+            <span style={styles.falsifierNote}>
+              Each row is a legitimate Attestcoin proof of the wrong thing, sent to two real escrows on
+              CC3. The left column is what a naive integration does with it: it pays out. The right is the
+              same call once the third check is in place: it rejects, on-chain.
+            </span>
+          </div>
           <div style={styles.tableHead}>
             <div style={styles.rowGrid}>
               <span style={styles.colLabel}>
@@ -440,6 +480,10 @@ const styles: Record<string, React.CSSProperties> = {
   statTop: { marginBottom: "0.9rem" },
   statValue: { fontSize: "clamp(2rem, 1.4rem + 2vw, 3.1rem)", lineHeight: 0.95, letterSpacing: "-0.03em", fontWeight: 600 },
   statLabel: { fontSize: 12.5, color: "var(--ink-dim)", marginTop: "0.6rem", lineHeight: 1.4, maxWidth: 220 },
+
+  falsifierHead: { display: "flex", alignItems: "baseline", gap: "0.6rem", flexWrap: "wrap", marginBottom: "1.25rem" },
+  falsifierTitle: { fontSize: 17, fontWeight: 600, letterSpacing: "-0.015em" },
+  falsifierNote: { fontSize: 12.5, color: "var(--ink-dim)", lineHeight: 1.5, maxWidth: 62 + "ch" },
 
   tableHead: { padding: "0 0 0.7rem" },
   table: { border: "1px solid var(--line)", borderRadius: 3, overflow: "hidden", background: "var(--panel)" },
