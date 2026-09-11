@@ -1421,3 +1421,14 @@ wrong." con "wrong." en ámbar, y debajo la firma `ThirdCheck · thirdcheck.verc
 largo existente de la escena close (sequence llega hasta el tail de 3s), así que no toca voz ni
 timing. Verificado por still (frame 3915). Render `out/thirdcheck_final.mp4` re-renderizado, 131.35s,
 video+aac, 31 MB. Enviado. Sigue siendo el video final salvo nuevo pedido.
+
+**Repo local reconectado al mirror público y sincronizado.** El repo local (`master`) no tenía
+remoto y su historia había divergido del mirror `github.com/kasbsquall/thirdcheck` (`main`, estaba
+en 923513d). Todo el trabajo reciente (video final, Verified Inflows, adoptante, scripts de
+deploy/verify) estaba sin commitear. Chequeo de seguridad previo: `.env`, `video/.secrets/`,
+`data/*.private.json` y `__pycache__` confirmados en gitignore; los scripts leen
+`DEPLOYER_PRIVATE_KEY` del entorno, cero claves hardcodeadas. Se commiteó todo en 4 commits
+temáticos (inflows, adoptante, video, frontend) + el del link de YouTube, y se hizo
+`push --force-with-lease master:main`. Verificado que el contenido de los 5 commits descartados del
+remoto ya estaba en local (solo cambiaron SHAs; el mirror tenía historia curada aparte). `main`
+remoto ahora en la misma cabeza que local. Upstream configurado, próximos push directos.

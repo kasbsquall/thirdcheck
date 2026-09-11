@@ -21,12 +21,57 @@ BUIDL CTC 2026 Fall · Creditcoin & Credit Labs · DeFi track
 
 ## By the numbers
 
-- **15 of 16** protocol entry points exercised across BlockProver (`0x0FD2`) and ChainInfo (`0x0FD3`), plus the full 16-method `EvmV1Decoder` surface. A typical consumer touches one. Depth of protocol use is the stated core criterion.
-- **5 of 53** submissions clear every applicable binding check. ThirdCheck scored the whole field against the twelve checks; 91% ship at least one gap. Rows are anonymised, confirmed defects disclosed privately first.
+- **Twelve checks, each load-bearing.** Every check maps to the exact line that enforces it and the attack that opens if you remove it (see [The twelve checks, load-bearing](#the-twelve-checks-load-bearing) below). Not a count. Nine are enforced inside `ThirdCheckLib` in two calls, B-10 and B-12 are caught by the analyzer and CI gate, B-11 is closed by construction. Depth of protocol use is the stated core criterion.
+- **5 of 53** submissions clear every applicable binding check. ThirdCheck scored the field against the twelve checks at scan time, when it held 53 submissions; the field has since grown to 87. 91% of the scanned set ship at least one gap. Rows are anonymised, confirmed defects disclosed privately first. The strongest submissions independently re-implement a subset of these same checks by hand, the clearest evidence the standard is real (see [Field convergence](#field-convergence) below).
 - **11/11** claims reproduce off the public chain, no key and no clone: run `npm run judge:verify`, or verify any claim on the [live bulletin](https://thirdcheck.vercel.app).
 - **Inbound value, checked before it lands.** A real cross-chain deposit was locked on Sepolia and credited to a fresh Creditcoin beneficiary only after the third check proved it, with no bridge trusted. Bridge failures have cost roughly $2B; this is the inbox check that stops them. Both public: [deposit](https://sepolia.etherscan.io/tx/0x549f4aab849b8a15423aa7da9dd7095290fba86a6b7ef60b8c5c527c004100bf) then [credit](https://creditcoin-testnet.blockscout.com/tx/0xda7ae863cd0c57dfeb60ec6021ac44a6463dc7818ff13b6529bfe757a9dfa17b).
 - **A second app already builds on it.** A reference credit-line app (CreditLineApp) consumes the library end to end: a user's 0.001 of verified cross-chain collateral opened a 0.0005 credit line (50% LTV) on Creditcoin, and the user drew against it, on testnet. Proof the third check is a dependency products build on, not just our own contracts.
 - **The model:** apps route orders through SettlementHub and settle safe by construction; the fee on safe settlement is the revenue, a verified operator settles at a lower rate, and audit-grade review is the service.
+
+---
+
+## The twelve checks, load-bearing
+
+The precompile at `0x0FD2` proves inclusion and continuity. It does not prove the transaction is the one your contract meant to act on. Every check below is enforced in `ThirdCheckLib`, in two calls (`verifyReceipt` + a bind predicate). Remove any single row and a valid proof of the wrong thing settles. Lines are in [`contracts/lib/ThirdCheckLib.sol`](contracts/lib/ThirdCheckLib.sol).
+
+| # | Check | Enforced at | Remove it and this opens |
+|---|-------|-------------|--------------------------|
+| B-05 | Chain identity | `ThirdCheckLib.sol:68` | A proof from a different source chain or a fork is accepted as if it came from the chain you priced against. |
+| B-08 | Block window | `ThirdCheckLib.sol:69` | A real but stale or out-of-scope block settles an order it was never meant to. |
+| proof | Inclusion + continuity | `ThirdCheckLib.sol:71-78` | Anything not actually in an attested, continuous block is treated as settled. This is the one thing the precompile does for you; the rest of this list it does not. |
+| B-04 | Replay | `ThirdCheckLib.sol:81-84` | The same genuine proof pays twice. The position is recovered on-chain from the Merkle path, never taken from the caller, so the nullifier cannot be spoofed. |
+| B-01 | Receipt status | `ThirdCheckLib.sol:87` | A reverted source transaction is still genuinely included. Without this, a payer reverts, escrows nothing, and still holds a valid inclusion proof that releases funds. |
+| B-09 | Log selection among many | `ThirdCheckLib.sol:105` / `:141` | In a batched transaction the consumer reads the wrong log; a decoy sharing the transaction is taken as the payment. |
+| B-02 | Emitter binding | `ThirdCheckLib.sol:108` / `:144` | An attacker deploys a look-alike contract, emits an identical event for free, obtains a genuine proof, and settles against value they never funded. The single most-missed check in the field. |
+| B-03 | Event signature | `ThirdCheckLib.sol:110` / `:146` | A different event with the same shape is misread as the settlement event. |
+| B-06 | Bound to the business object | `ThirdCheckLib.sol:116` / `:147` | A real payment for a different order releases this order. |
+| B-07 | Field binding (recipient, amount) | `ThirdCheckLib.sol:117-118` | A real payment to a different recipient, or for a smaller amount, releases the full order. |
+| B-10 | Attestation frontier / finality | analyzer + CI gate | A consumer acts before the frontier advances, so a reorg can unwind the settled state. |
+| B-11 | Substitutable verifier address | closed by construction, `ThirdCheckLib.sol:71,81` | The verifier is resolved through a fixed precompile, never a caller-supplied address that could return `true` for everything. |
+| B-12 | Off-chain generator treats an error as evidence | analyzer | The off-chain side returns success on a failed fetch, and a non-proof is submitted as a proof. |
+
+The point is not the number. Each row names a specific attack, and a consumer that ships without it ships that attack.
+
+## Field convergence
+
+The clearest evidence these checks are the real standard is that the strongest submissions arrived at a subset of them independently, each re-implementing the binding logic by hand inside its own contracts. Below is a conservative reading taken only from their own public write-ups. No submission covers the whole set; each covers the part its product needed.
+
+| Check | PRECEDENCE | nomen | Singleton | ThirdCheck |
+|-------|------------|-------|-----------|------------|
+| B-01 status | yes | yes | not evidenced | yes |
+| B-02 emitter | yes | yes | implicit | yes |
+| B-03 event signature | not evidenced | yes | not evidenced | yes |
+| B-04 replay | yes | not evidenced | yes | yes |
+| B-05 chain identity | yes | yes | yes | yes |
+| B-06 business-object binding | yes | partial | yes | yes |
+| B-07 field binding | not evidenced | yes | not evidenced | yes |
+| B-08 block window | not evidenced | not evidenced | not evidenced | yes |
+| B-09 log selection | yes | yes | yes | yes |
+| B-10 finality frontier | yes | not evidenced | yes | yes |
+| B-11 verifier address | not evidenced | not evidenced | not evidenced | closed by construction |
+| B-12 off-chain error as evidence | not evidenced | yes | not evidenced | yes |
+
+PRECEDENCE, nomen and Singleton are three of the strongest builds in this hackathon, and each hand-built a different slice of the same twelve checks. The checks are not our opinion; they are what the field's best work converges on. ThirdCheck is that convergence, complete, as a drop-in library and a CI gate, so the next consumer installs it in two calls instead of re-deriving a partial version and getting one wrong. This is stated from public write-ups to show the standard is real; it is not a security finding against any team.
 
 ---
 
